@@ -1,25 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.tsx                                           :+:      :+:    :+:   */
+/*   providers.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/21 18:47:44 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 18:47:45 by daeunki2         ###   ########.fr       */
+/*   Created: 2026/03/21 18:46:12 by daeunki2          #+#    #+#             */
+/*   Updated: 2026/03/21 18:46:13 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import Providers from './app/providers';
-import './index.css';
+import type { ReactNode } from 'react';
+import { ThemeProvider } from '../theme/ThemeContext';
+import { I18nProvider } from '../i18n/I18nContext';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Providers>
-      <App />
-    </Providers>
-  </React.StrictMode>,
-);
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+export default function Providers({ children }: ProvidersProps) {
+  return (
+    <ThemeProvider>
+      <I18nProvider>{children}</I18nProvider>
+    </ThemeProvider>
+  );
+}
