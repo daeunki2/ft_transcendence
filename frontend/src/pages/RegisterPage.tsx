@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 18:46:57 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:23:52 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,12 @@ import Button from '../components/ui/Button';
 import TopControls from '../components/ui/TopControls';
 import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
+import { useI18n } from '../i18n/useI18n';
 
 function RegisterPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { messages } = useI18n();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -65,7 +67,7 @@ function RegisterPage() {
                 fontSize: '28px',
               }}
             >
-              Register
+              {messages.register.title}
             </h1>
 
             <p
@@ -75,7 +77,7 @@ function RegisterPage() {
                 fontSize: '14px',
               }}
             >
-              Create your account to get started
+              {messages.register.subtitle}
             </p>
           </div>
 
@@ -90,25 +92,27 @@ function RegisterPage() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="Email"
+              placeholder={messages.register.email}
             />
 
             <Input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
+              placeholder={messages.register.password}
             />
 
             <Input
               type="password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder="Confirm Password"
+              placeholder={messages.register.confirmPassword}
             />
           </div>
 
-          <Button onClick={handleRegister}>Register</Button>
+          <Button onClick={handleRegister}>
+            {messages.register.submit}
+          </Button>
 
           <div
             style={{
@@ -117,7 +121,7 @@ function RegisterPage() {
               color: theme.colors.textMuted,
             }}
           >
-            Already have an account?{' '}
+            {messages.register.footerText}
             <button
               type="button"
               onClick={() => navigate('/login')}
@@ -132,7 +136,7 @@ function RegisterPage() {
                 fontSize: '14px',
               }}
             >
-              Login
+              {messages.register.footerLink}
             </button>
           </div>
         </div>

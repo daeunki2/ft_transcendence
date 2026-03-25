@@ -13,7 +13,7 @@ export const fr: Messages = {
     email: 'E-mail',
     password: 'Mot de passe',
     submit: 'Connexion',
-    footerText: "Vous n'avez pas de compte ?",
+    footerText: "Vous n'avez pas de compte? ",
     footerLink: "S'inscrire",
   },
   register: {
@@ -23,7 +23,7 @@ export const fr: Messages = {
     password: 'Mot de passe',
     confirmPassword: 'Confirmer le mot de passe',
     submit: "S'inscrire",
-    footerText: 'Vous avez déjà un compte ?',
+    footerText: 'Vous avez déjà un compte? ',
     footerLink: 'Connexion',
   },
   footer: {
@@ -36,11 +36,13 @@ export const fr: Messages = {
   mySpace: 'Mon espace',
   logout: 'Déconnexion',
 },
-    //홈
-    HomePage: {
-    pong : 'Pong',
-    summary : 'Classic arcade table tennis game',
-    gameruel: 'Game Ruel',
-    ruel: 'Score points by making the ball pass your opponent’s paddle. \n First to the target score wins.',
-    },
+HomePage: {
+  pong: 'Jouer à Pong',
+  summary: 'Jouez en ligne contre d’autres joueurs ou affrontez l’IA.',
+  match: 'Trouver un match',
+  aiGame: 'Jouer contre l’IA',
+  gameRule: 'Règles du jeu',
+  rule: 'Marquez plus de points que votre adversaire en renvoyant la balle sans la manquer.',
+},
+
 };

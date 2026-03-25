@@ -15,7 +15,7 @@ export const en: Messages = {
     email: 'Email',
     password: 'Password',
     submit: 'Login',
-    footerText: "Don't have an account?",
+    footerText: "Don't have an account? ",
     footerLink: 'Register',
 	},
 
@@ -27,7 +27,7 @@ export const en: Messages = {
     password: 'Password',
     confirmPassword: 'Confirm Password',
     submit: 'Register',
-    footerText: 'Already have an account?',
+    footerText: 'Already have an account? ',
     footerLink: 'Login',
 	},
 
@@ -46,9 +46,11 @@ export const en: Messages = {
     },
     //홈
     HomePage: {
-    pong : 'Pong',
-    summary : 'Classic arcade table tennis game',
-    gameruel: 'Game Ruel',
-    ruel: 'Score points by making the ball pass your opponent’s paddle. \n First to the target score wins.',
-    },
+        pong: 'Play Pong',
+  summary: 'Play Pong online with other players or against AI.',
+  match: 'Find Match',
+  aiGame: 'Play vs AI',
+  gameRule: 'Game Rules',
+  rule: 'Score more points than your opponent by hitting the ball without missing it.',
+},
 };

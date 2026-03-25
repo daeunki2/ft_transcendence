@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 21:05:47 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:31:04 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,10 @@ export type Messages = {
     HomePage: {
     pong : string;
     summary : string;
-    gameruel : string;
-    ruel : string;
+    match : string;
+    aiGame : string;
+    gameRule : string;
+    rule : string;
   };
+  
 };

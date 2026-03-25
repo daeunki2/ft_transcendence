@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 18:46:50 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:10:21 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,11 @@ import { useI18n } from '../i18n/useI18n';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { theme, themeName } = useTheme();
-  const { messages, locale } = useI18n();
+  const { theme } = useTheme();
+  const { messages } = useI18n();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const isRetro = themeName === 'retro';
-  const isKorean = locale === 'ko';
 
   const handleLogin = () => {
     console.log({
@@ -135,12 +132,7 @@ function LoginPage() {
                   margin: 0,
                   cursor: 'pointer',
                   color: theme.colors.primary,
-                  fontFamily: isKorean
-                    ? '"Noto Sans KR", "Pretendard", sans-serif'
-                    : isRetro
-                      ? '"Press Start 2P", monospace'
-                      : theme.font.family,
-                  fontSize: isRetro && !isKorean ? '12px' : '14px',
+                  fontSize: '14px',
                 }}
               >
                 {messages.login.footerLink}

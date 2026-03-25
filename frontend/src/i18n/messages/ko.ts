@@ -23,7 +23,7 @@ export const ko: Messages = {
     password: '비밀번호',
     confirmPassword: '비밀번호 확인',
     submit: '회원가입',
-    footerText: '이미 계정이 있으신가요?',
+    footerText: '이미 계정이 있으신가요? ',
     footerLink: '로그인',
   },
   footer: {
@@ -38,10 +38,12 @@ export const ko: Messages = {
   logout: '로그아웃',
 },
     //홈
-    HomePage: {
-    pong : '퐁',
-    summary : '고전적인 퐁게임',
-    gameruel: '게임 규칙',
-    ruel: '바를 움직여 공을 날려라',
-    },
+HomePage: {
+  pong: '퐁 게임',
+  summary: '다른 플레이어와 온라인으로 플레이하거나 AI와 대결하세요.',
+  match: '매칭하기',
+  aiGame: 'AI와 게임하기',
+  gameRule: '게임 설명',
+  rule: '공을 놓치지 않고 상대보다 더 많은 점수를 얻으면 승리합니다.',
+},
 };

@@ -6,34 +6,28 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 21:41:32 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:38:33 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
+import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
 import FooterLinks from '../components/common/FooterLinks';
 import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const { messages } = useI18n();
   const { theme } = useTheme();
 
   return (
     <PageContainer
-      header={
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}
-        >
-          <Navbar />
-        </div>
-      }
+      header={<Navbar />}
       footer={<FooterLinks />}
     >
       <div
@@ -60,6 +54,7 @@ export default function HomePage() {
           >
             {messages.HomePage.pong}
           </h1>
+
           <p
             style={{
               marginTop: '8px',
@@ -71,86 +66,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        <Card>
-          <div
-            style={{
-              width: '100%',
-              aspectRatio: '16 / 9',
-              background: theme.colors.background,
-              border: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: '16px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                gap: '40px',
-                fontSize: '28px',
-                fontWeight: 700,
-                color: theme.colors.text,
-              }}
-            >
-              <span>5</span>
-              <span>3</span>
-            </div>
 
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: '50%',
-                width: '2px',
-                transform: 'translateX(-50%)',
-                background: theme.colors.border,
-              }}
-            />
-
-            <div
-              style={{
-                position: 'absolute',
-                left: '20px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '10px',
-                height: '80px',
-                background: theme.colors.primary,
-              }}
-            />
-
-            <div
-              style={{
-                position: 'absolute',
-                right: '20px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '10px',
-                height: '80px',
-                background: theme.colors.primary,
-              }}
-            />
-
-            <div
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '14px',
-                height: '14px',
-                borderRadius: '50%',
-                background: theme.colors.text,
-              }}
-            />
-          </div>
-        </Card>
-
-        <Card>
+        <Card style={{ minHeight: '200px' }}>
           <div
             style={{
               display: 'flex',
@@ -165,8 +82,9 @@ export default function HomePage() {
                 color: theme.colors.text,
               }}
             >
-              {messages.HomePage.gameruel}
+              {messages.HomePage.gameRule}
             </h2>
+
             <p
               style={{
                 margin: 0,
@@ -174,10 +92,38 @@ export default function HomePage() {
                 fontSize: '14px',
               }}
             >
-            {messages.HomePage.ruel}
+              {messages.HomePage.rule}
             </p>
           </div>
         </Card>
+
+
+        <Card>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              onClick={() => navigate('/match')}
+              style={{ width: '100%', maxWidth: '320px' }}
+            >
+              {messages.HomePage.match}
+            </Button>
+
+            <Button
+              onClick={() => navigate('/ai-game')}
+              style={{ width: '100%', maxWidth: '320px' }}
+            >
+              {messages.HomePage.aiGame}
+            </Button>
+          </div>
+        </Card>
+
+
       </div>
     </PageContainer>
   );
