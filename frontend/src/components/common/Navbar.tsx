@@ -10,19 +10,48 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useTheme } from '../../theme/useTheme';
+import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../i18n/useI18n';
 import Logo from './Logo';
+import ToggleSwitch from '../ui/ToggleSwitch';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
+import { useTheme } from '../../theme/useTheme';
+import Button from '../ui/Button';
+
+const styles = {
+  root: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '16px',
+  },
+  left: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    flexWrap: 'wrap',
+  },
+  right: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap',
+  },
+  logoButton: {
+    border: 'none',
+    background: 'transparent',
+    padding: 0,
+    margin: 0,
+    cursor: 'pointer',
+  },
+} as const;
 
 export default function Navbar() {
+const { themeName, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { theme, themeName } = useTheme();
   const { messages } = useI18n();
-
-  const isRetro = themeName === 'retro';
 
   const menus = [
     { label: messages.navbar.pong, path: '/home' },
@@ -31,86 +60,35 @@ export default function Navbar() {
   ];
 
   return (
-    <div
-      style={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '16px',
-        flexWrap: 'wrap',
-      }}
-    >
-      <button
-        type="button"
-        onClick={() => navigate('/home')}
-        style={{
-          border: 'none',
-          background: 'transparent',
-          padding: 0,
-          margin: 0,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <Logo width="180px" />
-      </button>
-
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          flexWrap: 'wrap',
-        }}
-      >
-        {menus.map((menu) => {
-          const isActive = location.pathname === menu.path;
-
-          return (
-            <button
-              key={menu.path}
-              type="button"
-              onClick={() => navigate(menu.path)}
-              style={{
-                border: isRetro
-                  ? 'none'
-                  : `${theme.borderWidth.thin} solid ${theme.colors.border}`,
-                background: isActive ? theme.colors.primary : theme.colors.surface,
-                color: isActive ? theme.colors.primaryText : theme.colors.text,
-                borderRadius: theme.radius.md,
-                padding: '10px 14px',
-                minHeight: '40px',
-                cursor: 'pointer',
-                fontFamily: theme.font.family,
-                fontSize: '14px',
-              }}
-            >
-              {menu.label}
-            </button>
-          );
-        })}
-
+    <div style={styles.root}>
+      <div style={styles.left}>
         <button
           type="button"
-          onClick={() => navigate('/')}
-          style={{
-            border: isRetro
-              ? 'none'
-              : `${theme.borderWidth.thin} solid ${theme.colors.border}`,
-            background: theme.colors.surface,
-            color: theme.colors.text,
-            borderRadius: theme.radius.md,
-            padding: '10px 14px',
-            minHeight: '40px',
-            cursor: 'pointer',
-            fontFamily: theme.font.family,
-            fontSize: '14px',
-          }}
+          onClick={() => navigate('/home')}
+          style={styles.logoButton}
         >
-          {messages.navbar.logout}
+          <Logo width="180px" />
         </button>
+
+        {menus.map((menu) => (
+          <Button
+            key={menu.path}
+            onClick={() => navigate(menu.path)}
+          >
+            {menu.label}
+          </Button>
+        ))}
+      </div>
+
+      <div style={styles.right}>
+        <LanguageSwitcher />
+        <ToggleSwitch
+			isOn={themeName === 'future'}
+			onToggle={toggleTheme}
+		/>
+        <Button onClick={() => navigate('/')}>
+          {messages.navbar.logout}
+        </Button>
       </div>
     </div>
   );

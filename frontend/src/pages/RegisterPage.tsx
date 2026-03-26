@@ -20,6 +20,7 @@ import TopControls from '../components/ui/TopControls';
 import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import TextButton from '../components/ui/TextButton';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -45,102 +46,99 @@ function RegisterPage() {
       header={<TopControls />}
       footer={<FooterLinks />}
     >
-      <Card>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-          }}
-        >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          margin: '0 auto',
+        }}
+      >
+        <Card>
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '8px',
-              textAlign: 'center',
+              gap: '20px',
+              width: '100%',
             }}
           >
-            <h1
+            <div
               style={{
-                margin: 0,
-                fontSize: '28px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                textAlign: 'center',
               }}
             >
-              {messages.register.title}
-            </h1>
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: '28px',
+                }}
+              >
+                {messages.register.title}
+              </h1>
 
-            <p
+              <p
+                style={{
+                  margin: 0,
+                  color: theme.colors.textMuted,
+                  fontSize: '14px',
+                }}
+              >
+                {messages.register.subtitle}
+              </p>
+            </div>
+
+            <div
               style={{
-                margin: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                width: '100%',
+              }}
+            >
+              <Input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder={messages.register.email}
+              />
+
+              <Input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={messages.register.password}
+              />
+
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder={messages.register.confirmPassword}
+              />
+            </div>
+
+            <Button onClick={handleRegister}>
+              {messages.register.submit}
+            </Button>
+
+            <div
+              style={{
+                textAlign: 'center',
+                fontSize: '14px',
                 color: theme.colors.textMuted,
-                fontSize: '14px',
               }}
             >
-              {messages.register.subtitle}
-            </p>
+              {messages.register.footerText}{' '}
+              <TextButton onClick={() => navigate('/login')}>
+                {messages.register.footerLink}
+              </TextButton>
+            </div>
           </div>
-
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-            }}
-          >
-            <Input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder={messages.register.email}
-            />
-
-            <Input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder={messages.register.password}
-            />
-
-            <Input
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder={messages.register.confirmPassword}
-            />
-          </div>
-
-          <Button onClick={handleRegister}>
-            {messages.register.submit}
-          </Button>
-
-          <div
-            style={{
-              textAlign: 'center',
-              fontSize: '14px',
-              color: theme.colors.textMuted,
-            }}
-          >
-            {messages.register.footerText}
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                margin: 0,
-                cursor: 'pointer',
-                color: theme.colors.primary,
-                fontFamily: theme.font.family,
-                fontSize: '14px',
-              }}
-            >
-              {messages.register.footerLink}
-            </button>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </PageContainer>
   );
 }

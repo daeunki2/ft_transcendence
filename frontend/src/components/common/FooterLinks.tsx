@@ -13,6 +13,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../theme/useTheme';
 import { useI18n } from '../../i18n/useI18n';
+import TextButton from '../ui/TextButton';
 
 function FooterLinks() {
   const navigate = useNavigate();
@@ -28,39 +29,16 @@ function FooterLinks() {
         color: theme.colors.textMuted,
       }}
     >
-      <button
-        type="button"
-        onClick={() => navigate('/terms')}
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          margin: 0,
-          cursor: 'pointer',
-          color: 'inherit',
-          fontFamily: theme.font.family,
-          fontSize: '14px',
-        }}
-      >
-        {messages.footer.terms}
-      </button>
+		
+<TextButton onClick={() => navigate('/privacy')}>
+  {messages.footer.privacy}
+</TextButton>
 
-      <button
-        type="button"
-        onClick={() => navigate('/privacy')}  
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          margin: 0,
-          cursor: 'pointer',
-          color: 'inherit',
-          fontFamily: theme.font.family,
-          fontSize: '14px',
-        }}
-      >
-        {messages.footer.privacy}
-      </button>
+
+<TextButton onClick={() => navigate('/terms')}>
+  {messages.footer.terms}
+</TextButton>
+
     </div>
   );
 }

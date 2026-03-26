@@ -20,6 +20,7 @@ import TopControls from '../components/ui/TopControls';
 import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import TextButton from '../components/ui/TextButton';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -114,30 +115,21 @@ function LoginPage() {
               {messages.login.submit}
             </Button>
 
-            <div
-              style={{
-                textAlign: 'center',
-                fontSize: '14px',
-                color: theme.colors.textMuted,
-              }}
-            >
-              {messages.login.footerText}{' '}
-              <button
-                type="button"
-                onClick={() => navigate('/register')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  margin: 0,
-                  cursor: 'pointer',
-                  color: theme.colors.primary,
-                  fontSize: '14px',
-                }}
-              >
-                {messages.login.footerLink}
-              </button>
-            </div>
+
+
+			<div
+			style={{
+    		textAlign: 'center',
+    		fontSize: '14px',
+    		color: theme.colors.textMuted,
+  			}}
+			>
+
+			{messages.login.footerText}{' '}
+  			<TextButton onClick={() => navigate('/register')}>
+    			{messages.login.footerLink}
+  			</TextButton>{' '}
+			</div>
           </div>
         </Card>
       </div>
