@@ -5,6 +5,7 @@
 
 ## [2026-03-21] daeunki2
 
+branch : study
 Commit: front/team add
 
 ### what 
@@ -44,5 +45,20 @@ Commit: front/team add
 ### 보는법
 - study 브랜치에서 프론트엔드 디렉토리로 이동
 - npm run dev 입력
-- 크롬에 http://localhost:5173/ 입력
+- 혹시 안 보인다면 nvm use 20으로 버전 동기화 해야함
+- 크롬에 주소 입력
 - 탐색
+
+
+## [2026-03-27] daeunki2
+
+branch : main
+Commit: restructuring
+
+### what 
+- meeting 디렉토리 생성. 모듈표 회의록 업데이트. 키노트는 수정이 번거로워 텍스트로도 작성
+- daeunki2 디렉토리 생성. 공부한것 여기 올릴 예정
+
+### ps
+- 앞으로 작업이 많아질 경우를 대비해서 중요한 커밋의 경우 이렇게 로그를 남기면 좋을 것 같습니다.
+- 어떤 파일에서 무슨 작업을 했는지, 혹시 건들면 안돼는 파일이 있는지 정도만 있어도 좋지 않을까... 싶습니다. 
