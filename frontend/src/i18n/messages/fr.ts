@@ -45,4 +45,12 @@ HomePage: {
   rule: 'Marquez plus de points que votre adversaire en renvoyant la balle sans la manquer.',
 },
 
+  social: {
+    title: 'Amis',
+    addPlaceholder: 'Entrez le pseudo',
+    add: 'Ajouter',
+    sendMessage: 'Message',
+    startGame: 'Jouer',
+    noFriends: 'Pas encore d\'amis',
+  },
 };

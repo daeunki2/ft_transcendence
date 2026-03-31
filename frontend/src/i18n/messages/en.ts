@@ -53,4 +53,12 @@ export const en: Messages = {
   gameRule: 'Game Rules',
   rule: 'Score more points than your opponent by hitting the ball without missing it.',
 },
+  social: {
+    title: 'Friends',
+    addPlaceholder: 'Enter nickname',
+    add: 'Add',
+    sendMessage: 'Message',
+    startGame: 'Start Game',
+    noFriends: 'No friends yet',
+  },
 };

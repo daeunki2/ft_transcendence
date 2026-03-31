@@ -56,5 +56,12 @@ export type Messages = {
     gameRule : string;
     rule : string;
   };
-  
+  social: {
+    title: string;
+    addPlaceholder: string;
+    add: string;
+    sendMessage: string;
+    startGame: string;
+    noFriends: string;
+  };
 };
