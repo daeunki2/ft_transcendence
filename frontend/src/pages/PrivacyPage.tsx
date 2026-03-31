@@ -1,25 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.tsx                                           :+:      :+:    :+:   */
+/*   PrivacyPage.tsx                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/21 18:47:44 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/23 17:58:58 by daeunki2         ###   ########.fr       */
+/*   Created: 2026/03/21 18:46:52 by daeunki2          #+#    #+#             */
+/*   Updated: 2026/03/21 18:46:53 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import Providers from './app/providers';
-import './index.css';
+function PrivacyPage() {
+  return <h1>Privacy Page</h1>;
+}
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Providers>
-      <App />
-    </Providers>
-  </React.StrictMode>,
-);
+export default PrivacyPage;
