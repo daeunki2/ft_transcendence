@@ -16,6 +16,7 @@ import Navbar from '../components/common/Navbar';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 
@@ -76,16 +77,7 @@ function SocialPage() {
                     borderBottom: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
                   }}
                 >
-                  {/* 아바타 자리 (나중에 컴포넌트로 교체) */}
-                  <div
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: theme.colors.primary,
-                      flexShrink: 0,
-                    }}
-                  />
+                  <Avatar />
                   <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
                     {friend.nickname}
                   </span>
