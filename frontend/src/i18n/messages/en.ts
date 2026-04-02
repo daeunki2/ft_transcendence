@@ -47,18 +47,25 @@ export const en: Messages = {
     //홈
     HomePage: {
         pong: 'Play Pong',
-  summary: 'Play Pong online with other players or against AI.',
-  match: 'Find Match',
-  aiGame: 'Play vs AI',
-  gameRule: 'Game Rules',
-  rule: 'Score more points than your opponent by hitting the ball without missing it.',
-},
-  social: {
-    title: 'Friends',
-    addPlaceholder: 'Enter nickname',
-    add: 'Add',
-    sendMessage: 'Message',
-    startGame: 'Start Game',
-    noFriends: 'No friends yet',
-  },
+        summary: 'Play Pong online with other players or against AI.',
+        match: 'Find Match',
+        aiGame: 'Play vs AI',
+        gameRule: 'Game Rules',
+        rule: 'Score more points than your opponent by hitting the ball without missing it.',
+    },
+    //소셜
+    social: {
+      title: 'Friends',
+      addPlaceholder: 'Enter nickname',
+      add: 'Add',
+      sendMessage: 'Message',
+      startGame: 'Start Game',
+      noFriends: 'No friends yet',
+      remove: 'Remove',
+    },
+    //채팅
+    chat: {
+      inputPlaceholder: 'Type a message',
+      send: 'Send',
+    },
 };

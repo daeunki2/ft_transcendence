@@ -44,7 +44,6 @@ HomePage: {
   gameRule: 'Règles du jeu',
   rule: 'Marquez plus de points que votre adversaire en renvoyant la balle sans la manquer.',
 },
-
   social: {
     title: 'Amis',
     addPlaceholder: 'Entrez le pseudo',
@@ -52,5 +51,10 @@ HomePage: {
     sendMessage: 'Message',
     startGame: 'Jouer',
     noFriends: 'Pas encore d\'amis',
+    remove: 'Supprimer',
+  },
+  chat: {
+    inputPlaceholder: 'Tapez un message',
+    send: 'Envoyer',
   },
 };

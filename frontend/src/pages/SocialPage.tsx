@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+import { useState } from 'react';
 import PageContainer from '../components/ui/PageContainer';
 import FooterLinks from '../components/common/FooterLinks';
 import Navbar from '../components/common/Navbar';
@@ -17,6 +18,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Avatar from '../components/ui/Avatar';
+import ChatModal from '../components/ui/ChatModal';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 
@@ -29,6 +31,7 @@ const fakeFriends = [
 function SocialPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
+  const [chatTarget, setChatTarget] = useState<string | null>(null);
 
   return (
     <PageContainer
@@ -81,11 +84,23 @@ function SocialPage() {
                   <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
                     {friend.nickname}
                   </span>
-                  <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
+                  <Button
+                    onClick={() => setChatTarget(friend.nickname)}
+                    style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+                  >
                     {messages.social.sendMessage}
                   </Button>
                   <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
                     {messages.social.startGame}
+                  </Button>
+                  <Button style={{
+                    fontSize: '12px',
+                    padding: '8px 12px',
+                    minHeight: 'auto',
+                    background: theme.colors.danger,
+                    color: '#ffffff',
+                  }}>
+                    {messages.social.remove}
                   </Button>
                 </div>
               ))}
@@ -93,6 +108,12 @@ function SocialPage() {
           )}
         </Card>
       </div>
+
+      <ChatModal
+        open={chatTarget !== null}
+        onClose={() => setChatTarget(null)}
+        friendName={chatTarget ?? ''}
+      />
     </PageContainer>
   );
 }

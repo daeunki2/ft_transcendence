@@ -63,5 +63,10 @@ export type Messages = {
     sendMessage: string;
     startGame: string;
     noFriends: string;
+    remove: string;
+  };
+  chat: {
+    inputPlaceholder: string;
+    send: string;
   };
 };

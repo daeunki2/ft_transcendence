@@ -53,5 +53,10 @@ HomePage: {
     sendMessage: '메세지',
     startGame: '게임 시작',
     noFriends: '아직 친구가 없습니다',
+    remove: '삭제',
+  },
+  chat: {
+    inputPlaceholder: '메세지를 입력하세요',
+    send: '전송',
   },
 };
