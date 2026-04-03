@@ -1,0 +1,121 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   SocialPage.tsx                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
+/*   Updated: 2026/03/21 20:14:57 by daeunki2         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+import { useState } from 'react';
+import PageContainer from '../components/ui/PageContainer';
+import FooterLinks from '../components/common/FooterLinks';
+import Navbar from '../components/common/Navbar';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Avatar from '../components/ui/Avatar';
+import ChatModal from '../components/ui/ChatModal';
+import { useTheme } from '../theme/useTheme';
+import { useI18n } from '../i18n/useI18n';
+
+const fakeFriends = [
+  { id: 1, nickname: 'Player42' },
+  { id: 2, nickname: 'PongMaster' },
+  { id: 3, nickname: 'RetroGamer' },
+];
+
+function SocialPage() {
+  const { theme } = useTheme();
+  const { messages } = useI18n();
+  const [chatTarget, setChatTarget] = useState<string | null>(null);
+
+  return (
+    <PageContainer
+      header={<Navbar />}
+      footer={<FooterLinks />}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '900px',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+        }}
+      >
+        <h1 style={{ margin: 0, fontSize: '32px', color: theme.colors.text, textAlign: 'center' }}>
+          {messages.social.title}
+        </h1>
+
+        {/* 친구 추가 영역 */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Input
+            placeholder={messages.social.addPlaceholder}
+            style={{ flex: 1 }}
+          />
+          <Button>{messages.social.add}</Button>
+        </div>
+
+        {/* 친구 목록 */}
+        <Card>
+          {fakeFriends.length === 0 ? (
+            <p style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
+              {messages.social.noFriends}
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {fakeFriends.map((friend) => (
+                <div
+                  key={friend.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '8px 0',
+                    borderBottom: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
+                  }}
+                >
+                  <Avatar />
+                  <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
+                    {friend.nickname}
+                  </span>
+                  <Button
+                    onClick={() => setChatTarget(friend.nickname)}
+                    style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+                  >
+                    {messages.social.sendMessage}
+                  </Button>
+                  <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
+                    {messages.social.startGame}
+                  </Button>
+                  <Button style={{
+                    fontSize: '12px',
+                    padding: '8px 12px',
+                    minHeight: 'auto',
+                    background: theme.colors.danger,
+                    color: '#ffffff',
+                  }}>
+                    {messages.social.remove}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <ChatModal
+        open={chatTarget !== null}
+        onClose={() => setChatTarget(null)}
+        friendName={chatTarget ?? ''}
+      />
+    </PageContainer>
+  );
+}
+
+export default SocialPage;
