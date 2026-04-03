@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RegisterPage.tsx                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/23 18:23:52 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/03 14:06:51 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import TextButton from '../components/ui/TextButton';
+import { authService } from '../services/authService';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -31,16 +32,27 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleRegister = () => {
-    console.log({
-      email,
-      password,
-      confirmPassword,
-    });
+  const handleRegister = async () => {
+  if (password !== confirmPassword) {
+    alert("비밀번호가 일치하지 않습니다.");
+    return;
+  }
 
-    navigate('/login');
-  };
+  try {
 
+    const result = await authService.signup({ email, password });
+
+    if (result.success === true) {
+      alert("회원가입 성공! 로그인해 주세요.");
+      navigate('/login'); // 가입 성공 후 로그인 페이지로 이동
+    } else {
+      alert(result.message || "회원가입에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("회원가입 에러:", error);
+    alert("서버 연결에 실패했습니다.");
+  }
+};
   return (
     <PageContainer
       header={<TopControls />}

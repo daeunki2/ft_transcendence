@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LoginPage.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/23 18:10:21 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/03 14:03:08 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import TextButton from '../components/ui/TextButton';
+import { authService } from '../services/authService';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -30,14 +31,26 @@ function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    console.log({
-      email,
-      password,
-    });
-
-    navigate('/home');
-  };
+const handleLogin = async () => {
+try {
+	const result = await authService.login(email, password);
+  
+	if (result.success === true) {
+	  console.log('로그인 성공:', result.message);
+	  console.log('토큰:', result.accessToken);
+	  
+	  localStorage.setItem('accessToken', result.accessToken);
+	  
+	  navigate('/home');
+	}
+	else {
+		alert(result.error || "로그인에 실패했습니다.");
+	}
+  } catch(error) {
+	console.error('로그인 에러:', error);
+    alert("서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
 
   return (
     <PageContainer
