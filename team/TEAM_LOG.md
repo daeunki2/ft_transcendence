@@ -62,3 +62,21 @@ Commit: restructuring
 ### ps
 - 앞으로 작업이 많아질 경우를 대비해서 중요한 커밋의 경우 이렇게 로그를 남기면 좋을 것 같습니다.
 - 어떤 파일에서 무슨 작업을 했는지, 혹시 건들면 안돼는 파일이 있는지 정도만 있어도 좋지 않을까... 싶습니다. 
+
+### .env
+
+- root(compose 파일 있는 곳)에 하나 /backend에 하나 총 2개 만들어야함
+
+ft_transcendence/.env
+
+```
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=my_db
+```
+
+backend/.env
+
+```
+MY_SEVRET_KEY=1234
+```
