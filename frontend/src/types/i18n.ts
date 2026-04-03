@@ -69,4 +69,13 @@ export type Messages = {
     inputPlaceholder: string;
     send: string;
   };
+  mySpace: {
+    title: string;
+    editAvatar: string;
+    nickname: string;
+    nicknamePlaceholder: string;
+    save: string;
+    gameHistory: string;
+    noGames: string;
+  };
 };

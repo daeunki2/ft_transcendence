@@ -59,4 +59,13 @@ HomePage: {
     inputPlaceholder: '메세지를 입력하세요',
     send: '전송',
   },
+  mySpace: {
+    title: '마이스페이스',
+    editAvatar: '아바타 수정',
+    nickname: '닉네임',
+    nicknamePlaceholder: '닉네임을 입력하세요',
+    save: '저장',
+    gameHistory: '게임 히스토리',
+    noGames: '아직 게임 기록이 없습니다',
+  },
 };

@@ -57,4 +57,13 @@ HomePage: {
     inputPlaceholder: 'Tapez un message',
     send: 'Envoyer',
   },
+  mySpace: {
+    title: 'Mon Espace',
+    editAvatar: 'Modifier l\'avatar',
+    nickname: 'Pseudo',
+    nicknamePlaceholder: 'Entrez votre pseudo',
+    save: 'Enregistrer',
+    gameHistory: 'Historique des parties',
+    noGames: 'Aucune partie jouée',
+  },
 };

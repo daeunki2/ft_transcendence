@@ -68,4 +68,14 @@ export const en: Messages = {
       inputPlaceholder: 'Type a message',
       send: 'Send',
     },
+    //프로필
+    mySpace: {
+      title: 'My Space',
+      editAvatar: 'Edit Avatar',
+      nickname: 'Nickname',
+      nicknamePlaceholder: 'Enter your nickname',
+      save: 'Save',
+      gameHistory: 'Game History',
+      noGames: 'No games played yet',
+    },
 };
