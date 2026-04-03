@@ -3,11 +3,13 @@ import { useTheme } from '../../theme/useTheme';
 
 type AvatarProps = HTMLAttributes<HTMLDivElement> & {
   size?: number;
+  url?: string;
 };
 
 export default function Avatar({
   size = 40,
   style,
+  url,
   ...props
 }: AvatarProps) {
   const { theme, themeName } = useTheme();
@@ -26,6 +28,9 @@ export default function Avatar({
       : `${theme.borderWidth.thin} solid ${theme.colors.border}`,
 
     boxShadow: 'none',
+    backgroundImage: url ? `url(${url})` : undefined,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
   };
 
   return (
