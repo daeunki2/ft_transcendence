@@ -24,8 +24,8 @@ export class AppService {
       email,
       password: hashedPassword,
     });
-
-    return await this.userRepository.save(newUser);
+    await this.userRepository.save(newUser);
+	return {success: true, message: '회원가입 성공' };
   }
 
   async validateUser(loginData: any) {
@@ -33,8 +33,12 @@ export class AppService {
 
     const user = await this.userRepository.findOne({ where: { email } });
 
-    // 유저가 있고 비밀번호가 일치하는지 확인 (평문 비교)
-    if (user && user.password === password) {
+	if (!user) {
+    	return { success: false, message: '존재하지 않는 계정입니다.' };
+	}
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (isMatch) {
       return {
         success: true,
         message: 'DB 인증 성공!',

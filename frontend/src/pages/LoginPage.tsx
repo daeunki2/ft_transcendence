@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 13:08:54 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/03 14:03:08 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ const handleLogin = async () => {
 try {
 	const result = await authService.login(email, password);
   
-	if (result.success == true) {
+	if (result.success === true) {
 	  console.log('로그인 성공:', result.message);
 	  console.log('토큰:', result.accessToken);
 	  

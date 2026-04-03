@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 13:09:24 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/03 14:06:51 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ function RegisterPage() {
 
     const result = await authService.signup({ email, password });
 
-    if (result.success) {
+    if (result.success === true) {
       alert("회원가입 성공! 로그인해 주세요.");
       navigate('/login'); // 가입 성공 후 로그인 페이지로 이동
     } else {
