@@ -78,5 +78,5 @@ POSTGRES_DB=my_db
 backend/.env
 
 ```
-MY_SEVRET_KEY=1234
+MY_SECRET_KEY=1234
 ```
