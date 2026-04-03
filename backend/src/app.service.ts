@@ -3,16 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AppService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+	private readonly jwtService: JwtService,
   ) {}
 
   async signUp(userData: any) {
-    const { email, password } = userData;
+    const { email, password, nick } = userData;
 
 	const existingUser = await this.userRepository.findOne({where: {email}})
 	if (existingUser)
@@ -23,12 +25,13 @@ export class AppService {
     const newUser = this.userRepository.create({
       email,
       password: hashedPassword,
+	  nickname: nick,
     });
     await this.userRepository.save(newUser);
 	return {success: true, message: '회원가입 성공' };
   }
 
-  async validateUser(loginData: any) {
+  async login(loginData: any) {
     const { email, password } = loginData;
 
     const user = await this.userRepository.findOne({ where: { email } });
@@ -38,11 +41,15 @@ export class AppService {
 	}
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (isMatch) {
-      return {
+    if (isMatch)
+	{
+		const payload = { sub: user.id, email: user.email };
+		const token = this.jwtService.sign(payload);
+		console.log('성공');
+      	return {
         success: true,
         message: 'DB 인증 성공!',
-        accessToken: 'real-database-token-' + user.id, //테스트 용 나중에 jwt토큰으로 대체
+        accessToken: token,
       };
     }
 

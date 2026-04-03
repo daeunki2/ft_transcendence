@@ -10,5 +10,8 @@ export class User {
   email: string;
 
   @Column()
-  password: string; // 실제로는 암호화해서 저장해야 하지만, 일단은 평문으로 진행!
+  password: string; 
+
+  @Column()
+  nickname: string;
 }

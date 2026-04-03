@@ -3,9 +3,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
   imports: [
+
+	ConfigModule.forRoot({ // 다른 모듈에서도 .env변수 사용위함
+      isGlobal: true, 
+    }),
+
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'database',
@@ -17,6 +25,11 @@ import { User } from './entities/user.entity';
       synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
     }),
     TypeOrmModule.forFeature([User]), // Repository를 쓰기 위해 필요
+
+	JwtModule.register({
+      secret: process.env.MY_SECRET_KEY, // .env 파일로 생성해야함!
+      signOptions: { expiresIn: '1h' }, // 토큰 유효 기간 (1시간)
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

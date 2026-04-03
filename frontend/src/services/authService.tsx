@@ -3,7 +3,7 @@ import apiClient from './apiClient';
 export const authService = {
   // 로그인 기능: 'post' 방식과 '/login' 주소를 지정해서 공통 함수 호출
   login: async (email: string, password: string) => {
-    return await apiClient('post', '/login', { email, password });
+    return await apiClient('post', '/login', { email, password});
   },
 
   // 회원가입 기능

@@ -20,6 +20,7 @@ export const fr: Messages = {
     title: 'Inscription',
     subtitle: 'Créez votre compte pour commencer',
     email: 'E-mail',
+	nick: 'Nickname',
     password: 'Mot de passe',
     confirmPassword: 'Confirmer le mot de passe',
     submit: "S'inscrire",
