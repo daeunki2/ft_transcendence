@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 14:06:51 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/03 16:20:31 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ function RegisterPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nick, setNick] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleRegister = async () => {
@@ -40,7 +41,7 @@ function RegisterPage() {
 
   try {
 
-    const result = await authService.signup({ email, password });
+    const result = await authService.signup({ email, password, nick });
 
     if (result.success === true) {
       alert("회원가입 성공! 로그인해 주세요.");
@@ -115,6 +116,12 @@ function RegisterPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder={messages.register.email}
+              />
+			  <Input
+                type="text"
+                value={nick}
+                onChange={(event) => setNick(event.target.value)}
+                placeholder={messages.register.nick}
               />
 
               <Input

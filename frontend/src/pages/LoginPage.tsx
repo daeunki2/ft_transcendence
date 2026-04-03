@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 14:03:08 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/03 17:02:01 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ try {
 	  console.log('로그인 성공:', result.message);
 	  console.log('토큰:', result.accessToken);
 	  
-	  localStorage.setItem('accessToken', result.accessToken);
+	// localStorage.setItem('accessToken', result.accessToken); 백엔드에서 바로 쿠키저장
 	  
 	  navigate('/home');
 	}

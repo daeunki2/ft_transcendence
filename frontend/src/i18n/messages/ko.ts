@@ -20,6 +20,7 @@ export const ko: Messages = {
     title: '회원가입',
     subtitle: '시작하려면 계정을 만들어주세요',
     email: '이메일',
+	nick: '닉네임',
     password: '비밀번호',
     confirmPassword: '비밀번호 확인',
     submit: '회원가입',
