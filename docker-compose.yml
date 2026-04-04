@@ -7,7 +7,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - ./postgres_data:/var/lib/postgresql/data
     stdin_open: true
     tty: true
 

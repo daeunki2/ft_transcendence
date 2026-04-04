@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Navbar.tsx                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:13:57 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 20:21:56 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/04 11:40:10 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ import ToggleSwitch from '../ui/ToggleSwitch';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import { useTheme } from '../../theme/useTheme';
 import Button from '../ui/Button';
+import { useLogout } from '../../hooks/Logout';
 
 const styles = {
   root: {
@@ -52,6 +53,7 @@ export default function Navbar() {
 const { themeName, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { messages } = useI18n();
+  const { handleLogout } = useLogout();
 
   const menus = [
     { label: messages.navbar.pong, path: '/home' },
@@ -86,7 +88,7 @@ const { themeName, toggleTheme } = useTheme();
 			isOn={themeName === 'future'}
 			onToggle={toggleTheme}
 		/>
-        <Button onClick={() => navigate('/')}>
+        <Button onClick={handleLogout}>
           {messages.navbar.logout}
         </Button>
       </div>

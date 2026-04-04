@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 15:21:29 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/04 10:25:18 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ export type Messages = {
     email: string;
     password: string;
     submit: string;
+    submitting: string;
     footerText: string;
     footerLink: string;
   };
@@ -35,6 +36,7 @@ export type Messages = {
     password: string;
     confirmPassword: string;
     submit: string;
+    submitting: string;
     footerText: string;
     footerLink: string;
   };

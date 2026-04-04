@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HomePage.tsx                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/23 18:38:33 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/04 12:57:36 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,18 @@ import FooterLinks from '../components/common/FooterLinks';
 import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import { useAuthInit } from '../hooks/useAuthInit';
+import { useEffect } from 'react';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { messages } = useI18n();
   const { theme } = useTheme();
+  const { fetchMe } = useAuthInit();
+
+  useEffect(() => {
+    fetchMe(); // 홈에 진입했을 때 서버에 내 정보 물어보기
+  }, []); // 의존성 배열을 비워서 진입 시 딱 한 번 실행
 
   return (
     <PageContainer
