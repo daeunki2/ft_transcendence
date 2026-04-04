@@ -116,3 +116,4 @@ npm install -D @types/cookie-parser
 - 어떤 정보 들고올지 정하기 (지금은 아이디, 닉네임, 이메일)
 - 로그아웃 시 provider 내에 정보가 사라지는가? (확인 필요)
 - 쿠키에 현재 토큰만 넣어놨는데 다른 정보 넣어놓을 지
+- providers에 microservice 대응 시 getme를 처리하는 방식, API 게이트웨이에서 각 서비스별로 분할 (공부 및 구현필요)
