@@ -6,11 +6,10 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 17:02:01 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/04 10:28:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
@@ -21,36 +20,14 @@ import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import TextButton from '../components/ui/TextButton';
-import { authService } from '../services/authService';
+import { useLogin } from '../hooks/Login';
 
 function LoginPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { messages } = useI18n();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-const handleLogin = async () => {
-try {
-	const result = await authService.login(email, password);
-  
-	if (result.success === true) {
-	  console.log('로그인 성공:', result.message);
-	  console.log('토큰:', result.accessToken);
-	  
-	// localStorage.setItem('accessToken', result.accessToken); 백엔드에서 바로 쿠키저장
-	  
-	  navigate('/home');
-	}
-	else {
-		alert(result.error || "로그인에 실패했습니다.");
-	}
-  } catch(error) {
-	console.error('로그인 에러:', error);
-    alert("서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.");
-  }
-};
+const { email, setEmail, password, setPassword, handleLogin, isLoading } = useLogin();
 
   return (
     <PageContainer
@@ -124,8 +101,8 @@ try {
               />
             </div>
 
-            <Button onClick={handleLogin}>
-              {messages.login.submit}
+            <Button onClick={handleLogin} disabled={isLoading}>
+              {isLoading ? messages.login.submitting : messages.login.submit}
             </Button>
 
 

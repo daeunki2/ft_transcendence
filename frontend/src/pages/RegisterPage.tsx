@@ -6,11 +6,10 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 16:20:31 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/04 10:29:01 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
@@ -21,39 +20,23 @@ import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import TextButton from '../components/ui/TextButton';
-import { authService } from '../services/authService';
+import { useRegister } from '../hooks/Register';
 
 function RegisterPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { messages } = useI18n();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [nick, setNick] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const {
+    email, setEmail,
+    password, setPassword,
+    nick, setNick,
+    confirmPassword, setConfirmPassword,
+    isLoading,
+    handleRegister
+  } = useRegister();
 
-  const handleRegister = async () => {
-  if (password !== confirmPassword) {
-    alert("비밀번호가 일치하지 않습니다.");
-    return;
-  }
-
-  try {
-
-    const result = await authService.signup({ email, password, nick });
-
-    if (result.success === true) {
-      alert("회원가입 성공! 로그인해 주세요.");
-      navigate('/login'); // 가입 성공 후 로그인 페이지로 이동
-    } else {
-      alert(result.message || "회원가입에 실패했습니다.");
-    }
-  } catch (error) {
-    console.error("회원가입 에러:", error);
-    alert("서버 연결에 실패했습니다.");
-  }
-};
+  
   return (
     <PageContainer
       header={<TopControls />}
@@ -139,8 +122,8 @@ function RegisterPage() {
               />
             </div>
 
-            <Button onClick={handleRegister}>
-              {messages.register.submit}
+            <Button onClick={handleRegister} disabled={isLoading}>
+              {isLoading ? messages.register.submitting : messages.register.submit}
             </Button>
 
             <div
