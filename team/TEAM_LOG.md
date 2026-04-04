@@ -85,7 +85,7 @@ MY_SECRET_KEY=1234
 
 brunch: main
 
-![logo](./로그인%20및%20getme()%20흐름.png)
+![photo1](./로그인%20및%20getme()%20흐름.png)
 -> 참고용
 
 ### what
@@ -117,3 +117,5 @@ npm install -D @types/cookie-parser
 - 로그아웃 시 provider 내에 정보가 사라지는가? (확인 필요)
 - 쿠키에 현재 토큰만 넣어놨는데 다른 정보 넣어놓을 지
 - providers에 microservice 대응 시 getme를 처리하는 방식, API 게이트웨이에서 각 서비스별로 분할 (공부 및 구현필요)
+
+![photo1](./마이크로%20서비스%20게이트%20웨이.png.png)
