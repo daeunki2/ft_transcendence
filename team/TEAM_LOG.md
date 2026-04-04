@@ -118,4 +118,4 @@ npm install -D @types/cookie-parser
 - 쿠키에 현재 토큰만 넣어놨는데 다른 정보 넣어놓을 지
 - providers에 microservice 대응 시 getme를 처리하는 방식, API 게이트웨이에서 각 서비스별로 분할 (공부 및 구현필요)
 
-![photo1](./마이크로%20서비스%20게이트%20웨이.png.png)
+![photo1](./마이크로%20서비스%20게이트%20웨이.png)
