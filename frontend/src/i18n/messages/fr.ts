@@ -69,4 +69,14 @@ HomePage: {
     gameHistory: 'Historique des parties',
     noGames: 'Aucune partie jouée',
   },
+  errors: {
+    USER_NOT_FOUND: 'Utilisateur introuvable.',
+    INVALID_PASSWORD: 'Mot de passe incorrect.',
+    EMAIL_ALREADY_EXISTS: 'Cet e-mail est déjà utilisé.',
+    SERVER_ERROR: 'Une erreur de serveur est survenue.',
+  },
+  result: {
+    success: 'Opération réussie.',
+    false: "L'opération a échoué.",
+  },
 };

@@ -37,7 +37,7 @@ export class AppService {
     const user = await this.userRepository.findOne({ where: { email } });
   
     if (!user)
-    	return { success: false, message: '존재하지 않는 계정입니다.' };
+    	return { success: false, message: 'USER_NOT_FOUND' };
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch)
@@ -47,12 +47,12 @@ export class AppService {
 		  console.log('로그인 성공');
       	return {
         success: true,
-        message: 'DB 인증 성공!',
+        message: 'LOGIN_SUCCESS',
         accessToken: token,
       };
     }
     // 실패 시
-    return { success: false, message: '이메일 또는 비밀번호가 틀립니다.' };
+  return { success: false, message: 'INVALID_PASSWORD' };
   }
 
   async logout() {

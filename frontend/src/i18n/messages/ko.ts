@@ -71,4 +71,14 @@ HomePage: {
     gameHistory: '게임 히스토리',
     noGames: '아직 게임 기록이 없습니다',
   },
+errors: {
+    USER_NOT_FOUND: '존재하지 않는 사용자입니다.',
+    INVALID_PASSWORD: '비밀번호가 일치하지 않습니다.',
+    EMAIL_ALREADY_EXISTS: '이미 사용 중인 이메일입니다.',
+    SERVER_ERROR: '서버 오류가 발생했습니다.',
+  },
+  result: {
+    success: '성공적으로 완료되었습니다.',
+    false: '작업 처리에 실패했습니다.',
+  },
 };

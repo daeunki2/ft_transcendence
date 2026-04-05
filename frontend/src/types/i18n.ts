@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   i18n.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/04 10:25:18 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/05 22:27:39 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,5 +80,15 @@ export type Messages = {
     save: string;
     gameHistory: string;
     noGames: string;
+  };
+  errors: {
+    USER_NOT_FOUND: string;
+    INVALID_PASSWORD: string;
+    EMAIL_ALREADY_EXISTS: string;
+    SERVER_ERROR: string;
+  };
+  result: {
+    success: string;
+    false: string;
   };
 };

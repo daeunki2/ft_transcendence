@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LoginPage.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/04 10:28:39 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/05 23:00:35 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@ import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import Alert from '../components/ui/Alert';
 import TopControls from '../components/ui/TopControls';
 import FooterLinks from '../components/common/FooterLinks';
 import { useTheme } from '../theme/useTheme';
@@ -27,13 +28,23 @@ function LoginPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
 
-const { email, setEmail, password, setPassword, handleLogin, isLoading } = useLogin();
+const { email, setEmail, password, setPassword, handleLogin, isLoading,errorMsg,setErrorMsg } = useLogin();
 
   return (
     <PageContainer
       header={<TopControls />}
       footer={<FooterLinks />}
     >
+
+  <Alert 
+        open={!!errorMsg} 
+        title={messages.login.title} // 혹은 '알림' 같은 적절한 타이틀
+        message={errorMsg || ''} 
+        confirmText={messages.result?.false || "OK"} 
+        onClose={() => setErrorMsg(null)} 
+      />
+
+      
       <div
         style={{
           width: '100%',
