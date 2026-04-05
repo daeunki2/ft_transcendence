@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/05 22:27:39 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/05 23:05:53 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,10 +81,10 @@ export type Messages = {
     gameHistory: string;
     noGames: string;
   };
-  errors: {
+errors: {
     USER_NOT_FOUND: string;
     INVALID_PASSWORD: string;
-    EMAIL_ALREADY_EXISTS: string;
+    USER_ALREADY_EXISTS: string; 
     SERVER_ERROR: string;
   };
   result: {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RegisterPage.tsx                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/04 10:29:01 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/05 23:15:33 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
+import Alert from '../components/ui/Alert';
 import Button from '../components/ui/Button';
 import TopControls from '../components/ui/TopControls';
 import FooterLinks from '../components/common/FooterLinks';
@@ -33,7 +34,9 @@ function RegisterPage() {
     nick, setNick,
     confirmPassword, setConfirmPassword,
     isLoading,
-    handleRegister
+    handleRegister,
+    alertMsg,
+    setAlertMsg
   } = useRegister();
 
   
@@ -42,6 +45,21 @@ function RegisterPage() {
       header={<TopControls />}
       footer={<FooterLinks />}
     >
+<Alert 
+      open={!!alertMsg} 
+      title={messages.register.title}
+      message={alertMsg || ''} 
+      confirmText={messages.result.false} 
+      onClose={() => {
+        if (alertMsg === messages.result.success) {
+          navigate('/login');
+        }
+        setAlertMsg(null);
+      }} 
+    />
+
+
+      
       <div
         style={{
           width: '100%',

@@ -18,7 +18,7 @@ export class AppService {
 
 	  const existingUser = await this.userRepository.findOne({where: {email}})
 	  if (existingUser)
-		  return { success: false, message: '이미 가입된 이메일입니다.' };
+		  return { success: false, message: 'USER_ALREADY_EXISTS' };
     const saltOrRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 
@@ -29,7 +29,7 @@ export class AppService {
     });
     await this.userRepository.save(newUser);
 		console.log('가입 성공');
-	  return {success: true, message: '회원가입 성공' };
+	  return { success: true, message: 'SIGNUP_SUCCESS' };
   }
 
   async login(loginData: any) {

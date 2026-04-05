@@ -81,14 +81,14 @@ export const en: Messages = {
       gameHistory: 'Game History',
       noGames: 'No games played yet',
     },
-    errors: {
-    USER_NOT_FOUND: 'User not found.',
-    INVALID_PASSWORD: 'Incorrect password.',
-    EMAIL_ALREADY_EXISTS: 'This email is already in use.',
-    SERVER_ERROR: 'A server error occurred. Please try again later.',
+errors: {
+    USER_NOT_FOUND: "User not found.",
+    INVALID_PASSWORD: "Invalid password.",
+    USER_ALREADY_EXISTS: "This email is already registered.",
+    SERVER_ERROR: "Internal server error. Please try again later.",
   },
   result: {
-    success: 'Operation successful.',
-    false: 'Operation failed.',
+    success: "Success",
+    false: "OK",
   },
 };
