@@ -70,9 +70,8 @@ Commit: restructuring
 ft_transcendence/.env
 
 ```
-POSTGRES_USER=user
-POSTGRES_PASSWORD=password
-POSTGRES_DB=my_db
+AUTHDB_USER=user
+AUTHDB_PASSWORD=password
 ```
 
 backend/.env
