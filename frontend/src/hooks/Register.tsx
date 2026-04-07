@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Register.tsx                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:06 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/05 23:24:31 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:26:01 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ const handleRegister = async () => {
         //지금은 이메일 중복만 경고하고 있음 나중에 닉네임 중복도 추가해야 할지도?
         navigate('/login');
       	} else {
-          setAlertMsg(messages.errors?.USER_ALREADY_EXISTS);
+          setAlertMsg(result.message);
+          console.log("회원가입 실패 사유:", result);
       	}
     } catch (error) {
       console.error("회원가입 에러:", error);

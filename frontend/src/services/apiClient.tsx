@@ -6,13 +6,13 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:09 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/04 12:42:13 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/07 19:09:14 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:4000'; // 서버 주소
+const BASE_URL = 'http://localhost:8000/'; // gateway 주소
 
 // 찬영님이 요청한 '공통 함수'
 const apiClient = async (method : 'get' | 'post' | 'put' | 'delete', url : string, data : any = null) => {

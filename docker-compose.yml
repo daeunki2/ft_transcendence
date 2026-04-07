@@ -20,6 +20,32 @@ services:
       - /app/node_modules
     depends_on:
       - auth-database
+    env_file:
+    - ./auth-service/.env
+    stdin_open: true
+    tty: true
+
+  gateway:
+    build: ./gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - user-service
+    stdin_open: true
+    tty: true
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./user-service:/app
+      - /app/node_modules
+    depends_on:
+      - user-database
     stdin_open: true
     tty: true
 
@@ -35,5 +61,18 @@ services:
     volumes:
       - auth_db_data:/var/lib/postgresql/data
 
+  user-database:
+    image: postgres:15
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=${USERDB_USER}
+      - POSTGRES_PASSWORD=${USERDB_PASSWORD}
+      - POSTGRES_DB=user-db
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+
 volumes:
   auth_db_data:
+  user_db_data:
