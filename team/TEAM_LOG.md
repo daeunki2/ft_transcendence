@@ -134,3 +134,36 @@ commit -m "feat: add custom Alert component for registration flow"
 - 혹시 닉네임 중복 허용하는지? (채팅상대나 매칭할때 닉네임으로 상대 찾게 하려면 중복 막아야함)
 - 기본적인 검증 필요하지는 않은지? (비밀번호 n자이상 이메일 형식 등등.)
 - 사실상 우리는 아이디가 이메일일 필요가 없는거 같은데 혹시 그냥 아이디로 하게 하는건 어떤지?
+
+## [2026-04-05] chanypar
+
+commit -m gateway_microservice_start
+
+### what
+- 서버 분할을 위한 gateway 생성
+- microservice 위해 각각의 서비스 디렉토리 생성 및 backend/ 이름변경 (auth-service, user-service)
+- docker-compose.yml 수정 : user-service 추가, user-database 추가
+- 기존의 db -> auth-database로 수정
+- .env 파일 수정 :
+
+ft_transcendence/.env
+
+```
+AUTHDB_USER=user
+AUTHDB_PASSWORD=password
+
+USERDB_USER=user
+USERDB_PASSWORD=password
+
+```
+
+auth-service/.env (파일 수정은 안했지만 햇갈리실까봐 넣어둡니다)
+
+```
+
+MY_SECRET_KEY=1234
+
+```
+
+- user-service 개발 시, user-service/src/entities/user.entity.ts 에서 테이블 추가 및 수정 가능합니다
+- 함수 추가하실 때는, 프론트엔드에 service/ 디렉토리 참고해 주세요
