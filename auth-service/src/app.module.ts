@@ -16,11 +16,11 @@ import { ConfigModule } from '@nestjs/config';
 
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'database',
+      host: 'auth-database',
       port: 5432,
       username: 'user', // 본인의 DB 사용자 이름
       password: 'password', // 본인의 DB 비밀번호
-      database: 'my_db', // 본인의 DB 이름
+      database: 'auth-db', // 본인의 DB 이름
       entities: [User], // 우리가 만든 Entity 등록
       synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
     }),

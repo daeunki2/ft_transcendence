@@ -10,28 +10,69 @@ services:
     stdin_open: true
     tty: true
 
-  backend:
-    build: ./backend
-    container_name: transcendence_backend
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
     ports:
       - "4000:4000"
     volumes:
-      - ./backend:/app
+      - ./auth-service:/app
       - /app/node_modules
     depends_on:
-      - database
+      - auth-database
+    env_file:
+    - ./auth-service/.env
     stdin_open: true
     tty: true
 
-  database:
+  gateway:
+    build: ./gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - user-service
+    stdin_open: true
+    tty: true
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./user-service:/app
+      - /app/node_modules
+    depends_on:
+      - user-database
+    stdin_open: true
+    tty: true
+
+  auth-database:
     image: postgres:15
-    container_name: transcendence_db
-    env_file:
-      - .env
+    container_name: auth-db
+    environment:
+      - POSTGRES_USER=${AUTHDB_USER}
+      - POSTGRES_PASSWORD=${AUTHDB_PASSWORD}
+      - POSTGRES_DB=auth-db
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - auth_db_data:/var/lib/postgresql/data
+
+  user-database:
+    image: postgres:15
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=${USERDB_USER}
+      - POSTGRES_PASSWORD=${USERDB_PASSWORD}
+      - POSTGRES_DB=user-db
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  auth_db_data:
+  user_db_data:
