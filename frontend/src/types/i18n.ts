@@ -67,6 +67,11 @@ export type Messages = {
     startGame: string;
     noFriends: string;
     remove: string;
+    requestsTitle: string;
+    noRequests: string;
+    accept: string;
+    reject: string;
+    alertTitle: string;
   };
   chat: {
     inputPlaceholder: string;
@@ -84,8 +89,16 @@ export type Messages = {
 errors: {
     USER_NOT_FOUND: string;
     INVALID_PASSWORD: string;
-    USER_ALREADY_EXISTS: string; 
+    USER_ALREADY_EXISTS: string;
     SERVER_ERROR: string;
+    CANNOT_ADD_SELF: string;
+    ALREADY_FRIENDS_OR_REQUESTED: string;
+    REQUEST_NOT_FOUND: string;
+    REQUEST_NOT_PENDING: string;
+    FRIEND_NOT_FOUND: string;
+    NOT_ACCEPTED_FRIENDSHIP: string;
+    FORBIDDEN: string;
+    NICKNAME_REQUIRED: string;
   };
   result: {
     success: string;

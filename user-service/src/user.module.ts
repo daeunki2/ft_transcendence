@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 import { User } from './entities/user.entity';
+import { Friend } from './entities/friend.entity';
+import { FriendsModule } from './friends/friends.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
@@ -10,8 +12,8 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
 
-	ConfigModule.forRoot({ // 다른 모듈에서도 .env변수 사용위함
-      isGlobal: true, 
+    ConfigModule.forRoot({ // 다른 모듈에서도 .env변수 사용위함
+      isGlobal: true,
     }),
 
     TypeOrmModule.forRoot({
@@ -21,17 +23,19 @@ import { ConfigModule } from '@nestjs/config';
       username: 'user', // 본인의 DB 사용자 이름
       password: 'password', // 본인의 DB 비밀번호
       database: 'user-db', // 본인의 DB 이름
-      entities: [User], // 우리가 만든 Entity 등록
+      entities: [User, Friend], // 우리가 만든 Entity 등록
       synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
     }),
     TypeOrmModule.forFeature([User]), // Repository를 쓰기 위해 필요
 
-	JwtModule.register({
+    JwtModule.register({
       secret: process.env.MY_SECRET_KEY, // .env 파일로 생성해야함!
       signOptions: { expiresIn: '1h' }, // 토큰 유효 기간 (1시간)
     }),
+
+    FriendsModule, // 친구 기능 모듈
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [UserController],
+  providers: [UserService],
 })
-export class AppModule {}
+export class UserModule {}
