@@ -6,14 +6,14 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:48:58 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/04 12:48:35 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/09 19:02:46 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext.types';
 
 export const useLogout = () => {
   const navigate = useNavigate();

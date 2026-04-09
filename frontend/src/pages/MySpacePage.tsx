@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MySpacePage.tsx                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 00:00:00 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/09 19:05:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,12 @@ import Button from '../components/ui/Button';
 import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
+  const { user } = useAuth();
 
   return (
     <PageContainer
@@ -71,10 +73,10 @@ export default function MySpacePage() {
               }}
             >
               <span style={{ fontSize: '14px', color: theme.colors.textMuted }}>
-                {messages.mySpace.nickname}
+                {user.id}
               </span>
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: theme.colors.text }}>
-                Player1
+                {user.email}
               </span>
             </div>
           </div>

@@ -1,16 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { Auth } from './entities/auth.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class AppService {
+export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-	private readonly jwtService: JwtService,
+    @InjectRepository(Auth)
+    private userRepository: Repository<Auth>,
+	  private readonly jwtService: JwtService,
+    private readonly httpService: HttpService,
   ) {}
 
   async signUp(userData: any) {
@@ -23,12 +26,25 @@ export class AppService {
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 
     const newUser = this.userRepository.create({
-      email,
+      email: email,
       password: hashedPassword,
-	  nickname: nick,
+	    refresh_token: null,
     });
-    await this.userRepository.save(newUser);
-		console.log('가입 성공');
+    const savedUser = await this.userRepository.save(newUser);
+		console.log(`가입 성공: ID ${savedUser.id}`);
+
+    try {
+    await firstValueFrom(
+      this.httpService.post('http://user-service:4001/users/init', {
+        id: savedUser.id,
+        email: email,
+        nickname: nick,
+      })
+    );
+  } catch (error) {
+    // 3. 만약 호출 실패 시, Auth DB에 저장한 걸 롤백하거나 에러 처리 필요
+    console.error('User 서비스 초기화 실패:', error.response?.data || error.message);
+  }
 	  return { success: true, message: 'SIGNUP_SUCCESS' };
   }
 

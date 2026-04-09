@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { User } from './entities/user.entity';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { Auth } from './entities/auth.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 
 
 @Module({
@@ -14,6 +15,12 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true, 
     }),
 
+    // HttpModule 추가 (다른 서비스 API 호출용)
+    HttpModule.register({
+      timeout: 5000,     // 5초 타임아웃 설정 (선택사항)
+      maxRedirects: 5,   // 최대 리다이렉트 횟수 (선택사항)
+    }),
+
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'auth-database',
@@ -21,17 +28,17 @@ import { ConfigModule } from '@nestjs/config';
       username: 'user', // 본인의 DB 사용자 이름
       password: 'password', // 본인의 DB 비밀번호
       database: 'auth-db', // 본인의 DB 이름
-      entities: [User], // 우리가 만든 Entity 등록
+      entities: [Auth], // 우리가 만든 Entity 등록
       synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
     }),
-    TypeOrmModule.forFeature([User]), // Repository를 쓰기 위해 필요
+    TypeOrmModule.forFeature([Auth]), // Repository를 쓰기 위해 필요
 
 	JwtModule.register({
       secret: process.env.MY_SECRET_KEY, // .env 파일로 생성해야함!
       signOptions: { expiresIn: '1h' }, // 토큰 유효 기간 (1시간)
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AuthController],
+  providers: [AuthService],
 })
-export class AppModule {}
+export class AuthModule {}

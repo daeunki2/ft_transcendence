@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Login.tsx                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:02 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/05 22:34:36 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/09 19:02:03 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext.types';
 import { useI18n } from '../i18n/useI18n';
 
 export const useLogin = () => {
