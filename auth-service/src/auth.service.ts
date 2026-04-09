@@ -35,7 +35,7 @@ export class AuthService {
 
     try {
     await firstValueFrom(
-      this.httpService.post('http://user-service:4001/users/init', {
+      this.httpService.post('http://user-service:4001/init', {
         id: savedUser.id,
         email: email,
         nickname: nick,

@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import * as express from 'express';
 import type { Response } from 'express';
 
-@Controller('')
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -36,6 +36,7 @@ export class AuthController {
       	httpOnly: true,
       	secure: false,   // 실서비스(HTTPS)라면 true
       	expires: new Date(0), // 즉시 삭제
+		path: '/',
     	});
 
     	return (result);

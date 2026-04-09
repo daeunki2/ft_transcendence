@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:02 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/09 19:02:03 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/09 22:38:46 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,18 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { AuthContext } from '../contexts/AuthContext.types';
 import { useI18n } from '../i18n/useI18n';
+import { useAuthInit } from '../hooks/useAuthInit';
 
 export const useLogin = () => {
   const navigate = useNavigate();
-	const { messages } = useI18n(); //언어 추가
+  const { messages } = useI18n(); //언어 추가
   const { setUser } = useContext(AuthContext)!; //  유저를 저장하기위한 전역 주머니
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null); // 초기화
+  const { fetchMe } = useAuthInit();
+  
 
 const handleLogin = async () => {
 
@@ -38,8 +41,7 @@ const handleLogin = async () => {
 	  	console.log('로그인 성공:', result.message);
 	  	console.log('토큰:', result.accessToken);
 	  
-		// localStorage.setItem('accessToken', result.accessToken); 백엔드에서 바로 쿠키저장
-	  
+		await fetchMe();
 	  	navigate('/home');
 		}
 	else { 

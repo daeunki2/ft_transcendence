@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:14 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/07 19:08:36 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/09 22:12:33 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,6 @@ export const authService = {
   // 로그인한 유저 정보 가져오기
   getMe: async () => {
     // 세 번째 인자(data)는 GET이라서 비워두거나 생략합니다.
-    return await apiClient('get', 'api/auth/me', {});
+    return await apiClient('get', 'api/users/me', {});
   }
 };

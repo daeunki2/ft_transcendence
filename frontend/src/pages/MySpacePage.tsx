@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/09 19:05:39 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/09 22:32:58 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ export default function MySpacePage() {
               }}
             >
               <span style={{ fontSize: '14px', color: theme.colors.textMuted }}>
-                {user.id}
+                {user.nickname}
               </span>
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: theme.colors.text }}>
                 {user.email}

@@ -1,9 +1,9 @@
-import { Controller, Post, Body, Res, Get, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, Req, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
-// import * as express from 'express';
+import * as express from 'express';
 
 
-@Controller('users')
+@Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -13,22 +13,30 @@ export class UserController {
     return await this.userService.createUserProfile(data.id, data.email, data.nickname);
   }
 
-  // @Get('me')
-  // 	async getMe(@Req() request: express.Request) {
-  //   const token = request.cookies['accessToken'];
+  @Get('me')
+  	async getMe(@Req() request: express.Request) {
+    console.log('get me 입장');
+    const token = request.cookies['accessToken'];
 
-  //   if (!token) {
-  //     throw new UnauthorizedException('로그인이 필요합니다.');
-  //   }
+    if (!token) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
 	
-  //   const user = await this.authService.getMe(token);
-  //   return {
-  //     success: true,
-  //     user: {
-  //       id: user.id,
-  //       email: user.email,
-  //     },
-  //   };
-  // }
+    const user = await this.userService.getMe(token);
+
+    if (!user) {
+  // 유저가 없을 경우 예외를 던짐 (NestJS 표준 방식)
+    throw new NotFoundException('유저를 찾을 수 없습니다.');
+    }
+    return {
+      success: true,
+      user: {
+        userId: user.userId,
+        email: user.email,
+        nickname: user.nickname,
+        userPhoto: user.userPhoto,
+      },
+    };
+  }
 	
 }
