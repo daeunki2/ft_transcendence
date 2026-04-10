@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/10 09:07:51 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/10 09:32:25 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,21 @@ import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
+import AvatarModal from '../components/modals/AvatarModal';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
   const { user } = useAuth();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAvatarSelect = (id: number) => {
+    console.log(`Selected Avatar ID: ${id}`);
+    // 여기서 유저 정보 업데이트 로직 실행
+    setIsModalOpen(false);
+  };
 
   return (
     <PageContainer
@@ -58,6 +68,7 @@ export default function MySpacePage() {
             {/* 아바타 */}
             <Avatar size={120} />
             <Button
+              onClick={() => setIsModalOpen(true)}
               style={{ fontSize: '12px', padding: '8px 16px', minHeight: 'auto' }}
             >
               {messages.mySpace.editAvatar}
@@ -92,6 +103,13 @@ export default function MySpacePage() {
           </p>
         </Card>
       </div>
+
+      <AvatarModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSelect={handleAvatarSelect}
+        theme={theme}
+      />
     </PageContainer>
   );
 }

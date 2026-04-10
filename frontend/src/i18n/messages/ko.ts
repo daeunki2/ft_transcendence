@@ -65,11 +65,13 @@ HomePage: {
   mySpace: {
     title: '마이스페이스',
     editAvatar: '아바타 수정',
+    selectAvatar: '아바타 선택',
     nickname: '닉네임',
     nicknamePlaceholder: '닉네임을 입력하세요',
     save: '저장',
     gameHistory: '게임 히스토리',
     noGames: '아직 게임 기록이 없습니다',
+    cancel: '뒤로가기',
   },
 
   errors: {
