@@ -1,16 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { Auth } from './entities/auth.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class AppService {
+export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-	private readonly jwtService: JwtService,
+    @InjectRepository(Auth)
+    private userRepository: Repository<Auth>,
+	  private readonly jwtService: JwtService,
+    private readonly httpService: HttpService,
   ) {}
 
   async signUp(userData: any) {
@@ -23,12 +26,25 @@ export class AppService {
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 
     const newUser = this.userRepository.create({
-      email,
+      email: email,
       password: hashedPassword,
-	  nickname: nick,
+	    refresh_token: null,
     });
-    await this.userRepository.save(newUser);
-		console.log('가입 성공');
+    const savedUser = await this.userRepository.save(newUser);
+		console.log(`[signUp가입 성공: ID ${savedUser.id}`);
+
+    try {
+    await firstValueFrom(
+      this.httpService.post('http://user-service:4001/init', {
+        id: savedUser.id,
+        email: email,
+        nickname: nick,
+      })
+    );
+  } catch (error) {
+    // 3. 만약 호출 실패 시, Auth DB에 저장한 걸 롤백하거나 에러 처리 필요
+    console.error('[signUp]User 서비스 초기화 실패:', error.response?.data || error.message);
+  }
 	  return { success: true, message: 'SIGNUP_SUCCESS' };
   }
 
@@ -44,7 +60,7 @@ export class AppService {
 	  {
 		  const payload = { sub: user.id, email: user.email };
 		  const token = this.jwtService.sign(payload);
-		  console.log('로그인 성공');
+		  console.log('[login]로그인 성공');
       	return {
         success: true,
         message: 'LOGIN_SUCCESS',
@@ -59,7 +75,7 @@ export class AppService {
     // 나중에 여기에 '로그아웃 시 수행할 작업'을 추가할 수 있습니다.
     // 예: Redis에서 토큰 삭제, 접속 로그 업데이트 등
     
-    console.log('로그아웃 성공');
+    console.log('[logout]로그아웃 성공');
     return {
       success: true,
       message: '성공적으로 로그아웃되었습니다.',
@@ -72,7 +88,7 @@ export class AppService {
       const user = await this.userRepository.findOne({ where: { id: decoded.id } });
       if (!user)
         throw new Error();
-      console.log('get me 성공');
+      console.log('[getme]성공');
       return user;
     } catch (error) {
       // 토큰이 조작되었거나 만료된 경우

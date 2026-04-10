@@ -1,21 +1,23 @@
-import { createContext} from 'react';
-import {useState} from 'react';
+import {useState, useContext} from 'react';
 import type {ReactNode} from 'react';
+import { AuthContext } from './AuthContext.types';
+import type { UserType } from './AuthContext.types';
 
-// 1. 주머니의 모양(타입) 정의
-interface AuthContextType {
-  user: { nick: string } | null;
-  setUser: (user: { nick: string } | null) => void;
-  isLoading: boolean; // 👈 로딩 상태 추가 (초기 데이터 확인용)
-}
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  
+  if (context === undefined) {
+    throw new Error('useAuth는 AuthProvider 내부에서만 사용할 수 있습니다.');
+  }
+  
+  return context;
+};
 
-// 2. 주머니를 제공하는 Provider 컴포넌트
+// 주머니를 제공하는 Provider 컴포넌트
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ nick: string } | null>(null);
+  const [user, setUser] = useState< UserType | null>(null);
   const [isLoading] = useState(true); // 👈 처음에 서버 확인 전까지 true
-
 
   return (
     <AuthContext.Provider value={{ user, setUser, isLoading }}>

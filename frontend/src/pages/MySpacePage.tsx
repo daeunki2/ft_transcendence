@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MySpacePage.tsx                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 00:00:00 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/10 11:59:26 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,24 @@ import Button from '../components/ui/Button';
 import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
+import AvatarModal from '../components/modals/AvatarModal';
+import { AVATAR_MAP } from '../constants/Avatars';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
+  const { user } = useAuth();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const currentAvatarUrl = AVATAR_MAP[user.userPhoto]
+
+  const handleAvatarSelect = (id: number) => {
+    console.log(`Selected Avatar ID: ${id}`);
+    // 여기서 유저 정보 업데이트 로직 실행
+    setIsModalOpen(false);
+  };
 
   return (
     <PageContainer
@@ -54,8 +68,9 @@ export default function MySpacePage() {
             }}
           >
             {/* 아바타 */}
-            <Avatar size={120} />
+            <Avatar size={120} url={currentAvatarUrl}/>
             <Button
+              onClick={() => setIsModalOpen(true)}
               style={{ fontSize: '12px', padding: '8px 16px', minHeight: 'auto' }}
             >
               {messages.mySpace.editAvatar}
@@ -71,10 +86,10 @@ export default function MySpacePage() {
               }}
             >
               <span style={{ fontSize: '14px', color: theme.colors.textMuted }}>
-                {messages.mySpace.nickname}
+                {user?.nickname}
               </span>
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: theme.colors.text }}>
-                Player1
+                {user?.email}
               </span>
             </div>
           </div>
@@ -90,6 +105,13 @@ export default function MySpacePage() {
           </p>
         </Card>
       </div>
+
+      <AvatarModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSelect={handleAvatarSelect}
+        theme={theme}
+      />
     </PageContainer>
   );
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   App.tsx                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 20:17:13 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/10 10:20:28 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,16 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SocialPage from './pages/SocialPage';
 import MySpacePage from './pages/MySpacePage';
+import { useAuthInit } from './hooks/useAuthInit';
+import React, { useEffect } from 'react';
+
 
 function App() {
+  const { fetchMe } = useAuthInit();
+  
+  useEffect(() => {
+    fetchMe(); // 앱 진입 시 쿠키가 있다면 유저 정보를 가져옴
+  }, []); // 딱 한 번 실행
   return (
     <BrowserRouter>
       <Routes>
