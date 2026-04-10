@@ -1,5 +1,5 @@
 import { useContext} from 'react';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext.types';
 import { authService } from '../services/authService';
 
 export const useAuthInit = () => {
@@ -12,8 +12,6 @@ export const useAuthInit = () => {
   const { user, setUser} = context;
 
   const fetchMe = async () => {
-    // 이미 유저 정보가 있다면 다시 부르지 않음 (선택 사항)
-    if (user) return;
 
     try {
       const response = await authService.getMe();
