@@ -57,12 +57,12 @@ HomePage: {
     remove: 'Supprimer',
   },
   chat: {
-    inputPlaceholder: 'Tapez un message',
+    inputPlaceholder: 'Tapez le message',
     send: 'Envoyer',
   },
   mySpace: {
     title: 'Mon Espace',
-    editAvatar: 'Modifier l\'avatar',
+    editAvatar: 'Changer l\'avatar',
     nickname: 'Pseudo',
     nicknamePlaceholder: 'Entrez votre pseudo',
     save: 'Enregistrer',

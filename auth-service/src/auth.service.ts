@@ -31,7 +31,7 @@ export class AuthService {
 	    refresh_token: null,
     });
     const savedUser = await this.userRepository.save(newUser);
-		console.log(`가입 성공: ID ${savedUser.id}`);
+		console.log(`[signUp가입 성공: ID ${savedUser.id}`);
 
     try {
     await firstValueFrom(
@@ -43,7 +43,7 @@ export class AuthService {
     );
   } catch (error) {
     // 3. 만약 호출 실패 시, Auth DB에 저장한 걸 롤백하거나 에러 처리 필요
-    console.error('User 서비스 초기화 실패:', error.response?.data || error.message);
+    console.error('[signUp]User 서비스 초기화 실패:', error.response?.data || error.message);
   }
 	  return { success: true, message: 'SIGNUP_SUCCESS' };
   }
@@ -60,7 +60,7 @@ export class AuthService {
 	  {
 		  const payload = { sub: user.id, email: user.email };
 		  const token = this.jwtService.sign(payload);
-		  console.log('로그인 성공');
+		  console.log('[login]로그인 성공');
       	return {
         success: true,
         message: 'LOGIN_SUCCESS',
@@ -75,7 +75,7 @@ export class AuthService {
     // 나중에 여기에 '로그아웃 시 수행할 작업'을 추가할 수 있습니다.
     // 예: Redis에서 토큰 삭제, 접속 로그 업데이트 등
     
-    console.log('로그아웃 성공');
+    console.log('[logout]로그아웃 성공');
     return {
       success: true,
       message: '성공적으로 로그아웃되었습니다.',
@@ -88,7 +88,7 @@ export class AuthService {
       const user = await this.userRepository.findOne({ where: { id: decoded.id } });
       if (!user)
         throw new Error();
-      console.log('get me 성공');
+      console.log('[getme]성공');
       return user;
     } catch (error) {
       // 토큰이 조작되었거나 만료된 경우

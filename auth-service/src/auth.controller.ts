@@ -9,7 +9,7 @@ export class AuthController {
 
 	@Post('login')
   		async login(@Body() loginData: any, @Res({ passthrough: true }) response: Response) {
-    	console.log('프론트에서 온 데이터:', loginData);	
+    	console.log('[login]프론트에서 온 데이터:', loginData);	
 		const result = await this.authService.login(loginData);
 
 		
@@ -22,7 +22,7 @@ export class AuthController {
 	}
 	@Post('signup')
 		async signUp(@Body() userData: any) {
-    	console.log('프론트에서 온 데이터:', userData);
+    	console.log('[signup]프론트에서 온 데이터:', userData);
 		return await this.authService.signUp(userData);
 	}
 

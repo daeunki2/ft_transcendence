@@ -15,18 +15,18 @@ export class UserController {
 
   @Get('me')
   	async getMe(@Req() request: express.Request) {
-    console.log('get me 입장');
+    console.log('[getMe] 입장');
     const token = request.cookies['accessToken'];
 
     if (!token) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
+      throw new UnauthorizedException('[getMe] 로그인이 필요합니다.');
     }
 	
     const user = await this.userService.getMe(token);
 
     if (!user) {
   // 유저가 없을 경우 예외를 던짐 (NestJS 표준 방식)
-    throw new NotFoundException('유저를 찾을 수 없습니다.');
+    throw new NotFoundException('[getMe] 유저를 찾을 수 없습니다.');
     }
     return {
       success: true,

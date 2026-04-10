@@ -34,13 +34,16 @@ export class UserService {
   async getMe(token: string) {
     try {
       const decoded = this.jwtService.verify(token);
-      const user = await this.userRepository.findOne({ where: { userId: decoded.id } });
-      console.log('get me 성공');
+      console.log('[getMe] Decoded JWT:', decoded);
+      const user = await this.userRepository.findOne({ where: { userId: decoded.sub } });
+      if (user)
+        console.log('[getMe] DB에서 찾은 실제 userId:', user.userId);
+      else
+        console.log('[getMe] userId 못 찾음');
       return user;
     } catch (error) {
       // 토큰이 조작되었거나 만료된 경우
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException('[getMe] 유효하지 않은 토큰입니다.');
     }
-
   }
 }
