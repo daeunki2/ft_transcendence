@@ -1,6 +1,6 @@
 import { useContext} from 'react';
 import { AuthContext } from '../contexts/AuthContext.types';
-import { authService } from '../services/authService';
+import { userService } from '../services/userService';
 
 export const useAuthInit = () => {
   const context = useContext(AuthContext);
@@ -14,7 +14,7 @@ export const useAuthInit = () => {
   const fetchMe = async () => {
 
     try {
-      const response = await authService.getMe();
+      const response = await userService.getMe();
       if (response && response.success) {
         setUser(response.user);
       }

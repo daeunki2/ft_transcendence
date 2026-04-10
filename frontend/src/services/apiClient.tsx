@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:09 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/07 19:09:14 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/10 17:26:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@ import axios from 'axios';
 const BASE_URL = 'http://localhost:8000/'; // gateway 주소
 
 // 찬영님이 요청한 '공통 함수'
-const apiClient = async (method : 'get' | 'post' | 'put' | 'delete', url : string, data : any = null) => {
+const apiClient = async (method : 'get' | 'post' | 'put' | 'delete' | 'patch', url : string, data : any = null) => {
   try {
     // 1. 설계도(Config Object) 조립
     const config = {

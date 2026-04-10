@@ -81,19 +81,4 @@ export class AuthService {
       message: '성공적으로 로그아웃되었습니다.',
     };
   }
-
-  async getMe(token: string) {
-    try {
-      const decoded = this.jwtService.verify(token);
-      const user = await this.userRepository.findOne({ where: { id: decoded.id } });
-      if (!user)
-        throw new Error();
-      console.log('[getme]성공');
-      return user;
-    } catch (error) {
-      // 토큰이 조작되었거나 만료된 경우
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
-    }
-
-  }
 }
