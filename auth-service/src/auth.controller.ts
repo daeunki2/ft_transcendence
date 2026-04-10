@@ -41,22 +41,4 @@ export class AuthController {
 
     	return (result);
   	}
-
-	@Get('me')
-  	async getMe(@Req() request: express.Request) {
-    const token = request.cookies['accessToken'];
-
-    if (!token) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
-    }
-	
-    const user = await this.authService.getMe(token);
-    return {
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-    };
-  }
 }

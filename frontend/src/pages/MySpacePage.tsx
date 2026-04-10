@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/10 17:21:30 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/10 18:15:09 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ import React, { useState } from 'react';
 import AvatarModal from '../components/modals/AvatarModal';
 import { AVATAR_MAP } from '../constants/Avatars';
 import { useUpdateProfile } from '../hooks/UpdateProfile';
+import EditableNickname from '../components/profile/EditableNickname';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
@@ -31,7 +32,16 @@ export default function MySpacePage() {
   const { updateProfile } = useUpdateProfile();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const currentAvatarUrl = AVATAR_MAP[user.userPhoto]
+  
+  if (!user) {
+    return (
+      <PageContainer header={<Navbar />} footer={<FooterLinks />}>
+        <div style={{ textAlign: 'center', padding: '50px', color: theme.colors.text }}>
+        </div>
+      </PageContainer>
+    );
+  }
+  const currentAvatarUrl = AVATAR_MAP[user.userPhoto];
 
   const handleAvatarSelect = async (id: number) => {
 
@@ -89,9 +99,7 @@ export default function MySpacePage() {
                 gap: '8px',
               }}
             >
-              <span style={{ fontSize: '14px', color: theme.colors.textMuted }}>
-                {user?.nickname}
-              </span>
+              <EditableNickname currentNickname={user?.nickname || ''} />
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: theme.colors.text }}>
                 {user?.email}
               </span>
