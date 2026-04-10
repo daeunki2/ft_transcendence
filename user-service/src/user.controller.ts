@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Get, Req, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import * as express from 'express';
 
@@ -38,5 +38,33 @@ export class UserController {
       },
     };
   }
-	
+
+  @Patch('me')
+  async updateProfile(
+    @Req() request: express.Request,
+    @Body() data: { userPhoto?: number; nickname?: string }
+  ) {
+    const token = request.cookies['accessToken'];
+
+    if (!token) {
+      throw new UnauthorizedException('[updateProfile] 로그인이 필요합니다.');
+    }
+
+    // 서비스 호출 (비즈니스 로직 위임)
+    const updatedUser = await this.userService.updateProfile(token, data);
+
+    if (!updatedUser) {
+      throw new NotFoundException('[updateProfile] 유저를 찾을 수 없습니다.');
+    }
+
+    return {
+      success: true,
+      user: {
+        userId: updatedUser.userId,
+        email: updatedUser.email,
+        nickname: updatedUser.nickname,
+        userPhoto: updatedUser.userPhoto,
+      },
+    };
+  }
 }

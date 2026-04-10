@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext.types';
-import { authService } from '../services/authService';
+import { userService } from '../services/userService';
 
 // 변경할 수 있는 필드들을 정의 (Partial을 써서 선택적으로 받음)
 interface UpdateFields {
@@ -19,7 +19,7 @@ export const useUpdateProfile = () => {
     setIsUpdating(true);
     try {
       // 1. 서버에 수정된 필드들만 전송
-      const response = await authService.updateProfile(fields);
+      const response = await userService.updateProfile(fields);
 
       if (response?.success) {
         // 2. 서버 성공 시 Context 상태 업데이트
