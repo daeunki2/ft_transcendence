@@ -15,7 +15,7 @@ export class UserController {
 
   @Get('me')
   	async getMe(@Req() request: express.Request) {
-    console.log('[getMe] 입장');
+    // console.log('[getMe] 입장');
     const token = request.cookies['accessToken'];
 
     if (!token) {

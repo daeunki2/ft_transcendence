@@ -34,7 +34,7 @@ export class UserService {
   async getMe(token: string) {
     try {
       const decoded = this.jwtService.verify(token);
-      console.log('[getMe] Decoded JWT:', decoded);
+      // console.log('[getMe] Decoded JWT:', decoded);
       const user = await this.userRepository.findOne({ where: { userId: decoded.sub } });
       if (user)
         console.log('[getMe] DB에서 찾은 실제 userId:', user.userId);

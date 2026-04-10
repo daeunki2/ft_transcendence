@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/10 09:32:25 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/10 11:59:26 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import AvatarModal from '../components/modals/AvatarModal';
+import { AVATAR_MAP } from '../constants/Avatars';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
@@ -28,6 +29,7 @@ export default function MySpacePage() {
   const { user } = useAuth();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const currentAvatarUrl = AVATAR_MAP[user.userPhoto]
 
   const handleAvatarSelect = (id: number) => {
     console.log(`Selected Avatar ID: ${id}`);
@@ -66,7 +68,7 @@ export default function MySpacePage() {
             }}
           >
             {/* 아바타 */}
-            <Avatar size={120} />
+            <Avatar size={120} url={currentAvatarUrl}/>
             <Button
               onClick={() => setIsModalOpen(true)}
               style={{ fontSize: '12px', padding: '8px 16px', minHeight: 'auto' }}

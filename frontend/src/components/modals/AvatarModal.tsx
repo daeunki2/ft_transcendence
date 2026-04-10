@@ -3,6 +3,7 @@ import Card from '../ui/Card';
 import Avatar from '../ui/Avatar';
 import Button from '../ui/Button';
 import { useI18n } from '../../i18n/useI18n';
+import { AVATAR_MAP } from '../../constants/Avatars';
 
 interface AvatarModalProps {
   isOpen: boolean;
@@ -15,7 +16,8 @@ const AvatarModal = ({ isOpen, onClose, onSelect, theme }: AvatarModalProps) => 
     const { messages } = useI18n();
   if (!isOpen) return null;
 
-  const avatarOptions = [1, 2, 3, 4]; // 추후 API나 상수로 관리
+ // 상수 객체의 키값들을 배열로 만듭니다 ([1, 2, 3, 4])
+  const avatarOptions = Object.keys(AVATAR_MAP).map(Number);
 
   return (
     <div style={{
@@ -40,7 +42,9 @@ const AvatarModal = ({ isOpen, onClose, onSelect, theme }: AvatarModalProps) => 
           {avatarOptions.map((id) => (
             <div 
               key={id} 
-              onClick={() => onSelect(id)}
+              onClick={() => {onSelect(id);
+                onClose();
+              }}
               style={{ 
                 cursor: 'pointer', 
                 transition: 'transform 0.2s',
@@ -48,7 +52,7 @@ const AvatarModal = ({ isOpen, onClose, onSelect, theme }: AvatarModalProps) => 
               onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
               onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1.0)')}
             >
-              <Avatar size={80} />
+              <Avatar size={80} url={AVATAR_MAP[id]}/>
             </div>
           ))}
         </div>
