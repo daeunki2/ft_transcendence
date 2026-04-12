@@ -80,11 +80,13 @@ export const en: Messages = {
     mySpace: {
       title: 'My Space',
       editAvatar: 'Edit Avatar',
+      selectAvatar: 'Select Avatar',
       nickname: 'Nickname',
       nicknamePlaceholder: 'Enter your nickname',
       save: 'Save',
       gameHistory: 'Game History',
       noGames: 'No games played yet',
+      cancel: 'cancel',
     },
 errors: {
     USER_NOT_FOUND: "User not found.",

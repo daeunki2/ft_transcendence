@@ -62,17 +62,19 @@ HomePage: {
     alertTitle: 'Avis',
   },
   chat: {
-    inputPlaceholder: 'Tapez un message',
+    inputPlaceholder: 'Tapez le message',
     send: 'Envoyer',
   },
   mySpace: {
     title: 'Mon Espace',
-    editAvatar: 'Modifier l\'avatar',
+    editAvatar: 'Changer l\'avatar',
+    selectAvatar: 'Sélectionner un avatar',
     nickname: 'Pseudo',
     nicknamePlaceholder: 'Entrez votre pseudo',
     save: 'Enregistrer',
     gameHistory: 'Historique des parties',
     noGames: 'Aucune partie jouée',
+    cancel: 'retour',
   },
 errors: {
     USER_NOT_FOUND: "Utilisateur non trouvé.",

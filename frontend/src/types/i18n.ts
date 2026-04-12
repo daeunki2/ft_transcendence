@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   i18n.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/05 23:05:53 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/10 10:46:11 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,11 +80,13 @@ export type Messages = {
   mySpace: {
     title: string;
     editAvatar: string;
+    selectAvatar: string;
     nickname: string;
     nicknamePlaceholder: string;
     save: string;
     gameHistory: string;
     noGames: string;
+    cancel: string;
   };
 errors: {
     USER_NOT_FOUND: string;

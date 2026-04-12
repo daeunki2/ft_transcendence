@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MySpacePage.tsx                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/03 00:00:00 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/10 18:15:09 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,38 @@ import Button from '../components/ui/Button';
 import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
+import AvatarModal from '../components/modals/AvatarModal';
+import { AVATAR_MAP } from '../constants/Avatars';
+import { useUpdateProfile } from '../hooks/UpdateProfile';
+import EditableNickname from '../components/profile/EditableNickname';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
+  const { user } = useAuth();
+  const { updateProfile } = useUpdateProfile();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  if (!user) {
+    return (
+      <PageContainer header={<Navbar />} footer={<FooterLinks />}>
+        <div style={{ textAlign: 'center', padding: '50px', color: theme.colors.text }}>
+        </div>
+      </PageContainer>
+    );
+  }
+  const currentAvatarUrl = AVATAR_MAP[user.userPhoto];
+
+  const handleAvatarSelect = async (id: number) => {
+
+    await updateProfile({ userPhoto: id });
+    console.log(`Selected Avatar ID: ${id}`);
+    // 여기서 유저 정보 업데이트 로직 실행
+    setIsModalOpen(false);
+  };
 
   return (
     <PageContainer
@@ -54,8 +82,9 @@ export default function MySpacePage() {
             }}
           >
             {/* 아바타 */}
-            <Avatar size={120} />
+            <Avatar size={120} url={currentAvatarUrl}/>
             <Button
+              onClick={() => setIsModalOpen(true)}
               style={{ fontSize: '12px', padding: '8px 16px', minHeight: 'auto' }}
             >
               {messages.mySpace.editAvatar}
@@ -70,11 +99,9 @@ export default function MySpacePage() {
                 gap: '8px',
               }}
             >
-              <span style={{ fontSize: '14px', color: theme.colors.textMuted }}>
-                {messages.mySpace.nickname}
-              </span>
+              <EditableNickname currentNickname={user?.nickname || ''} />
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: theme.colors.text }}>
-                Player1
+                {user?.email}
               </span>
             </div>
           </div>
@@ -90,6 +117,13 @@ export default function MySpacePage() {
           </p>
         </Card>
       </div>
+
+      <AvatarModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSelect={handleAvatarSelect}
+        theme={theme}
+      />
     </PageContainer>
   );
 }

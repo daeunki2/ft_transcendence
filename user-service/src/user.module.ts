@@ -12,8 +12,8 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
 
-    ConfigModule.forRoot({ // 다른 모듈에서도 .env변수 사용위함
-      isGlobal: true,
+	ConfigModule.forRoot({ // 다른 모듈에서도 .env변수 사용위함
+      isGlobal: true, 
     }),
 
     TypeOrmModule.forRoot({

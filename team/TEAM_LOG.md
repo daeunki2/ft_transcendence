@@ -167,3 +167,26 @@ MY_SECRET_KEY=1234
 
 - user-service 개발 시, user-service/src/entities/user.entity.ts 에서 테이블 추가 및 수정 가능합니다
 - 함수 추가하실 때는, 프론트엔드에 service/ 디렉토리 참고해 주세요
+
+
+## [2026-04-10] chanypar
+
+commit -m update_profile_nick
+
+### what
+- register 시 auth-service/src/auth.service signUp 함수에서 user-service/src/user.controller 의 init 함수 호출 (this.httpService.post('http://user-service:4001/init'...))
+- ->  즉, 가입시 auth-db의 테이블을 채우고, gateway거치지 않고, 바로 user-service의 init 함수로 사용자 정보를 보내 user-db 테이블 채움
+- getme() user-service로 이동, 새로고침하거나, 로그인 후 실행 :
+- -> 로그인 시 -> hooks/login  ```await fetchMe();```
+- -> 새로고침 시 -> App.tsx   ```useEffect(() => { fetchMe(); }, []); ```
+- src/pages/MySpacePage 사진, 닉네임 수정하도록 설정
+- -> user-service에 updateProfile 함수 추가 (닉네임, 사진 둘다 대응가능), 수정 시 자동으로 프로필 업데이트 
+
+### 각 서비스 db 테이블 구성
+- auth-db : [auth] uuid, email, pass, created_at
+			[token] refresh_token
+- user-db : [users] uuid, email, nickname, created_at, userPhoto
+			[friends] 성빈님 추가예정
+
+### 생각해볼 내용
+- getme() 함수는 자동으로 새로고침이나 브라우저에 진입할 때 실헹되기 때문에, 처음에 랜딩페이지 들어왔을 떄도, 실행이 되고, 당연히 유저가 등록되기 전이기 때문에 404에러를 서버에서 반환. 알아본결과 실무에서도 큰 에러가 아니기에 그냥 냅둔다고 함. 하지만 정 수정 원하면 서버차원에서 에러 반환하지 않도록 수정가능함.
