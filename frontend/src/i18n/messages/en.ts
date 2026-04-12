@@ -88,6 +88,8 @@ errors: {
     INVALID_PASSWORD: "Invalid password.",
     USER_ALREADY_EXISTS: "This email is already registered.",
     SERVER_ERROR: "Internal server error. Please try again later.",
+    INVALID_EMAIL_FORMAT: "Username must be 1–20 characters long and contain only letters and numbers.",
+    INVALID_PASSWORD_FORMAT: "Password must be between 4 and 32 characters.",
   },
   result: {
     success: "Success",

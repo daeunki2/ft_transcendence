@@ -79,6 +79,8 @@ HomePage: {
     INVALID_PASSWORD: "비밀번호가 틀렸습니다.",
     USER_ALREADY_EXISTS: "이미 가입된 이메일입니다.",
     SERVER_ERROR: "서버 오류가 발생했습니다.",
+    INVALID_EMAIL_FORMAT: "아이디는 영문과 숫자를 포함한 1~20자여야 합니다.",
+    INVALID_PASSWORD_FORMAT: "비밀번호는 4~32자 사이여야 합니다.",
   },
   result: {
     success: "성공",

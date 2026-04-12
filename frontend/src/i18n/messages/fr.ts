@@ -76,6 +76,8 @@ errors: {
     INVALID_PASSWORD: "Mot de passe incorrect.",
     USER_ALREADY_EXISTS: "Cet e-mail est déjà utilisé.",
     SERVER_ERROR: "Erreur interne du serveur. Veuillez réessayer plus tard.",
+    INVALID_EMAIL_FORMAT: "Le nom d'utilisateur doit contenir entre 1 et 20 caractères et uniquement des lettres et des chiffres.",
+    INVALID_PASSWORD_FORMAT: "Le mot de passe doit contenir entre 4 et 32 caractères.",
   },
   result: {
     success: "Succès",
