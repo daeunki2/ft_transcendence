@@ -194,28 +194,22 @@ commit -m update_profile_nick
 
 ## [2026-04-12] suna
 
-branch : suna
 Commit: friend feature
 
 ### what
-1. 친구 기능 백엔드 구현 (user-service)
-   - `friends` 테이블(entity) 생성 : requesterId, addresseeId, status(pending/accepted) 구조
-   - FriendsModule, FriendsController, FriendsService 생성
-   - 친구 요청 보내기 (닉네임 기반 검색), 수락, 거절, 삭제 API 구현
-   - 양방향 중복 체크, 본인 추가 방지, 권한 검증 등 예외 처리
-   - 에러 코드 방식으로 프론트에 반환 (USER_NOT_FOUND, CANNOT_ADD_SELF, ALREADY_FRIENDS_OR_REQUESTED 등)
-2. 친구 기능 프론트엔드 구현
-   - `friendService.tsx` 생성 : getFriends, getRequests, sendRequest, acceptRequest, rejectRequest, removeFriend
-   - `SocialPage.tsx` 대폭 수정 : 친구 목록, 받은 요청 목록, 친구 요청 보내기 UI 구현
-   - 다국어 지원 (en, fr, ko) 친구 관련 메세지 추가
-3. user-service 리팩토링
-   - app.module.ts -> user.module.ts, app.service.ts -> user.service.ts 이름 변경
-   - FriendsModule을 user.module에 등록
 
-### 참고
-- 현재 인증은 임시로 `x-user-id` 헤더 사용 중. JWT 인증 도입 시 `req.user.id`로 전환 필요
-- 친구 요청 거절 시 row 삭제 방식 (rejected 상태 없음)
-- user-db의 friends 테이블 : id, requesterId, addresseeId, status, createdAt, updatedAt
+   - `friends` 테이블(entity) 생성 : requesterId, addresseeId, status(pending/accepted) 구조
+	db 통해 조회, 수락/거절, 요청 흐름.	
+
+   - 닉네임 조회 및 id 조회를 위해 user 테이블 참조 필요.
+
+   - FriendsModule, FriendsController, FriendsService 생성
+
+   - 양방향 중복 체크, 본인 추가 방지, 권한 검증 등 예외 처리
+
+   - 에러 코드 방식으로 프론트에 반환 (USER_NOT_FOUND, CANNOT_ADD_SELF, ALREADY_FRIENDS_OR_REQUESTED 등)
+
+   - user-db : [friends] id, requesterId, addresseeId, status, createdAt, updatedAt
 
 ### API 엔드포인트 (gateway 경유: /api/users/friends/...)
 - `GET /friends` — 내 친구 목록
@@ -224,3 +218,9 @@ Commit: friend feature
 - `PATCH /friends/requests/:id` — 요청 수락
 - `DELETE /friends/requests/:id` — 요청 거절
 - `DELETE /friends/:id` — 친구 삭제
+
+### 생각해볼 내용
+- 현재 인증은 임시로 `x-user-id` 헤더 사용 중. JWT 인증 도입 시 `req.user.id`로 전환 필요
+
+
+
