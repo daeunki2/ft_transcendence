@@ -224,3 +224,14 @@ Commit: friend feature
 
 
 
+## [2026-04-12] suna
+
+Commit: changing uid type to string
+
+### what
+
+   - frined 기능 내의 코드에서 uid를 number로 받아 타입 불일치 버그 발생
+   - 따라서 string으로 바꾸어 타입 불일치 해결
+   - 그 외 모든 friend 관련 코드 number -> string으로 수정
+
+
