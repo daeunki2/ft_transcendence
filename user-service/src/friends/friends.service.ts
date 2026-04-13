@@ -14,7 +14,7 @@ import { User } from '../entities/user.entity';
 // 프론트가 받기 편한 응답 형태
 export interface FriendListItem {
   friendId: number; // friends 테이블의 row id (삭제할 때 사용)
-  userId: number; // 상대방 user id
+  userId: string; // 상대방 user id (uuid)
   nickname: string; // 상대방 닉네임
 }
 
@@ -32,13 +32,13 @@ export class FriendsService {
    * - nickname으로 상대방을 찾고
    * - 본인/중복/이미 친구 케이스를 거른 뒤 pending row를 만든다
    */
-  async sendRequest(requesterId: number, nickname: string): Promise<Friend> {
+  async sendRequest(requesterId: string, nickname: string): Promise<Friend> {
     const addressee = await this.userRepo.findOne({ where: { nickname } });
     if (!addressee) {
       throw new NotFoundException('USER_NOT_FOUND');
     }
 
-    if (addressee.id === requesterId) {
+    if (addressee.userId === requesterId) {
       throw new BadRequestException('CANNOT_ADD_SELF');
     }
 
@@ -47,7 +47,7 @@ export class FriendsService {
       .createQueryBuilder('f')
       .where(
         '(f.requesterId = :a AND f.addresseeId = :b) OR (f.requesterId = :b AND f.addresseeId = :a)',
-        { a: requesterId, b: addressee.id },
+        { a: requesterId, b: addressee.userId },
       )
       .getOne();
     if (existing) {
@@ -56,7 +56,7 @@ export class FriendsService {
 
     const friend = this.friendRepo.create({
       requesterId,
-      addresseeId: addressee.id,
+      addresseeId: addressee.userId,
       status: 'pending',
     });
     return this.friendRepo.save(friend);
@@ -66,7 +66,7 @@ export class FriendsService {
    * 내 친구 목록 (수락된 친구만)
    * 양방향이므로 requester든 addressee든 본인이 포함된 row는 모두 가져옴
    */
-  async getFriends(userId: number): Promise<FriendListItem[]> {
+  async getFriends(userId: string): Promise<FriendListItem[]> {
     const rows = await this.friendRepo
       .createQueryBuilder('f')
       .leftJoinAndSelect('f.requester', 'requester')
@@ -79,7 +79,7 @@ export class FriendsService {
       const other = row.requesterId === userId ? row.addressee : row.requester;
       return {
         friendId: row.id,
-        userId: other.id,
+        userId: other.userId,
         nickname: other.nickname,
       };
     });
@@ -88,7 +88,7 @@ export class FriendsService {
   /**
    * 내가 받은 친구 요청 목록 (pending)
    */
-  async getReceivedRequests(userId: number): Promise<FriendListItem[]> {
+  async getReceivedRequests(userId: string): Promise<FriendListItem[]> {
     const rows = await this.friendRepo
       .createQueryBuilder('f')
       .leftJoinAndSelect('f.requester', 'requester')
@@ -98,7 +98,7 @@ export class FriendsService {
 
     return rows.map((row) => ({
       friendId: row.id,
-      userId: row.requester.id,
+      userId: row.requester.userId,
       nickname: row.requester.nickname,
     }));
   }
@@ -106,7 +106,7 @@ export class FriendsService {
   /**
    * 친구 요청 수락 — 받은 사람만 수락 가능
    */
-  async acceptRequest(userId: number, friendId: number): Promise<Friend> {
+  async acceptRequest(userId: string, friendId: number): Promise<Friend> {
     const row = await this.friendRepo.findOne({ where: { id: friendId } });
     if (!row) throw new NotFoundException('REQUEST_NOT_FOUND');
     if (row.addresseeId !== userId) {
@@ -122,7 +122,7 @@ export class FriendsService {
   /**
    * 친구 요청 거절 — 받은 사람만 거절 가능, row 삭제
    */
-  async rejectRequest(userId: number, friendId: number): Promise<void> {
+  async rejectRequest(userId: string, friendId: number): Promise<void> {
     const row = await this.friendRepo.findOne({ where: { id: friendId } });
     if (!row) throw new NotFoundException('REQUEST_NOT_FOUND');
     if (row.addresseeId !== userId) {
@@ -137,7 +137,7 @@ export class FriendsService {
   /**
    * 친구 삭제 — 친구 관계의 양쪽 모두 삭제 가능
    */
-  async removeFriend(userId: number, friendId: number): Promise<void> {
+  async removeFriend(userId: string, friendId: number): Promise<void> {
     const row = await this.friendRepo.findOne({ where: { id: friendId } });
     if (!row) throw new NotFoundException('FRIEND_NOT_FOUND');
     if (row.requesterId !== userId && row.addresseeId !== userId) {
