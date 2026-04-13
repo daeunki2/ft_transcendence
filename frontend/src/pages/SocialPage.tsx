@@ -22,7 +22,7 @@ import ChatModal from '../components/ui/ChatModal';
 import Alert from '../components/ui/Alert';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
-import { authService } from '../services/authService';
+import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
 
 function SocialPage() {
@@ -30,7 +30,7 @@ function SocialPage() {
   const { messages } = useI18n();
   const [chatTarget, setChatTarget] = useState<string | null>(null);
 
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [friends, setFriends] = useState<FriendItem[]>([]);
   const [requests, setRequests] = useState<FriendItem[]>([]);
   const [nicknameInput, setNicknameInput] = useState('');
@@ -44,7 +44,7 @@ function SocialPage() {
   };
 
   // 친구/요청 목록 새로고침
-  const refresh = useCallback(async (uid: number) => {
+  const refresh = useCallback(async (uid: string) => {
     try {
       const [f, r] = await Promise.all([
         friendService.getFriends(uid),
@@ -61,10 +61,10 @@ function SocialPage() {
   useEffect(() => {
     (async () => {
       try {
-        const me = await authService.getMe();
-        const uid = me?.user?.id;
-        if (typeof uid !== 'number') {
-          console.error('Failed to get current user id', me);
+        const me = await userService.getMe();
+        const uid = me?.user?.userId;
+        if (typeof uid !== 'string') {
+          console.error('[소셜] uid가 string이 아님, 중단', me);
           return;
         }
         setCurrentUserId(uid);
@@ -77,7 +77,11 @@ function SocialPage() {
 
   // 친구 요청 보내기
   const handleSendRequest = async () => {
-    if (currentUserId === null) return;
+    console.log('[친구추가] 버튼 클릭됨, currentUserId:', currentUserId);
+    if (currentUserId === null) {
+      console.warn('[친구추가] currentUserId가 null이라 중단');
+      return;
+    }
     const nickname = nicknameInput.trim();
     if (!nickname) {
       setErrorCode('NICKNAME_REQUIRED');

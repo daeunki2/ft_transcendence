@@ -25,12 +25,12 @@ export class Friend {
   // 요청 보낸 사람
   @Column()
   @Index()
-  requesterId: number;
+  requesterId: string;
 
   // 요청 받은 사람
   @Column()
   @Index()
-  addresseeId: number;
+  addresseeId: string;
 
   // pending: 요청 대기중, accepted: 친구 수락됨
   // (rejected는 row 삭제로 처리하므로 enum에 없음)

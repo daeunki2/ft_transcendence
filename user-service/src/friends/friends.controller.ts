@@ -25,16 +25,12 @@ export class FriendsController {
 
   // TODO: JwtAuthGuard 도입 시 이 헬퍼를 req.user.id로 교체
   // 임시: x-user-id 헤더에서 현재 사용자 id를 꺼낸다
-  private getCurrentUserId(req: Request): number {
+  private getCurrentUserId(req: Request): string {
     const raw = req.headers['x-user-id'];
-    if (!raw || Array.isArray(raw)) {
+    if (!raw || Array.isArray(raw) || raw.trim() === '') {
       throw new UnauthorizedException('x-user-id header required (temp)');
     }
-    const id = Number(raw);
-    if (!Number.isInteger(id) || id <= 0) {
-      throw new UnauthorizedException('x-user-id header is invalid');
-    }
-    return id;
+    return raw;
   }
 
   // 내 친구 목록
