@@ -24,6 +24,7 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
+import { AVATAR_MAP } from '../constants/Avatars';
 
 function SocialPage() {
   const { theme } = useTheme();
@@ -191,7 +192,7 @@ function SocialPage() {
                     borderBottom: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
                   }}
                 >
-                  <Avatar />
+                  <Avatar url={AVATAR_MAP[friend.userPhoto]} />
                   <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
                     {friend.nickname}
                   </span>

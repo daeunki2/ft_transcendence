@@ -8,6 +8,7 @@ export interface FriendItem {
   friendId: number;
   userId: string;
   nickname: string;
+  userPhoto: number;
 }
 
 // TODO: JWT 인증 도입 시 이 헬퍼 + x-user-id 헤더 모두 제거하고
