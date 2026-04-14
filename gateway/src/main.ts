@@ -22,7 +22,46 @@ async function bootstrap() {
     createProxyMiddleware({
       target: 'http://auth-service:4000',
       changeOrigin: true,
-	  pathRewrite: { '^/api/auth': '' },
+      pathRewrite: { '^/api/auth': '' },
+      // 개발 환경에서는 auth-service 컨테이너의 도메인을 그대로 쓰면
+      // 브라우저가 쿠키를 저장하지 못하므로 localhost로 재작성한다.
+      cookieDomainRewrite: {
+        '*': 'localhost',
+      },
+      // 원본 코드:
+      // onProxyRes(proxyRes) {
+      //   const cookies = proxyRes.headers['set-cookie'];
+      //   if (!cookies) {
+      //     return;
+      //   }
+      //   proxyRes.headers['set-cookie'] = cookies.map((cookie) => {
+      //     // dev 환경에서는 HTTPS가 아니므로 Secure 플래그를 제거해 쿠키 저장을 허용한다.
+      //     let updated = cookie.replace(/;\s*secure/gi, '');
+      //     // SameSite=None은 Secure 플래그와 함께 써야 하므로, Secure를 뗀 경우 Lax로 강제 변환한다.
+      //     if (/;\s*samesite=none/gi.test(updated)) {
+      //       updated = updated.replace(/;\s*samesite=none/gi, '; SameSite=Lax');
+      //     }
+      //     return updated;
+      //   });
+      // },
+      on: {
+        proxyRes(proxyRes) {
+          const cookies = proxyRes.headers['set-cookie'];
+          if (!cookies) {
+            return;
+          }
+          const cookieList = Array.isArray(cookies) ? cookies : [cookies];
+          proxyRes.headers['set-cookie'] = cookieList.map((cookie) => {
+            // dev 환경에서는 HTTPS가 아니므로 Secure 플래그를 제거해 쿠키 저장을 허용한다.
+            let updated = cookie.replace(/;\s*secure/gi, '');
+            // SameSite=None은 Secure 플래그와 함께 써야 하므로, Secure를 뗀 경우 Lax로 강제 변환한다.
+            if (/;\s*samesite=none/gi.test(updated)) {
+              updated = updated.replace(/;\s*samesite=none/gi, '; SameSite=Lax');
+            }
+            return updated;
+          });
+        },
+      },
     }),
   );
 

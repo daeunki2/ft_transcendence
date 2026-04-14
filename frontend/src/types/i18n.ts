@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   i18n.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/11 23:03:02 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/10 10:46:11 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,11 @@ export type Messages = {
     startGame: string;
     noFriends: string;
     remove: string;
+    requestsTitle: string;
+    noRequests: string;
+    accept: string;
+    reject: string;
+    alertTitle: string;
   };
   chat: {
     inputPlaceholder: string;
@@ -86,10 +91,16 @@ export type Messages = {
 errors: {
     USER_NOT_FOUND: string;
     INVALID_PASSWORD: string;
-    USER_ALREADY_EXISTS: string; 
+    USER_ALREADY_EXISTS: string;
     SERVER_ERROR: string;
-    INVALID_EMAIL_FORMAT: string;
-    INVALID_PASSWORD_FORMAT: string;
+    CANNOT_ADD_SELF: string;
+    ALREADY_FRIENDS_OR_REQUESTED: string;
+    REQUEST_NOT_FOUND: string;
+    REQUEST_NOT_PENDING: string;
+    FRIEND_NOT_FOUND: string;
+    NOT_ACCEPTED_FRIENDSHIP: string;
+    FORBIDDEN: string;
+    NICKNAME_REQUIRED: string;
   };
   result: {
     success: string;

@@ -65,6 +65,11 @@ export const en: Messages = {
       startGame: 'Start Game',
       noFriends: 'No friends yet',
       remove: 'Remove',
+      requestsTitle: 'Friend Requests',
+      noRequests: 'No requests',
+      accept: 'Accept',
+      reject: 'Reject',
+      alertTitle: 'Notice',
     },
     //채팅
     chat: {
@@ -88,8 +93,14 @@ errors: {
     INVALID_PASSWORD: "Invalid password.",
     USER_ALREADY_EXISTS: "This email is already registered.",
     SERVER_ERROR: "Internal server error. Please try again later.",
-    INVALID_EMAIL_FORMAT: "Username must be 1–20 characters long and contain only letters and numbers.",
-    INVALID_PASSWORD_FORMAT: "Password must be between 4 and 32 characters.",
+    CANNOT_ADD_SELF: "You cannot add yourself as a friend.",
+    ALREADY_FRIENDS_OR_REQUESTED: "You are already friends or a request is pending.",
+    REQUEST_NOT_FOUND: "Friend request not found.",
+    REQUEST_NOT_PENDING: "This request is no longer pending.",
+    FRIEND_NOT_FOUND: "Friend not found.",
+    NOT_ACCEPTED_FRIENDSHIP: "This is not an accepted friendship.",
+    FORBIDDEN: "You don't have permission to do this.",
+    NICKNAME_REQUIRED: "Please enter a nickname.",
   },
   result: {
     success: "Success",

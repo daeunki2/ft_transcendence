@@ -8,7 +8,9 @@ import { JwtModule } from '@nestjs/jwt';
       isGlobal: true,
     }),
     JwtModule.register({
-      secret: process.env.MY_SECRET_KEY ?? 'default_secret',
+      // 원본 코드:
+      // secret: process.env.MY_SECRET_KEY ?? 'default_secret',
+      secret: process.env.MY_SECRET_KEY,
     }),
   ],
   controllers: [],
