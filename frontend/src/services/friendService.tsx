@@ -33,7 +33,7 @@ export const friendService = {
         headers: buildHeaders(userId),
         withCredentials: true,
       });
-      return res.data;
+      return res.data.friends;
     } catch (error: any) {
       return handleError(error);
     }
@@ -46,7 +46,7 @@ export const friendService = {
         headers: buildHeaders(userId),
         withCredentials: true,
       });
-      return res.data;
+      return res.data.requests;
     } catch (error: any) {
       return handleError(error);
     }
@@ -60,7 +60,7 @@ export const friendService = {
         { nickname },
         { headers: buildHeaders(userId), withCredentials: true },
       );
-      return res.data;
+      return res.data.request;
     } catch (error: any) {
       return handleError(error);
     }
@@ -74,7 +74,7 @@ export const friendService = {
         {},
         { headers: buildHeaders(userId), withCredentials: true },
       );
-      return res.data;
+      return res.data.request;
     } catch (error: any) {
       return handleError(error);
     }

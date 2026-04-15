@@ -10,7 +10,16 @@ export class UserController {
   @Post('init') // auth-service가 호출하는 경로
 
   async initializeUser(@Body() data: { id: string; email: string; nickname: string }) {
-    return await this.userService.createUserProfile(data.id, data.email, data.nickname);
+    const user = await this.userService.createUserProfile(data.id, data.email, data.nickname);
+    return {
+      success: true,
+      user: {
+        userId: user.userId,
+        email: user.email,
+        nickname: user.nickname,
+        userPhoto: user.userPhoto,
+      },
+    };
   }
 
   @Get('me')
