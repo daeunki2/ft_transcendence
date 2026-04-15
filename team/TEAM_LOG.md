@@ -190,3 +190,48 @@ commit -m update_profile_nick
 
 ### 생각해볼 내용
 - getme() 함수는 자동으로 새로고침이나 브라우저에 진입할 때 실헹되기 때문에, 처음에 랜딩페이지 들어왔을 떄도, 실행이 되고, 당연히 유저가 등록되기 전이기 때문에 404에러를 서버에서 반환. 알아본결과 실무에서도 큰 에러가 아니기에 그냥 냅둔다고 함. 하지만 정 수정 원하면 서버차원에서 에러 반환하지 않도록 수정가능함.
+
+
+## [2026-04-12] suna
+
+Commit: friend feature
+
+### what
+
+   - `friends` 테이블(entity) 생성 : requesterId, addresseeId, status(pending/accepted) 구조
+	db 통해 조회, 수락/거절, 요청 흐름.	
+
+   - 닉네임 조회 및 id 조회를 위해 user 테이블 참조 필요.
+
+   - FriendsModule, FriendsController, FriendsService 생성
+
+   - 양방향 중복 체크, 본인 추가 방지, 권한 검증 등 예외 처리
+
+   - 에러 코드 방식으로 프론트에 반환 (USER_NOT_FOUND, CANNOT_ADD_SELF, ALREADY_FRIENDS_OR_REQUESTED 등)
+
+   - user-db : [friends] id, requesterId, addresseeId, status, createdAt, updatedAt
+
+### API 엔드포인트 (gateway 경유: /api/users/friends/...)
+- `GET /friends` — 내 친구 목록
+- `GET /friends/requests` — 받은 요청 목록
+- `POST /friends/requests` — 친구 요청 보내기 (body: { nickname })
+- `PATCH /friends/requests/:id` — 요청 수락
+- `DELETE /friends/requests/:id` — 요청 거절
+- `DELETE /friends/:id` — 친구 삭제
+
+### 생각해볼 내용
+- 현재 인증은 임시로 `x-user-id` 헤더 사용 중. JWT 인증 도입 시 `req.user.id`로 전환 필요
+
+
+
+## [2026-04-12] suna
+
+Commit: changing uid type to string
+
+### what
+
+   - frined 기능 내의 코드에서 uid를 number로 받아 타입 불일치 버그 발생
+   - 따라서 string으로 바꾸어 타입 불일치 해결
+   - 그 외 모든 friend 관련 코드 number -> string으로 수정
+
+

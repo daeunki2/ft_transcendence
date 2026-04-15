@@ -75,45 +75,4 @@ export class UserService {
     console.log('[updateProfile] update 성공');
     return await this.userRepository.findOne({ where: { userId: user.userId } });
   }
-
-  /*
-  // 이전 구현: JwtService를 주입 받아 Access Token을 직접 검증
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-	  private readonly jwtService: JwtService,
-  ) {}
-
-  async getMe(token: string) {
-    try {
-      const decoded = this.jwtService.verify(token);
-      const user = await this.userRepository.findOne({ where: { userId: decoded.sub } });
-      if (user)
-        console.log('[getMe] DB에서 찾은 실제 userId:', user.userId);
-      else
-        console.log('[getMe] userId 못 찾음');
-      return user;
-    } catch (error) {
-      throw new UnauthorizedException('[getMe] 유효하지 않은 토큰입니다.');
-    }
-  }
-
-  async updateProfile(token: string, data: { userPhoto?: number; nickname?: string }) {
-    const user = await this.getMe(token); 
-    if (!user) {
-      throw new UnauthorizedException('유저를 찾을 수 없습니다.');
-    }
-
-    await this.userRepository.update(
-      { userId: user.userId },
-      {
-        ...(data.userPhoto !== undefined && { userPhoto: data.userPhoto }),
-        ...(data.nickname !== undefined && { nickname: data.nickname }),
-      }
-    );
-
-    console.log('[updateProfile] update 성공');
-    return await this.userRepository.findOne({ where: { userId: user.userId } });
-  }
-  */
 }
