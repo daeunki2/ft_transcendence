@@ -2,14 +2,12 @@ import { Injectable, InternalServerErrorException, UnauthorizedException } from 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-	  private readonly jwtService: JwtService,
 
   ) {}
 
@@ -31,25 +29,17 @@ export class UserService {
   }
   }
 
-  async getMe(token: string) {
-    try {
-      const decoded = this.jwtService.verify(token);
-      // console.log('[getMe] Decoded JWT:', decoded);
-      const user = await this.userRepository.findOne({ where: { userId: decoded.sub } });
-      if (user)
-        console.log('[getMe] DB에서 찾은 실제 userId:', user.userId);
-      else
-        console.log('[getMe] userId 못 찾음');
-      return user;
-    } catch (error) {
-      // 토큰이 조작되었거나 만료된 경우
-      throw new UnauthorizedException('[getMe] 유효하지 않은 토큰입니다.');
-    }
+  async getMe(userId: string) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (user)
+      console.log('[getMe] DB에서 찾은 실제 userId:', user.userId);
+    else
+      console.log('[getMe] userId 못 찾음');
+    return user;
   }
 
-  async updateProfile(token: string, data: { userPhoto?: number; nickname?: string }) {
-    // 1. 토큰 검증 및 유저 식별 (이미 만들어두신 getMe 활용)
-    const user = await this.getMe(token); 
+  async updateProfile(userId: string, data: { userPhoto?: number; nickname?: string }) {
+    const user = await this.getMe(userId); 
     
     if (!user) {
       throw new UnauthorizedException('유저를 찾을 수 없습니다.');

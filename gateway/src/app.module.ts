@@ -1,7 +1,18 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [], // 다른 모듈을 가져올 필요가 거의 없음
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    JwtModule.register({
+      // 원본 코드:
+      // secret: process.env.MY_SECRET_KEY ?? 'default_secret',
+      secret: process.env.MY_SECRET_KEY,
+    }),
+  ],
   controllers: [],
   providers: [],
 })
