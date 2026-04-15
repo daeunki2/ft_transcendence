@@ -12,8 +12,8 @@ export class Auth {
   @Column()
   password: string; 
 
-  @Column({ type: 'varchar', nullable: true })
-  refresh_token: string | null;
+  // @Column({ type: 'varchar', nullable: true })
+  // refresh_token: string | null;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

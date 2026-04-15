@@ -3,9 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
+import { RefreshSession } from './entities/refresh-session.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { RedisModule } from './redis/redis.module';
 
 
 @Module({
@@ -28,15 +30,16 @@ import { HttpModule } from '@nestjs/axios';
       username: 'user', // 본인의 DB 사용자 이름
       password: 'password', // 본인의 DB 비밀번호
       database: 'auth-db', // 본인의 DB 이름
-      entities: [Auth], // 우리가 만든 Entity 등록
+      entities: [Auth, RefreshSession], // 우리가 만든 Entity 등록 + 리프레시 추가
       synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
     }),
-    TypeOrmModule.forFeature([Auth]), // Repository를 쓰기 위해 필요
+    TypeOrmModule.forFeature([Auth, RefreshSession]), // Repository를 쓰기 위해 필요 + 리프레시 추가
 
 	JwtModule.register({
       secret: process.env.MY_SECRET_KEY, // .env 파일로 생성해야함!
       signOptions: { expiresIn: '1h' }, // 토큰 유효 기간 (1시간)
     }),
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

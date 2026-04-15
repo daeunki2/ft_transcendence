@@ -88,6 +88,44 @@ export type Messages = {
     noGames: string;
     cancel: string;
   };
+  privacy: {
+    title: string;
+    updatedAt: string;
+    backButton: string;
+    section1Title: string;
+    section1Body: string;
+    section2Title: string;
+    section2Body: string;
+    section3Title: string;
+    section3Body: string;
+    section4Title: string;
+    section4Body: string;
+    section5Title: string;
+    section5Body: string;
+    section6Title: string;
+    section6Body: string;
+    section7Title: string;
+    section7Body: string;
+  };
+  termsPage: {
+    title: string;
+    effectiveDate: string;
+    backButton: string;
+    section1Title: string;
+    section1Body: string;
+    section2Title: string;
+    section2Body: string;
+    section3Title: string;
+    section3Body: string;
+    section4Title: string;
+    section4Body: string;
+    section5Title: string;
+    section5Body: string;
+    section6Title: string;
+    section6Body: string;
+    section7Title: string;
+    section7Body: string;
+  };
 errors: {
     USER_NOT_FOUND: string;
     INVALID_PASSWORD: string;
@@ -101,9 +139,12 @@ errors: {
     NOT_ACCEPTED_FRIENDSHIP: string;
     FORBIDDEN: string;
     NICKNAME_REQUIRED: string;
+    NICKNAME_NOT_ALLOWED: string;
+    SESSION_EXPIRED: string;
   };
   result: {
     success: string;
     false: string;
+    goLogin: string;
   };
 };
