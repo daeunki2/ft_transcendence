@@ -25,8 +25,6 @@ const apiClient = async (method : 'get' | 'post' | 'put' | 'delete' | 'patch', u
 	    withCredentials: true, // 쿠키가 저장용도!
       headers: {
         'Content-Type': 'application/json',
-        // 토큰이 있다면 자동으로 헤더에 추가
-        Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     };
 

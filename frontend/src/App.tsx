@@ -38,8 +38,8 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/Social" element={<SocialPage />} />
-        <Route path="/MySpace" element={<MySpacePage />} />
+        <Route path="/social" element={<SocialPage />} />
+        <Route path="/myspace" element={<MySpacePage />} />
       </Routes>
     </BrowserRouter>
   );

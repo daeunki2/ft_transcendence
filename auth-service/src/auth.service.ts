@@ -81,17 +81,22 @@ export class AuthService {
 		console.log(`[signUp가입 성공: ID ${savedUser.id}`);
 
     try {
-    await firstValueFrom(
-      this.httpService.post('http://user-service:4001/init', {
-        id: savedUser.id,
-        email: email,
-        nickname: nick,
-      })
-    );
-  } catch (error) {
-    // 3. 만약 호출 실패 시, Auth DB에 저장한 걸 롤백하거나 에러 처리 필요
-    console.error('[signUp]User 서비스 초기화 실패:', error.response?.data || error.message);
-  }
+      await firstValueFrom(
+        this.httpService.post('http://user-service:4001/init', {
+          id: savedUser.id,
+          email: email,
+          nickname: nick,
+        }),
+      );
+    } catch (error: any) {
+      // user-service init이 실패하면 auth 레코드를 롤백해 데이터 불일치를 방지한다.
+      await this.userRepository.delete({ id: savedUser.id });
+      console.error(
+        '[signUp]User 서비스 초기화 실패:',
+        error.response?.data || error.message,
+      );
+      return { success: false, message: 'USER_PROFILE_INIT_FAILED' };
+    }
 	  return { success: true, message: 'SIGNUP_SUCCESS' };
   }
 
