@@ -31,6 +31,7 @@ export class AuthController {
         ...baseCookieOptions,
         maxAge: result.refreshTokenMaxAgeMs,
       });
+      console.log('[인증컨트롤러] 새 쿠키(access/refresh) 설정 완료');
     }
 
     return result;
@@ -45,12 +46,17 @@ export class AuthController {
   async refresh(
     @Req() request: express.Request,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ){
+    console.log('[인증컨트롤러] 리프레시 요청 수신', { hasRefreshToken: Boolean(request.cookies?.refreshToken),});
+
     const refreshToken = request.cookies?.refreshToken;
     const result = await this.authService.refresh(refreshToken, {
       userAgent: request.headers['user-agent'],
       ipAddress: request.ip,
     });
+
+    console.log('[인증컨트롤러] 리프레시 처리 결과', { success: result.success, message: result.message,});
+
 
     if (result.success) {
       const baseCookieOptions = this.getBaseCookieOptions();

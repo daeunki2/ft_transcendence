@@ -1,7 +1,8 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException,BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { isNicknameAllowed } from './utils/nickname-filter';
 
 @Injectable()
 export class UserService {
@@ -11,22 +12,29 @@ export class UserService {
 
   ) {}
 
-  async createUserProfile(id: string, email: string, nickname: string, ) {
-    try {
-
-    const newUser = this.userRepository.create({
+  async createUserProfile(id: string, email: string, nickname: string, )
+  {
+    try
+    {
+      if ( typeof nickname !== 'string' || nickname.trim() === '' || !isNicknameAllowed(nickname) )
+      { throw new BadRequestException('NICKNAME_NOT_ALLOWED'); }
+      const newUser = this.userRepository.create({
       userId: id, // 전달받은 UUID
       email: email,
-      nickname: nickname,
+      nickname: nickname.trim(),
       userPhoto: 1, 
-    });
+      });
 
-    console.log('유저 db생성');
-    return await this.userRepository.save(newUser);
-  } catch (error) {
-    console.error('프로필 생성 중 DB 에러:', error.message);
-    throw new InternalServerErrorException('유저 프로필 생성 중 서버 에러가 발생했습니다.');
-  }
+      console.log('유저 db생성');
+      return await this.userRepository.save(newUser);
+    }
+    catch (error)
+    {
+      if (error instanceof BadRequestException)
+        {throw error;}
+      console.error('프로필 생성 중 DB 에러:', error.message);
+      throw new InternalServerErrorException('유저 프로필 생성 중 서버 에러가 발생했습니다.');
+    }
   }
 
   async getMe(userId: string) {
@@ -43,6 +51,14 @@ export class UserService {
     
     if (!user) {
       throw new UnauthorizedException('유저를 찾을 수 없습니다.');
+    }
+
+    // 닉네임 금칙어 확인 
+    if (data.nickname !== undefined) {
+    if (typeof data.nickname !== 'string' || data.nickname.trim() === '' || !isNicknameAllowed(data.nickname)) {
+      throw new BadRequestException('NICKNAME_NOT_ALLOWED');
+    }
+    data.nickname = data.nickname.trim();
     }
 
     // 2. DB 업데이트 (TypeORM 문법에 맞게 수정)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   authService.tsx                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:14 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/10 17:28:17 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/15 14:42:00 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,10 @@ export const authService = {
   // 로그아웃 기능
   logout: async () => {
     return await apiClient('post', 'api/auth/logout', {});
-  }
+  },
+
+  // 게이트웨이가 at만료일때 리프레시 
+  refresh: async () => {
+    return await apiClient('post', 'api/auth/refresh', {});
+  },
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Register.tsx                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:06 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/07 18:26:01 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/15 14:26:21 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,15 +37,18 @@ const handleRegister = async () => {
     try {
     	const result = await authService.signup({ email, password, nick });
 
-    	if (result.success) {
+	      if (result.success) {
         //alert("회원가입 성공! 로그인해 주세요.");
         setAlertMsg(messages.result?.success || "Success!");
         //지금은 이메일 중복만 경고하고 있음 나중에 닉네임 중복도 추가해야 할지도?
         navigate('/login');
-      	} else {
-          setAlertMsg(result.message);
-          console.log("회원가입 실패 사유:", result);
-      	}
+	      	} else {
+            // Login 훅과 동일하게 i18n 메시지로 매핑
+            // setAlertMsg(result.message);
+            const translated = (messages.errors as any)[result.message] || messages.errors.SERVER_ERROR;
+	          setAlertMsg(translated);
+	          console.log("회원가입 실패 사유:", result);
+	      	}
     } catch (error) {
       console.error("회원가입 에러:", error);
       setAlertMsg(messages.errors?.SERVER_ERROR);

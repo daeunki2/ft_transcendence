@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Login.tsx                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:02 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/10 18:32:52 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/15 14:26:04 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,12 @@ const handleLogin = async () => {
 		await fetchMe();
 	  	navigate('/home');
 		}
-	else { 
-	const translated = (messages.errors as any)[result.message] || messages.result.false;
-        setErrorMsg(translated);
-	}
+		else { 
+        // 기존 fallback('OK') 대신 서버 에러 코드 기반 번역을 우선해 실제 원인 표시를 유지합니다.
+        // const translated = (messages.errors as any)[result.message] || messages.result.false;
+		const translated = (messages.errors as any)[result.message] || messages.errors.SERVER_ERROR;
+	        setErrorMsg(translated);
+		}
   	} catch(error) {
 	console.error('로그인 에러:', error);
 	setErrorMsg(messages.errors.SERVER_ERROR);

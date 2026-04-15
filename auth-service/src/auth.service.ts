@@ -11,7 +11,7 @@ import { createHash } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from './redis/redis.module';
-
+import { isNicknameAllowed } from './utils/nickname-filter'; // 금칙어
 
 const emailRegex = /^[A-Za-z0-9]{1,20}$/;       // 1~20자, 영어+숫자 아이디로 <script>alert("해킹")</script> 이런거 넣는거 방지
 const passwordRegex = /^[A-Za-z0-9]{4,32}$/;   // 4~32자, 영어+숫자 
@@ -38,8 +38,8 @@ type LoginResult =
 
 @Injectable()
 export class AuthService {
-  private readonly defaultAccessTtl = '15m';
-  private readonly defaultRefreshTtl = '7d';
+  private readonly defaultAccessTtl = '1m'; //15분
+  private readonly defaultRefreshTtl = '7d'; //7일
   private readonly defaultAccessTtlMs = 15 * 60 * 1000;
   private readonly defaultRefreshTtlMs = 7 * 24 * 60 * 60 * 1000;
 
@@ -64,6 +64,10 @@ export class AuthService {
     if (!passwordRegex.test(password)) {
       return { success: false, message: 'INVALID_PASSWORD_FORMAT' };
     }
+    if (typeof nick !== 'string' || nick.trim() === '' || !isNicknameAllowed(nick)) {
+    return { success: false, message: 'NICKNAME_NOT_ALLOWED' };
+    }
+
     const existingUser = await this.userRepository.findOne({where: {email}})
     
     if (existingUser)
@@ -77,19 +81,20 @@ export class AuthService {
       password: hashedPassword,
     //  refresh_token: null, 테이블을 따로 두어서 이제는 필요 없음
     });
-    const savedUser = await this.userRepository.save(newUser);
+    const savedUser = await this.userRepository.save(newUser); // 인증디비에저장
 		console.log(`[signUp가입 성공: ID ${savedUser.id}`);
 
     try {
       await firstValueFrom(
-        this.httpService.post('http://user-service:4001/init', {
+        this.httpService.post('http://user-service:4001/init', // 유저서비스 쪽에 초기화 요청 보냄. 
+        {
           id: savedUser.id,
           email: email,
           nickname: nick,
         }),
       );
     } catch (error: any) {
-      // user-service init이 실패하면 auth 레코드를 롤백해 데이터 불일치를 방지한다.
+      // user-service init이 실패하면 auth 레코드를 롤백해 데이터 불일치를 방지
       await this.userRepository.delete({ id: savedUser.id });
       console.error(
         '[signUp]User 서비스 초기화 실패:',
@@ -156,18 +161,24 @@ export class AuthService {
   }
 
   async refresh(refreshToken?: string, context?: LoginContext): Promise<LoginResult> {
+    console.log('[인증서비스] refresh 시작');
     if (!refreshToken) {
+      console.log('[인증서비스] 리프레시 토큰 없음');
       return { success: false, message: 'REFRESH_TOKEN_REQUIRED' };
     }
 
     const revoked = await this.isRefreshTokenBlacklisted(refreshToken);
+    console.log('[인증서비스] 블랙리스트 조회 완료', { revoked });
     if (revoked) {
+      console.log('[인증서비스] 블랙리스트에 등록된 토큰');
       return { success: false, message: 'REFRESH_TOKEN_REVOKED' };
     }
 
     try {
       this.jwtService.verify<{ sub: string; email?: string }>(refreshToken);
+      console.log('[인증서비스] 리프레시 토큰 서명 검증 성공');
     } catch (error) {
+      console.log('[인증서비스] 리프레시 토큰 서명 검증 실패');
       return { success: false, message: 'REFRESH_TOKEN_INVALID' };
     }
 
@@ -177,10 +188,12 @@ export class AuthService {
     });
 
     if (!session) {
+      console.log('[인증서비스] 리프레시 세션 없음');
       return { success: false, message: 'REFRESH_SESSION_NOT_FOUND' };
     }
 
     if (session.expiresAt.getTime() < Date.now()) {
+      console.log('[인증서비스] 리프레시 세션 만료');
       await this.refreshSessionRepository.delete({ tokenHash });
       return { success: false, message: 'REFRESH_TOKEN_EXPIRED' };
     }
@@ -206,6 +219,7 @@ export class AuthService {
       { sub: user.id, email: user.email },
       { expiresIn: refreshTokenMaxAgeMs / 1000 },
     );
+    console.log('[인증서비스] 새 액세스/리프레시 토큰 발급 완료');
 
     const previousExpiryMs = session.expiresAt.getTime();
     session.tokenHash = this.hashToken(newRefreshToken);
@@ -214,6 +228,7 @@ export class AuthService {
     session.expiresAt = new Date(Date.now() + refreshTokenMaxAgeMs);
     await this.refreshSessionRepository.save(session);
     await this.addRefreshTokenToBlacklist(refreshToken, previousExpiryMs - Date.now());
+    console.log('[인증서비스] 리프레시 세션 갱신 및 기존 RT 블랙리스트 등록 완료');
 
     return {
       success: true,
