@@ -45,11 +45,11 @@ function SocialPage() {
   };
 
   // 친구/요청 목록 새로고침
-  const refresh = useCallback(async (uid: string) => {
+  const refresh = useCallback(async () => {
     try {
       const [f, r] = await Promise.all([
-        friendService.getFriends(uid),
-        friendService.getRequests(uid),
+        friendService.getFriends(),
+        friendService.getRequests(),
       ]);
       setFriends(f);
       setRequests(r);
@@ -69,7 +69,7 @@ function SocialPage() {
           return;
         }
         setCurrentUserId(uid);
-        await refresh(uid);
+        await refresh();
       } catch (err) {
         console.error(err);
       }
@@ -89,9 +89,9 @@ function SocialPage() {
       return;
     }
     try {
-      await friendService.sendRequest(currentUserId, nickname);
+      await friendService.sendRequest(nickname);
       setNicknameInput('');
-      await refresh(currentUserId);
+      await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
     }
@@ -101,8 +101,8 @@ function SocialPage() {
   const handleAccept = async (friendId: number) => {
     if (currentUserId === null) return;
     try {
-      await friendService.acceptRequest(currentUserId, friendId);
-      await refresh(currentUserId);
+      await friendService.acceptRequest(friendId);
+      await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
     }
@@ -112,8 +112,8 @@ function SocialPage() {
   const handleReject = async (friendId: number) => {
     if (currentUserId === null) return;
     try {
-      await friendService.rejectRequest(currentUserId, friendId);
-      await refresh(currentUserId);
+      await friendService.rejectRequest(friendId);
+      await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
     }
@@ -123,8 +123,8 @@ function SocialPage() {
   const handleRemove = async (friendId: number) => {
     if (currentUserId === null) return;
     try {
-      await friendService.removeFriend(currentUserId, friendId);
-      await refresh(currentUserId);
+      await friendService.removeFriend(friendId);
+      await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
     }
