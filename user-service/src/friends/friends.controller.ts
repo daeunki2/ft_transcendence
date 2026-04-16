@@ -23,8 +23,6 @@ interface SendRequestDto {
 export class FriendsController {
   constructor(private readonly friendsService: FriendsService) {}
 
-  // TODO: JwtAuthGuard 도입 시 이 헬퍼를 req.user.id로 교체
-  // 임시: x-user-id 헤더에서 현재 사용자 id를 꺼낸다
   private getCurrentUserId(req: Request): string {
     const raw = req.headers['x-user-id'];
     if (!raw || Array.isArray(raw) || raw.trim() === '') {
@@ -37,14 +35,16 @@ export class FriendsController {
   @Get()
   async getFriends(@Req() req: Request) {
     const userId = this.getCurrentUserId(req);
-    return this.friendsService.getFriends(userId);
+    const friends = await this.friendsService.getFriends(userId);
+    return { success: true, friends };
   }
 
   // 내가 받은 친구 요청 목록
   @Get('requests')
   async getRequests(@Req() req: Request) {
     const userId = this.getCurrentUserId(req);
-    return this.friendsService.getReceivedRequests(userId);
+    const requests = await this.friendsService.getReceivedRequests(userId);
+    return { success: true, requests };
   }
 
   // 친구 요청 보내기
@@ -54,7 +54,8 @@ export class FriendsController {
     if (typeof body?.nickname !== 'string' || body.nickname.trim() === '') {
       throw new BadRequestException('NICKNAME_REQUIRED');
     }
-    return this.friendsService.sendRequest(userId, body.nickname.trim());
+    const request = await this.friendsService.sendRequest(userId, body.nickname.trim());
+    return { success: true, request };
   }
 
   // 친구 요청 수락
@@ -64,7 +65,8 @@ export class FriendsController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     const userId = this.getCurrentUserId(req);
-    return this.friendsService.acceptRequest(userId, id);
+    const request = await this.friendsService.acceptRequest(userId, id);
+    return { success: true, request };
   }
 
   // 친구 요청 거절
