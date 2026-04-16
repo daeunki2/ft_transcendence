@@ -252,3 +252,10 @@ Commit : token + gateway
 
 ### ps 
 - 지금 여기저기 한글로 로그 박아둔 상태입니다. 일단 개발상태에서는 유지 혹은 축소하고 나중에 정리하겠습니다.
+
+## [2026-04-16] chanypar
+
+Commit: user-service_request_update
+
+### what
+- request 인자형식으로 받게, user-service/src/user.controller.ts 수정

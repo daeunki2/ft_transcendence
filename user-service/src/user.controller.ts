@@ -1,11 +1,17 @@
 import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, NotFoundException, Headers } from '@nestjs/common';
 import { UserService } from './user.service';
-import * as express from 'express';
-
 
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  private getCurrentUserId(req: Request): string {
+    const raw = req.headers['x-user-id'];
+    if (!raw || Array.isArray(raw) || raw.trim() === '') {
+      throw new UnauthorizedException('x-user-id header required (temp)');
+    }
+    return raw;
+  }
 
   @Post('init') // auth-service가 호출하는 경로
 
@@ -14,7 +20,9 @@ export class UserController {
   }
 
   @Get('me')
-  async getMe(@Headers('x-user-id') currentUserId?: string) {
+  async getMe(@Req() req: Request) {
+    const currentUserId = this.getCurrentUserId(req);
+
     if (!currentUserId) {
       throw new UnauthorizedException('[getMe] 인증 정보가 없습니다.');
     }
@@ -36,38 +44,14 @@ export class UserController {
     };
   }
 
-  /*
-  //쿠키에서 Access Token을 읽어 직접 검증
-  @Get('me')
-	async getMe(@Req() request: express.Request) {
-    const token = request.cookies['accessToken'];
-
-    if (!token) {
-      throw new UnauthorizedException('[getMe] 로그인이 필요합니다.');
-    }
-	
-    const user = await this.userService.getMe(token);
-
-    if (!user) {
-      throw new NotFoundException('[getMe] 유저를 찾을 수 없습니다.');
-    }
-    return {
-      success: true,
-      user: {
-        userId: user.userId,
-        email: user.email,
-        nickname: user.nickname,
-        userPhoto: user.userPhoto,
-      },
-    };
-  }
-  */
 
   @Patch('me')
   async updateProfile(
-    @Headers('x-user-id') currentUserId: string | undefined,
+    @Req() req: Request,
     @Body() data: { userPhoto?: number; nickname?: string }
   ) {
+    const currentUserId = this.getCurrentUserId(req);
+
     if (!currentUserId) {
       throw new UnauthorizedException('[updateProfile] 인증 정보가 없습니다.');
     }
