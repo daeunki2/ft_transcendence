@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
 export interface UserType {
   userId: string;
@@ -9,7 +10,7 @@ export interface UserType {
 
 export interface AuthContextType {
   user: UserType | null;
-  setUser: (user: UserType | null) => void;
+  setUser: Dispatch<SetStateAction<UserType | null>>;
   isLoading: boolean;
 }
 

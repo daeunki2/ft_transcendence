@@ -235,3 +235,28 @@ Commit: changing uid type to string
    - 그 외 모든 friend 관련 코드 number -> string으로 수정
 
 
+## [2026-04-15] daeunki2
+
+Commit : token + gateway
+
+### what
+- 토큰 발급 재발급 블랙리스트 
+- 게이트웨이 인증
+- 재로그인 처리 + 프론트 가드
+- 간단한 보안처리 + 금지어
+- 개인정보 + 이용 약관 
+
+### 생각해볼 내용
+- 생각보다 내용이 많아서 team/daeunki2/token_gateway_work_log에 기록 남겼습니다.
+- 0410 suna에 남겨진 "JWT 인증 도입 시 `req.user.id`로 전환 필요" 필요성에 동감합니다. 
+
+### ps 
+- 지금 여기저기 한글로 로그 박아둔 상태입니다. 일단 개발상태에서는 유지 혹은 축소하고 나중에 정리하겠습니다.
+
+
+## [2026-04-16] daeunki2
+
+Commit : readme.md update
+
+### what
+- readme 목차 정리
