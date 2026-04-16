@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException, UnauthorizedException,BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { isNicknameAllowed } from './utils/nickname-filter';
+import { User } from '../entities/user.entity';
+import { isNicknameAllowed } from '../utils/nickname-filter';
 
 @Injectable()
 export class UserService {
