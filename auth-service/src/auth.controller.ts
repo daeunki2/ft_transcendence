@@ -101,7 +101,7 @@ export class AuthController {
     return {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'none',
+      sameSite: 'lax',
       path: '/',
     };
   }
