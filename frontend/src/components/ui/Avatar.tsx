@@ -20,7 +20,7 @@ export default function Avatar({
     width: `${size}px`,
     height: `${size}px`,
     borderRadius: isRetro ? '0px' : '50%',
-    background: theme.colors.primary,
+    backgroundColor: theme.colors.primary,
     flexShrink: 0,
 
     border: isRetro
@@ -31,6 +31,7 @@ export default function Avatar({
     backgroundImage: url ? `url(${url})` : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
   };
 
   return (

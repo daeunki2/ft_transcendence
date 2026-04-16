@@ -25,7 +25,7 @@ export const en: Messages = {
     title: 'Register',
     subtitle: 'Create your account to get started',
     email: 'Email',
-	nick: 'Nickname',
+	  nick: 'Nickname',
     password: 'Password',
     confirmPassword: 'Confirm Password',
     submit: 'Register',
