@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { User } from './entities/user.entity';
-import { Friend } from './entities/friend.entity';
-import { FriendsModule } from './friends/friends.module';
+import { User } from '../entities/user.entity';
+import { Friend } from '../entities/friend.entity';
+import { FriendsModule } from '../friends/friends.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
