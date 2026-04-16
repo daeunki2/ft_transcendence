@@ -45,13 +45,13 @@ export const friendService = {
 
   // 친구 요청 거절
   rejectRequest: async (friendId: number) => {
-    const res = await apiClient('delete', `api/users/friends/requests/${friendId}`);
+    const res = await apiClient('delete', `api/users/friends/requests/${friendId}`, {});
     return unwrap(res);
   },
 
   // 친구 삭제
   removeFriend: async (friendId: number) => {
-    const res = await apiClient('delete', `api/users/friends/${friendId}`);
+    const res = await apiClient('delete', `api/users/friends/${friendId}`, {});
     return unwrap(res);
   },
 };

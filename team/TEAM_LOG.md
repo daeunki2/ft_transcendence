@@ -260,3 +260,20 @@ Commit : readme.md update
 
 ### what
 - readme 목차 정리
+
+## [2026-04-16] suna
+
+Commit: friend, type, apiclient
+
+### what
+
+   - social page에서 userPhoto: number; 데이터 까지 참조하여 친구 아바타 그림 조회가능하게 수정
+   - friend controller에서 객체, 배열로 반환하는것을 객체 반환으로 통일. 친구 조회, 요청 조회는 모든 친구/요청들 id를 배열에 담아서 반환 그러나
+요청 수락, 친구 삭제와 같이 단일 요청 처리는 객체로 반환하여 반환 통일성이 없었음. 따라서 모든 friend controller에서 반환값을 객체로 반환.
+   - api호출을 friendservice자체적으로 호출하던것을 apiclient로 호출하도록 수정.
+   - 또한 DELETE API는 BODY가 없어 {} 빈 body를 apiclient호출 부에 추가(await apiClient('delete', `api/users/friends/${friendId}`, {});)
+   - Get에서는 axios 자체적으로 body를 수정해서 에러가 발생하지 않음.
+
+   ### 생각해볼 내용
+	- 친구 추가 입력창에 아무것도 입력하지 않고 add버튼을 누르면 apiclient를 호출하기 전에 자체적으로 닉네임을 입력하라는 에러가 반환됨.
+	따라서 엑세스 토큰이 재발급되지 않고 있음. 그러나 새로고침, 입력창에 닉네임 입력하고 add하면 재발급 및 재실행이 됨. 이것을 수정해야할지 유지 할지 고민 중.
