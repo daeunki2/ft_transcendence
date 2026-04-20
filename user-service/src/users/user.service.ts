@@ -32,6 +32,7 @@ export class UserService {
       email: email,
       nickname: normalizedNickname,
       userPhoto: 1, 
+      role: "normal",
       });
 
       console.log('유저 db생성');
