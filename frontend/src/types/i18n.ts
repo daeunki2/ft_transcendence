@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   i18n.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/10 10:46:11 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/20 17:11:36 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ export type Messages = {
   login: {
     title: string;
     subtitle: string;
-    email: string;
+    id: string;
     password: string;
     submit: string;
     submitting: string;
@@ -31,7 +31,7 @@ export type Messages = {
   register: {
     title: string;
     subtitle: string;
-    email: string;
+    id: string;
 	nick: string;
     password: string;
     confirmPassword: string;
@@ -129,7 +129,15 @@ export type Messages = {
 errors: {
     USER_NOT_FOUND: string;
     INVALID_PASSWORD: string;
+    ID_REQUIRED: string;
+    PASSWORD_REQUIRED: string;
+    CONFIRM_PASSWORD_REQUIRED: string;
+    INVALID_PASSWORD_FORMAT: string;
+    INVALID_ID_FORMAT: string;
+    INVALID_NICKNAME_FORMAT: string;
     USER_ALREADY_EXISTS: string;
+    NICKNAME_ALREADY_EXISTS: string;
+    USER_PROFILE_INIT_FAILED: string;
     SERVER_ERROR: string;
     CANNOT_ADD_SELF: string;
     ALREADY_FRIENDS_OR_REQUESTED: string;

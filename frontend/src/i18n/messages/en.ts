@@ -3,16 +3,16 @@ import type { Messages } from '../../types/i18n';
 export const en: Messages = {
 	//랜딩페이지에서 사용할 내용
 	landing: {
-	title: 'Welcome to Pong',
+	title: 'Welcome to Inflexion',
 	login: 'Login',
 	register: 'Register',
 	},
 
 	//로그인
-	login: {
-    title: 'Login',
-    subtitle: 'Enter your credentials to continue',
-    email: 'Email',
+		login: {
+	    title: 'Login',
+	    subtitle: 'Enter your credentials to continue',
+	    id: 'ID',
     password: 'Password',
     submit: 'Login',
     submitting: 'Logging in...',
@@ -21,18 +21,18 @@ export const en: Messages = {
 	},
 
 	//회원가입
-	register: {
-    title: 'Register',
-    subtitle: 'Create your account to get started',
-    email: 'Email',
-	  nick: 'Nickname',
-    password: 'Password',
-    confirmPassword: 'Confirm Password',
-    submit: 'Register',
-    submitting: 'Registering...',
-    footerText: 'Already have an account? ',
-    footerLink: 'Login',
-	},
+register: {
+  title: 'Sign Up',
+  subtitle: 'Create an account to get started',
+  id: 'Id (1–20 characters, letters and numbers)',
+  nick: 'Nickname (1–20 characters, letters and numbers)',
+  password: 'Password (4–20 characters, letters and numbers)',
+  confirmPassword: 'Confirm Password',
+  submit: 'Sign Up',
+  submitting: 'Processing...',
+  footerText: 'Already have an account?',
+  footerLink: 'Log In',
+},
 
 	//하단
 	footer: {
@@ -139,11 +139,19 @@ export const en: Messages = {
     section7Body:
       'These Terms may be changed within the scope of applicable law. Material changes will be announced in the service. Continued use after changes constitutes acceptance.',
   },
-errors: {
-    USER_NOT_FOUND: "User not found.",
-    INVALID_PASSWORD: "Invalid password.",
-    USER_ALREADY_EXISTS: "This email is already registered.",
-    SERVER_ERROR: "Internal server error. Please try again later.",
+		errors: {
+			    USER_NOT_FOUND: "Invalid ID or password.",
+			    INVALID_PASSWORD: "Invalid ID or password.",
+        ID_REQUIRED: "Please enter your ID.",
+        PASSWORD_REQUIRED: "Please enter your password.",
+        CONFIRM_PASSWORD_REQUIRED: "Please confirm your password.",
+        INVALID_PASSWORD_FORMAT: "Password must be 4-32 characters using only letters and numbers.",
+        INVALID_ID_FORMAT: "ID must be 1-20 characters using only letters and numbers.",
+        INVALID_NICKNAME_FORMAT: "Nickname must be 1-20 characters using only letters and numbers.",
+		    USER_ALREADY_EXISTS: "This ID is already registered.",
+        NICKNAME_ALREADY_EXISTS: "This nickname is already in use.",
+        USER_PROFILE_INIT_FAILED: "Signup failed while creating your profile. Please try again.",
+	    SERVER_ERROR: "Internal server error. Please try again later.",
     CANNOT_ADD_SELF: "You cannot add yourself as a friend.",
     ALREADY_FRIENDS_OR_REQUESTED: "You are already friends or a request is pending.",
     REQUEST_NOT_FOUND: "Friend request not found.",

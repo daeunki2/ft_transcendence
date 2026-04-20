@@ -108,8 +108,8 @@ function createAccessTokenMiddleware(jwtService: JwtService) // 인증로직
 
       console.log('[게이트웨이] 액세스 토큰 검증 성공', { sub: payload.sub });
       
-      if (payload.email) {
-        req.headers['x-user-email'] = payload.email as string;
+      if (payload.id) {
+        req.headers['x-user-login-id'] = payload.id as string;
       }
       return next();
     }

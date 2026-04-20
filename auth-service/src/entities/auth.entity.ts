@@ -7,7 +7,7 @@ export class Auth {
   id: string;
 
   @Column({ unique: true })
-  email: string;
+  loginId: string;
 
   @Column()
   password: string; 

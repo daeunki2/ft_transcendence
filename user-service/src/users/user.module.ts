@@ -20,8 +20,8 @@ import { ConfigModule } from '@nestjs/config';
       type: 'postgres',
       host: 'user-database',
       port: 5432,
-      username: 'user', // 본인의 DB 사용자 이름
-      password: 'password', // 본인의 DB 비밀번호
+      username: process.env.USERDB_USER, // .env 에서 주입
+      password: process.env.USERDB_PASSWORD, // .env 에서 주입
       database: 'user-db', // 본인의 DB 이름
       entities: [User, Friend], // 우리가 만든 Entity 등록
       synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
