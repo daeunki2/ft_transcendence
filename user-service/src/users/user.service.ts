@@ -23,6 +23,7 @@ export class UserService {
       email: email,
       nickname: nickname.trim(),
       userPhoto: 1, 
+      role: "normal",
       });
 
       console.log('유저 db생성');

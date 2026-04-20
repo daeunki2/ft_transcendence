@@ -17,4 +17,7 @@ export class User {
 
   @Column()
   userPhoto: number;
+
+  @Column()
+  role: string;
 }
