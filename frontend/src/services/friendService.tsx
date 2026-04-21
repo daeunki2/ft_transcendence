@@ -7,6 +7,7 @@ export interface FriendItem {
   userId: string;
   nickname: string;
   userPhoto: number;
+  isOnline?: boolean;
 }
 
 // apiClient는 에러 시 { success: false, message } 를 반환한다.

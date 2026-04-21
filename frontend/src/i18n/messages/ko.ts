@@ -62,6 +62,7 @@ HomePage: {
     accept: '수락',
     reject: '거절',
     alertTitle: '알림',
+    requestSent: '친구 요청을 보냈습니다.',
   },
   chat: {
     inputPlaceholder: '메세지를 입력하세요',

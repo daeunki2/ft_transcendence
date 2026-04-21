@@ -37,6 +37,7 @@ function SocialPage() {
   const [nicknameInput, setNicknameInput] = useState('');
   // 백엔드 에러 코드를 그대로 저장 → 렌더 시 i18n으로 변환
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // 에러 코드를 현재 언어 메세지로 변환. 알 수 없는 코드면 SERVER_ERROR로 fallback.
   const translateError = (code: string): string => {
@@ -92,6 +93,7 @@ function SocialPage() {
       await friendService.sendRequest(nickname);
       setNicknameInput('');
       await refresh();
+      setSuccessMessage(messages.social.requestSent);
     } catch (err: any) {
       setErrorCode(err.message);
     }
@@ -192,7 +194,23 @@ function SocialPage() {
                     borderBottom: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
                   }}
                 >
-                  <Avatar url={AVATAR_MAP[friend.userPhoto]} />
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <Avatar url={AVATAR_MAP[friend.userPhoto]} />
+                    <span
+                      title={friend.isOnline ? 'online' : 'offline'}
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: friend.isOnline ? '#22c55e' : '#ef4444',
+                        border: `2px solid ${theme.colors.background}`,
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
                   <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
                     {friend.nickname}
                   </span>
@@ -335,6 +353,14 @@ function SocialPage() {
         message={errorCode ? translateError(errorCode) : ''}
         confirmText={messages.result.false}
         onClose={() => setErrorCode(null)}
+      />
+
+      <Alert
+        open={successMessage !== null}
+        title={messages.result.success}
+        message={successMessage ?? ''}
+        confirmText={messages.result.false}
+        onClose={() => setSuccessMessage(null)}
       />
     </PageContainer>
   );

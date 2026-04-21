@@ -72,6 +72,7 @@ export type Messages = {
     accept: string;
     reject: string;
     alertTitle: string;
+    requestSent: string;
   };
   chat: {
     inputPlaceholder: string;

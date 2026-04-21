@@ -70,6 +70,7 @@ register: {
       accept: 'Accept',
       reject: 'Reject',
       alertTitle: 'Notice',
+      requestSent: 'Friend request sent.',
     },
     //채팅
     chat: {

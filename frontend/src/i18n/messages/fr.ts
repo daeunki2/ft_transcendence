@@ -60,6 +60,7 @@ HomePage: {
     accept: 'Accepter',
     reject: 'Refuser',
     alertTitle: 'Avis',
+    requestSent: 'Demande d\'ami envoyée.',
   },
   chat: {
     inputPlaceholder: 'Tapez le message',
