@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:56 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/05 23:15:33 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/20 16:52:48 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ function RegisterPage() {
   const { messages } = useI18n();
 
   const {
-    email, setEmail,
+    id, setId,
     password, setPassword,
     nick, setNick,
     confirmPassword, setConfirmPassword,
@@ -113,10 +113,10 @@ function RegisterPage() {
               }}
             >
               <Input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder={messages.register.email}
+                type="id"
+                value={id}
+                onChange={(event) => setId(event.target.value)}
+                placeholder={messages.register.id}
               />
 			  <Input
                 type="text"

@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:02 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/15 14:26:04 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/20 16:53:54 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ export const useLogin = () => {
   const navigate = useNavigate();
   const { messages } = useI18n(); //언어 추가
   const { setUser } = useContext(AuthContext)!; //  유저를 저장하기위한 전역 주머니
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null); // 초기화
@@ -29,12 +29,23 @@ export const useLogin = () => {
   
 
 const handleLogin = async () => {
+		const trimmedId = id.trim();
+		const trimmedPassword = password.trim();
 
-	setIsLoading(true);
-	setErrorMsg(null); // 메세지 초기화
-	
-	try {
-		const result = await authService.login(email, password);
+		if (!trimmedId) {
+			setErrorMsg(messages.errors.ID_REQUIRED);
+			return;
+		}
+		if (!trimmedPassword) {
+			setErrorMsg(messages.errors.PASSWORD_REQUIRED);
+			return;
+		}
+
+		setIsLoading(true);
+		setErrorMsg(null); // 메세지 초기화
+		
+		try {
+				const result = await authService.login(trimmedId, password);
   
 		if (result.success === true) {
 		setUser(result.user);
@@ -60,8 +71,8 @@ const handleLogin = async () => {
 
 // 컴포넌트에서 필요한 것들만 내보냅니다.
   return {
-    email,
-    setEmail,
+    id,
+    setId,
     password,
     setPassword,
     handleLogin,

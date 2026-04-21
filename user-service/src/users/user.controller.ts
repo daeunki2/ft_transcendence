@@ -24,6 +24,7 @@ export class UserController {
         email: user.email,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
+        role:user.role,
       },
     };
   }
@@ -49,6 +50,7 @@ export class UserController {
         email: user.email,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
+        role: user.role,
       },
     };
   }
@@ -78,6 +80,7 @@ export class UserController {
         email: updatedUser.email,
         nickname: updatedUser.nickname,
         userPhoto: updatedUser.userPhoto,
+        role: updatedUser.role,
       },
     };
   }
