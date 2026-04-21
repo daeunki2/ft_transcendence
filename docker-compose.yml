@@ -19,8 +19,10 @@ services:
       - ./auth-service:/app
       - /app/node_modules
     depends_on:
-      - auth-database
-      - redis
+      auth-database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
     - ./auth-service/.env
     stdin_open: true
@@ -48,7 +50,8 @@ services:
       - ./user-service:/app
       - /app/node_modules
     depends_on:
-      - user-database
+      user-database:
+        condition: service_healthy
     stdin_open: true
     tty: true
 
@@ -63,6 +66,12 @@ services:
       - "5432:5432"
     volumes:
       - auth_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   user-database:
     image: postgres:15
@@ -75,6 +84,12 @@ services:
       - "5433:5432"
     volumes:
       - user_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7
@@ -85,6 +100,11 @@ services:
       - redis_data:/data
     stdin_open: true
     tty: true
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   auth_db_data:
