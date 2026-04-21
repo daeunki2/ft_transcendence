@@ -70,6 +70,7 @@ export const en: Messages = {
       accept: 'Accept',
       reject: 'Reject',
       alertTitle: 'Notice',
+      requestSent: 'Friend request sent.',
     },
     //채팅
     chat: {
@@ -142,6 +143,7 @@ export const en: Messages = {
 errors: {
     USER_NOT_FOUND: "User not found.",
     INVALID_PASSWORD: "Invalid password.",
+    INVALID_EMAIL_FORMAT: "ID must be 1–20 characters, letters or numbers only (no spaces or special characters).",
     USER_ALREADY_EXISTS: "This email is already registered.",
     SERVER_ERROR: "Internal server error. Please try again later.",
     CANNOT_ADD_SELF: "You cannot add yourself as a friend.",

@@ -62,6 +62,7 @@ HomePage: {
     accept: '수락',
     reject: '거절',
     alertTitle: '알림',
+    requestSent: '친구 요청을 보냈습니다.',
   },
   chat: {
     inputPlaceholder: '메세지를 입력하세요',
@@ -133,6 +134,7 @@ HomePage: {
   errors: {
     USER_NOT_FOUND: "사용자를 찾을 수 없습니다.",
     INVALID_PASSWORD: "비밀번호가 틀렸습니다.",
+    INVALID_EMAIL_FORMAT: "아이디는 영문 또는 숫자 1~20자로 입력해 주세요. (공백·특수문자 불가)",
     USER_ALREADY_EXISTS: "이미 가입된 이메일입니다.",
     SERVER_ERROR: "서버 오류가 발생했습니다.",
     CANNOT_ADD_SELF: "자기 자신을 친구로 추가할 수 없습니다.",

@@ -60,6 +60,7 @@ HomePage: {
     accept: 'Accepter',
     reject: 'Refuser',
     alertTitle: 'Avis',
+    requestSent: 'Demande d\'ami envoyée.',
   },
   chat: {
     inputPlaceholder: 'Tapez le message',
@@ -131,6 +132,7 @@ HomePage: {
 errors: {
     USER_NOT_FOUND: "Utilisateur non trouvé.",
     INVALID_PASSWORD: "Mot de passe incorrect.",
+    INVALID_EMAIL_FORMAT: "L'identifiant doit contenir 1 à 20 caractères (lettres ou chiffres uniquement, sans espaces ni caractères spéciaux).",
     USER_ALREADY_EXISTS: "Cet e-mail est déjà utilisé.",
     SERVER_ERROR: "Erreur interne du serveur. Veuillez réessayer plus tard.",
     CANNOT_ADD_SELF: "Vous ne pouvez pas vous ajouter en ami.",

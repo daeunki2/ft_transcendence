@@ -72,6 +72,7 @@ export type Messages = {
     accept: string;
     reject: string;
     alertTitle: string;
+    requestSent: string;
   };
   chat: {
     inputPlaceholder: string;
@@ -129,6 +130,7 @@ export type Messages = {
 errors: {
     USER_NOT_FOUND: string;
     INVALID_PASSWORD: string;
+    INVALID_EMAIL_FORMAT: string;
     USER_ALREADY_EXISTS: string;
     SERVER_ERROR: string;
     CANNOT_ADD_SELF: string;
