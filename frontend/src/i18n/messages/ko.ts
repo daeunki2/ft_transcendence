@@ -3,26 +3,26 @@ import type { Messages } from '../../types/i18n';
 
 export const ko: Messages = {
   landing: {
-    title: 'Pong에 오신 것을 환영합니다',
+    title: 'Inflexion 오신 것을 환영합니다',
     login: '로그인',
     register: '회원가입',
   },
   login: {
     title: '로그인',
     subtitle: '계속하려면 정보를 입력하세요',
-    email: '이메일',
+    id: '아이디',
     password: '비밀번호',
     submit: '로그인',
     submitting: '로그인 중...',
-    footerText: '계정이 없으신가요?',
+    footerText: '계정이 없으신가요? ',
     footerLink: '회원가입',
   },
   register: {
     title: '회원가입',
     subtitle: '시작하려면 계정을 만들어주세요',
-    email: '이메일',
-	  nick: '닉네임',
-    password: '비밀번호',
+    id  : '아이디 1~20자 영어+숫자 조합',
+	  nick: '닉네임 1~20자 영어+숫자 조합',
+    password: '비밀번호 4~20자 영어+숫자 조합',
     confirmPassword: '비밀번호 확인',
     submit: '회원가입',
     submitting: '가입 처리 중 ',
@@ -82,7 +82,7 @@ HomePage: {
   privacy: {
     title: '개인정보처리방침',
     updatedAt: '최종 업데이트: 2026-04-15',
-    backButton: '나가기',
+    backButton: '뒤로가기',
     section1Title: '1. 수집하는 개인정보 항목',
     section1Body:
       '서비스는 회원가입 및 기능 제공을 위해 이메일, 닉네임, 계정 식별자, 프로필 이미지 선택값, 로그인 세션 정보(접속 IP, User-Agent, 토큰 세션 정보)를 수집할 수 있습니다.',
@@ -107,7 +107,7 @@ HomePage: {
   termsPage: {
     title: '이용약관',
     effectiveDate: '시행일: 2026-04-15',
-    backButton: '나가기',
+    backButton: '뒤로가기',
     section1Title: '1. 목적',
     section1Body:
       '본 약관은 Pong 서비스의 이용 조건, 권리와 의무, 책임 사항을 정하는 것을 목적으로 합니다.',
@@ -132,10 +132,17 @@ HomePage: {
   },
 
   errors: {
-    USER_NOT_FOUND: "사용자를 찾을 수 없습니다.",
-    INVALID_PASSWORD: "비밀번호가 틀렸습니다.",
-    INVALID_EMAIL_FORMAT: "아이디는 영문 또는 숫자 1~20자로 입력해 주세요. (공백·특수문자 불가)",
-    USER_ALREADY_EXISTS: "이미 가입된 이메일입니다.",
+    USER_NOT_FOUND: "아이디 또는 비밀번호가 올바르지 않습니다.",
+    INVALID_PASSWORD: "아이디 또는 비밀번호가 올바르지 않습니다.",
+    ID_REQUIRED: "아이디를 입력해 주세요.",
+    PASSWORD_REQUIRED: "비밀번호를 입력해 주세요.",
+    CONFIRM_PASSWORD_REQUIRED: "비밀번호 확인을 입력해 주세요.",
+    INVALID_PASSWORD_FORMAT: "비밀번호가 틀렸습니다.",
+    INVALID_ID_FORMAT: "사용할 수 없는 아이디 입니다. 1~20자 영어+숫자조합만 사용가능합니다.",
+    INVALID_NICKNAME_FORMAT: "사용할 수 없는 닉네임입니다. 1~20자 영어+숫자조합만 사용가능합니다.",
+    USER_ALREADY_EXISTS: "이미 가입된 아이디입니다.",
+    NICKNAME_ALREADY_EXISTS: "이미 사용 중인 닉네임입니다.",
+    USER_PROFILE_INIT_FAILED: "회원가입은 되었지만 프로필 생성에 실패했습니다. 다시 시도해 주세요.",
     SERVER_ERROR: "서버 오류가 발생했습니다.",
     CANNOT_ADD_SELF: "자기 자신을 친구로 추가할 수 없습니다.",
     ALREADY_FRIENDS_OR_REQUESTED: "이미 친구이거나 요청이 진행 중입니다.",

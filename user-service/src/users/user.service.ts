@@ -18,11 +18,21 @@ export class UserService {
     {
       if ( typeof nickname !== 'string' || nickname.trim() === '' || !isNicknameAllowed(nickname) )
       { throw new BadRequestException('NICKNAME_NOT_ALLOWED'); }
+
+      const normalizedNickname = nickname.trim();
+      const existingNickname = await this.userRepository.findOne({
+        where: { nickname: normalizedNickname },
+      });
+      if (existingNickname) {
+        throw new BadRequestException('NICKNAME_ALREADY_EXISTS');
+      }
+
       const newUser = this.userRepository.create({
       userId: id, // 전달받은 UUID
       email: email,
-      nickname: nickname.trim(),
+      nickname: normalizedNickname,
       userPhoto: 1, 
+      role: "normal",
       });
 
       console.log('유저 db생성');
@@ -58,7 +68,14 @@ export class UserService {
     if (typeof data.nickname !== 'string' || data.nickname.trim() === '' || !isNicknameAllowed(data.nickname)) {
       throw new BadRequestException('NICKNAME_NOT_ALLOWED');
     }
-    data.nickname = data.nickname.trim();
+    const normalizedNickname = data.nickname.trim();
+    const existingNickname = await this.userRepository.findOne({
+      where: { nickname: normalizedNickname },
+    });
+    if (existingNickname && existingNickname.userId !== user.userId) {
+      throw new BadRequestException('NICKNAME_ALREADY_EXISTS');
+    }
+    data.nickname = normalizedNickname;
     }
 
     // 2. DB 업데이트 (TypeORM 문법에 맞게 수정)

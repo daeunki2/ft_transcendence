@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 
 export interface UserType {
   userId: string;
-  email: string;
+  id: string;
   nickname: string;
   userPhoto: number;
 }

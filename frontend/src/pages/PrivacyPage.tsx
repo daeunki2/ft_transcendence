@@ -6,13 +6,12 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 13:42:48 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/15 13:42:50 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/20 16:43:37 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import PageContainer from '../components/ui/PageContainer';
 import TopControls from '../components/ui/TopControls';
-import FooterLinks from '../components/common/FooterLinks';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useTheme } from '../theme/useTheme';
@@ -36,7 +35,7 @@ function PrivacyPage() {
   const navigate = useNavigate();
 
   return (
-    <PageContainer header={<TopControls />} footer={<FooterLinks />}>
+    <PageContainer header={<TopControls />}>
       <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
         <Card>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>

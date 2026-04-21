@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:49 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/05 23:00:35 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/20 16:53:02 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ function LoginPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
 
-const { email, setEmail, password, setPassword, handleLogin, isLoading,errorMsg,setErrorMsg } = useLogin();
+const { id, setId, password, setPassword, handleLogin, isLoading,errorMsg,setErrorMsg } = useLogin();
 
   return (
     <PageContainer
@@ -98,10 +98,10 @@ const { email, setEmail, password, setPassword, handleLogin, isLoading,errorMsg,
               }}
             >
               <Input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder={messages.login.email}
+                type="Id"
+                value={id}
+                onChange={(event) => setId(event.target.value)}
+                placeholder={messages.login.id}
               />
 
               <Input

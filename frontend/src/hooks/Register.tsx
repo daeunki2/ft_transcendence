@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:06 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/15 14:26:21 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/20 16:53:41 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ export const useRegister = () => {
   const navigate = useNavigate();
   const { messages } = useI18n();
 
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [nick, setNick] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,6 +28,28 @@ export const useRegister = () => {
 const [alertMsg, setAlertMsg] = useState<string | null>(null);
   
 const handleRegister = async () => {
+    const trimmedId = id.trim();
+    const trimmedNick = nick.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
+    if (!trimmedId) {
+      setAlertMsg(messages.errors.ID_REQUIRED);
+      return;
+    }
+    if (!trimmedNick) {
+      setAlertMsg(messages.errors.NICKNAME_REQUIRED);
+      return;
+    }
+    if (!trimmedPassword) {
+      setAlertMsg(messages.errors.PASSWORD_REQUIRED);
+      return;
+    }
+    if (!trimmedConfirmPassword) {
+      setAlertMsg(messages.errors.CONFIRM_PASSWORD_REQUIRED);
+      return;
+    }
+
     if (password !== confirmPassword) {
       //alert("비밀번호가 일치하지 않습니다.");
     setAlertMsg(messages.errors?.INVALID_PASSWORD);
@@ -35,7 +57,7 @@ const handleRegister = async () => {
     }
     setIsLoading(true);
     try {
-    	const result = await authService.signup({ email, password, nick });
+    	const result = await authService.signup({ id: trimmedId, password, nick: trimmedNick });
 
 	      if (result.success) {
         //alert("회원가입 성공! 로그인해 주세요.");
@@ -58,8 +80,8 @@ const handleRegister = async () => {
   };
 
   return {
-    email,
-    setEmail,
+    id,
+    setId,
     password,
     setPassword,
     nick,

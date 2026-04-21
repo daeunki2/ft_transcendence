@@ -13,8 +13,9 @@ import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from './redis/redis.module';
 import { isNicknameAllowed } from './utils/nickname-filter'; // 금칙어
 
-const emailRegex = /^[A-Za-z0-9]{1,20}$/;       // 1~20자, 영어+숫자 아이디로 <script>alert("해킹")</script> 이런거 넣는거 방지
+const idRegex = /^[A-Za-z0-9]{1,20}$/;       // 1~20자, 영어+숫자 아이디로 <script>alert("해킹")</script> 이런거 넣는거 방지
 const passwordRegex = /^[A-Za-z0-9]{4,32}$/;   // 4~32자, 영어+숫자 
+const nicknameRegex = /^[A-Za-z0-9]{1,20}$/;
 
 type LoginContext = {
   userAgent?: string;
@@ -29,7 +30,7 @@ type LoginResult =
       refreshToken: string;
       accessTokenMaxAgeMs: number;
       refreshTokenMaxAgeMs: number;
-      user: { id: string; email: string };
+      user: { id: string };
     }
   | {
       success: false;
@@ -38,7 +39,7 @@ type LoginResult =
 
 @Injectable()
 export class AuthService {
-  private readonly defaultAccessTtl = '1m'; //15분
+  private readonly defaultAccessTtl = '15m'; //15분
   private readonly defaultRefreshTtl = '7d'; //7일
   private readonly defaultAccessTtlMs = 15 * 60 * 1000;
   private readonly defaultRefreshTtlMs = 7 * 24 * 60 * 60 * 1000;
@@ -56,28 +57,32 @@ export class AuthService {
   ) {}
 
   async signUp(userData: any) {
-    const { email, password, nick } = userData;
+    const { id, password, nick } = userData;
 
-    if (!emailRegex.test(email)) {
-      return { success: false, message: 'INVALID_EMAIL_FORMAT' };
+    if (!idRegex.test(id)) {
+      return { success: false, message: 'INVALID_ID_FORMAT' };
     }
     if (!passwordRegex.test(password)) {
       return { success: false, message: 'INVALID_PASSWORD_FORMAT' };
     }
+    if (!nicknameRegex.test(nick)) {
+      return { success: false, message: 'INVALID_NICKNAME_FORMAT' };
+    }
+
     if (typeof nick !== 'string' || nick.trim() === '' || !isNicknameAllowed(nick)) {
     return { success: false, message: 'NICKNAME_NOT_ALLOWED' };
     }
 
-    const existingUser = await this.userRepository.findOne({where: {email}})
-    
-    if (existingUser)
+    const existingID = await this.userRepository.findOne({where: { loginId: id }})
+
+    if (existingID)
       return { success: false, message: 'USER_ALREADY_EXISTS' };
-    
+
     const saltOrRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 
     const newUser = this.userRepository.create({
-      email: email,
+      loginId: id,
       password: hashedPassword,
     //  refresh_token: null, 테이블을 따로 두어서 이제는 필요 없음
     });
@@ -89,40 +94,45 @@ export class AuthService {
         this.httpService.post('http://user-service:4001/init', // 유저서비스 쪽에 초기화 요청 보냄. 
         {
           id: savedUser.id,
-          email: email,
+          loginId: id,
+          email: id,
           nickname: nick,
         }),
       );
     } catch (error: any) {
       // user-service init이 실패하면 auth 레코드를 롤백해 데이터 불일치를 방지
       await this.userRepository.delete({ id: savedUser.id });
+      const upstreamMessage = error.response?.data?.message;
       console.error(
         '[signUp]User 서비스 초기화 실패:',
         error.response?.data || error.message,
       );
+      if (typeof upstreamMessage === 'string' && upstreamMessage.length > 0) {
+        return { success: false, message: upstreamMessage };
+      }
       return { success: false, message: 'USER_PROFILE_INIT_FAILED' };
     }
 	  return { success: true, message: 'SIGNUP_SUCCESS' };
   }
 
   async login(loginData: any, context?: LoginContext): Promise<LoginResult> {
-    const { email, password } = loginData;
+    const { id, password } = loginData;
 
-    if (!emailRegex.test(email)) {
-      return { success: false, message: 'INVALID_EMAIL_FORMAT' };
+    if (!idRegex.test(id)) {
+      return { success: false, message: 'INVALID_ID_FORMAT' };
     }
     if (!passwordRegex.test(password)) {
       return { success: false, message: 'INVALID_PASSWORD_FORMAT' };
     }
 
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { loginId: id } });
   
     if (!user)
       return { success: false, message: 'USER_NOT_FOUND' };
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
-      const payload = { sub: user.id, email: user.email }; // 토큰안에 들어갈 식별자
+      const payload = { sub: user.id, id: user.loginId }; // 토큰안에 들어갈 식별자
       const accessTtl = this.getAccessTokenTtl();
       const refreshTtl = this.getRefreshTokenTtl();
       const accessTokenMaxAgeMs = this.parseTtlToMs(accessTtl, this.defaultAccessTtlMs);
@@ -151,8 +161,7 @@ export class AuthService {
         accessTokenMaxAgeMs,
         refreshTokenMaxAgeMs,
         user: {
-          id: user.id,
-          email: user.email,
+          id: user.loginId,
         },
       };
     }
@@ -175,7 +184,7 @@ export class AuthService {
     }
 
     try {
-      this.jwtService.verify<{ sub: string; email?: string }>(refreshToken);
+      this.jwtService.verify<{ sub: string; id?: string }>(refreshToken);
       console.log('[인증서비스] 리프레시 토큰 서명 검증 성공');
     } catch (error) {
       console.log('[인증서비스] 리프레시 토큰 서명 검증 실패');
@@ -212,11 +221,11 @@ export class AuthService {
     const refreshTokenMaxAgeMs = this.parseTtlToMs(refreshTtl, this.defaultRefreshTtlMs);
 
     const newAccessToken = this.jwtService.sign(
-      { sub: user.id, email: user.email },
+      { sub: user.id, id: user.loginId },
       { expiresIn: accessTokenMaxAgeMs / 1000 },
     );
     const newRefreshToken = this.jwtService.sign(
-      { sub: user.id, email: user.email },
+      { sub: user.id, id: user.loginId },
       { expiresIn: refreshTokenMaxAgeMs / 1000 },
     );
     console.log('[인증서비스] 새 액세스/리프레시 토큰 발급 완료');
@@ -238,8 +247,7 @@ export class AuthService {
       accessTokenMaxAgeMs,
       refreshTokenMaxAgeMs,
       user: {
-        id: user.id,
-        email: user.email,
+        id: user.loginId,
       },
     };
   }
