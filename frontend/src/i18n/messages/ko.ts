@@ -69,7 +69,7 @@ HomePage: {
     send: '전송',
   },
   mySpace: {
-    title: '마이스페이스',
+    title: "{userId}님의 스페이스",
     editAvatar: '아바타 수정',
     selectAvatar: '아바타 선택',
     nickname: '닉네임',

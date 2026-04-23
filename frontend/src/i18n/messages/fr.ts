@@ -67,7 +67,7 @@ HomePage: {
     send: 'Envoyer',
   },
   mySpace: {
-    title: 'Mon Espace',
+    title: "Espace de {userId}",
     editAvatar: 'Changer l\'avatar',
     selectAvatar: 'Sélectionner un avatar',
     nickname: 'Pseudo',

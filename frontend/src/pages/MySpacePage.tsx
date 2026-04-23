@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/10 18:15:09 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/23 21:29:05 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ export default function MySpacePage() {
     return (
       <PageContainer header={<Navbar />} footer={<FooterLinks />}>
         <div style={{ textAlign: 'center', padding: '50px', color: theme.colors.text }}>
+          Loading...
         </div>
       </PageContainer>
     );
@@ -50,6 +51,10 @@ export default function MySpacePage() {
     // 여기서 유저 정보 업데이트 로직 실행
     setIsModalOpen(false);
   };
+
+  const pageTitle = messages.mySpace?.title && user.nickname
+    ? messages.mySpace.title.replace('{userId}', user.nickname) 
+    : "My Space";
 
   return (
     <PageContainer
@@ -67,7 +72,7 @@ export default function MySpacePage() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: '32px', color: theme.colors.text, textAlign: 'center' }}>
-          {messages.mySpace.title}
+          {pageTitle}
         </h1>
 
         {/* 프로필 카드 - 아바타 + 닉네임 */}
