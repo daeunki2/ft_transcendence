@@ -15,14 +15,14 @@ services:
     container_name: auth-service
     ports:
       - "4000:4000"
+    env_file:
+    - ./auth-service/.env
     volumes:
       - ./auth-service:/app
       - /app/node_modules
     depends_on:
       - auth-database
       - redis
-    env_file:
-    - ./auth-service/.env
     stdin_open: true
     tty: true
 

@@ -79,7 +79,7 @@ register: {
     },
     //프로필
     mySpace: {
-      title: 'My Space',
+      title: "{userId}'s Space",
       editAvatar: 'Edit Avatar',
       selectAvatar: 'Select Avatar',
       nickname: 'Nickname',
