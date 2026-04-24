@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/24 21:29:10 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/24 22:01:00 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
 import Alert from '../components/ui/Alert';
+import React from 'react';
 // import { useUpdateProfile } from '../hooks/UpdateProfile';
 import EditableNickname from '../components/profile/EditableNickname';
 import { useUploadPhoto } from '../hooks/useUploadPhoto';
