@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, NotFoundException, Headers, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, BadRequestException, NotFoundException, Headers, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -25,6 +25,16 @@ export class UserController {
         callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
       },
     }),
+    limits: {
+    fileSize: 2 * 1024 * 1024, // 5MB (Byte 단위)
+  },
+
+    fileFilter: (req, file, callback) => {
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        return callback(new BadRequestException('IMAGE_FORMAT_NOT_ALLOWED'), false);
+      }
+      callback(null, true);
+    },
   }))
   async uploadPhoto(
     @Req() req: Request, 

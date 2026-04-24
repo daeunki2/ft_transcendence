@@ -305,3 +305,9 @@ Commit: friend online status, request success feedback
    - 친구 아바타에 온라인/오프라인 상태 표시용 점
    - `SocialPage`에 `successMessage` state 추가, 요청 성공 직후 Alert 오픈 → 닫으면 null로 초기화,친구 요청 성공 시 성공 Alert 컴포넌트로 "친구 요청을 보냈습니다."
    
+
+ ## [2026-04-24] chanypar
+
+ Commit: myspace_upload_avatar
+
+ - 아바타 파일 업로드 

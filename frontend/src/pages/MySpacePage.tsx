@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/24 19:00:23 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/24 21:11:29 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,9 @@ import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState } from 'react';
-import { useUpdateProfile } from '../hooks/UpdateProfile';
+import React, { useState, useEffect } from 'react';
+import Alert from '../components/ui/Alert';
+// import { useUpdateProfile } from '../hooks/UpdateProfile';
 import EditableNickname from '../components/profile/EditableNickname';
 import { useUploadPhoto } from '../hooks/useUploadPhoto';
 
@@ -28,10 +29,10 @@ export default function MySpacePage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
   const { user } = useAuth();
-  const { updateProfile } = useUpdateProfile();
-  const { uploadPhoto, isProcessing } = useUploadPhoto();
+  // const { updateProfile } = useUpdateProfile();
+  const { uploadPhoto, isProcessing, errorMsg, setErrorMsg } = useUploadPhoto();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
@@ -66,6 +67,14 @@ export default function MySpacePage() {
       header={<Navbar />}
       footer={<FooterLinks />}
     >
+
+     <Alert 
+      open={!!errorMsg} 
+      title={pageTitle} // 혹은 '알림' 같은 적절한 타이틀
+      message={errorMsg || ''} 
+      confirmText={messages.result?.false || "OK"} 
+      onClose={() => setErrorMsg(null)} 
+      />
       <div
         style={{
           width: '100%',

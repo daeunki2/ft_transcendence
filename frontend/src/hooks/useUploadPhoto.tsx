@@ -1,15 +1,24 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUpdateProfile } from './UpdateProfile';
-import { userService } from '../services/userService'; // 🟢 서비스 임포트
+import { userService } from '../services/userService';
+import { useI18n } from '../i18n/useI18n';
 
 export function useUploadPhoto() {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const { updateProfile, isUpdating: isProfileUpdating } = useUpdateProfile();
   const [isUploading, setIsUploading] = useState(false);
+  const { messages } = useI18n(); //언어 추가
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const uploadPhoto = async (file: File) => {
     if (!file || !user) return;
+
+    const maxSize = 2 * 1024 * 1024; // 5MB를 Byte 단위로 계산
+    if (file.size > maxSize) {
+      setErrorMsg(messages.errors.TOO_BIG_FILE);
+      return; // 서버로 보내지 않고 여기서 중단
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -24,11 +33,12 @@ export function useUploadPhoto() {
         await updateProfile({ userPhoto: response.url });
 		return response.url;
       } else {
-        alert("업로드 실패: " + (response?.message || "알 수 없는 오류"));
+        setErrorMsg(messages.errors.IMAGE_FORMAT_NOT_ALLOWED);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload Error:", error);
-      alert("서버 통신 중 오류가 발생했습니다.");
+      const serverError = error.response?.data?.message || messages.errors?.SERVER_ERROR;
+      setErrorMsg(serverError);
     } finally {
       setIsUploading(false);
     }
@@ -36,6 +46,8 @@ export function useUploadPhoto() {
 
   return { 
     uploadPhoto, 
-    isProcessing: isUploading || isProfileUpdating 
+    isProcessing: isUploading || isProfileUpdating,
+    errorMsg, 
+    setErrorMsg
   };
 }

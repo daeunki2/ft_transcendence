@@ -164,6 +164,8 @@ register: {
     NICKNAME_REQUIRED: "Please enter a nickname.",
     NICKNAME_NOT_ALLOWED: "This nickname is not allowed.",
     SESSION_EXPIRED: "Your session has expired. Please log in again.",
+    IMAGE_FORMAT_NOT_ALLOWED: "This image format is not allowed",
+    TOO_BIG_FILE:"Too big file. (5MB max)",
   },
   result: {
     success: "Success",
