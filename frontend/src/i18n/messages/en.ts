@@ -82,6 +82,7 @@ register: {
       title: "{userId}'s Space",
       editAvatar: 'Edit Avatar',
       selectAvatar: 'Select Avatar',
+      submitting: 'Changing...',
       nickname: 'Nickname',
       nicknamePlaceholder: 'Enter your nickname',
       save: 'Save',

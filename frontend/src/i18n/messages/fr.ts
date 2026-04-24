@@ -70,6 +70,7 @@ HomePage: {
     title: "Espace de {userId}",
     editAvatar: 'Changer l\'avatar',
     selectAvatar: 'Sélectionner un avatar',
+    submitting: 'Changement en cours...',
     nickname: 'Pseudo',
     nicknamePlaceholder: 'Entrez votre pseudo',
     save: 'Enregistrer',

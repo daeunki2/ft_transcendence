@@ -1,5 +1,8 @@
-import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, NotFoundException, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, NotFoundException, Headers, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UserService } from './user.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller()
 export class UserController {
@@ -13,8 +16,27 @@ export class UserController {
     return raw;
   }
 
-  @Post('init') // auth-service가 호출하는 경로
+  @Post('uploadPhoto')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadPhoto(
+    @Req() req: Request, 
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const userId = this.getCurrentUserId(req);
+    
+    // 비즈니스 로직은 서비스로 위임
+    return await this.userService.handleFileUpload(userId, file);
+  }
 
+  @Post('init') // auth-service가 호출하는 경로
   async initializeUser(@Body() data: { id: string; email: string; nickname: string }) {
     const user = await this.userService.createUserProfile(data.id, data.email, data.nickname);
     return {
@@ -59,7 +81,7 @@ export class UserController {
   @Patch('me')
   async updateProfile(
     @Req() req: Request,
-    @Body() data: { userPhoto?: number; nickname?: string }
+    @Body() data: { userPhoto?: string; nickname?: string }
   ) {
     const currentUserId = this.getCurrentUserId(req);
 
