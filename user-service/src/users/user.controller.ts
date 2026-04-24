@@ -26,7 +26,7 @@ export class UserController {
       },
     }),
     limits: {
-    fileSize: 2 * 1024 * 1024, // 5MB (Byte 단위)
+    fileSize: 5 * 1024 * 1024, // 5MB (Byte 단위)
   },
 
     fileFilter: (req, file, callback) => {

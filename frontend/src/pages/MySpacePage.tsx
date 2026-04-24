@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/24 21:11:29 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/24 21:29:10 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState, useEffect } from 'react';
 import Alert from '../components/ui/Alert';
 // import { useUpdateProfile } from '../hooks/UpdateProfile';
 import EditableNickname from '../components/profile/EditableNickname';
@@ -51,9 +50,8 @@ export default function MySpacePage() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const result = await uploadPhoto(file);
+      await uploadPhoto(file);
       // 선택 후 input 초기화 (같은 파일 다시 올릴 때를 대비)
-      console.log('🚀 업로드 결과:', result);
       e.target.value = '';
     }
   };

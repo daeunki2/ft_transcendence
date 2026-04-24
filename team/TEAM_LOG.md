@@ -310,4 +310,17 @@ Commit: friend online status, request success feedback
 
  Commit: myspace_upload_avatar
 
- - 아바타 파일 업로드 
+### what
+ - 아바타 파일 업로드 추가 MySpacePage.tsx 에서 아바타 모달 완전히 제거 (일단 SocialPage에서 아바타 모달을 참조하고 있기에 삭제는 아직 안함. friend-service 수정 후 삭제)
+ - user-service entity에 userPhoto : number에서 string으로 수정
+ - userPhoto에 user-service/uploads안에 사진주소 링크 (ex: http://localhost:4001/uploads/default.jpg), 로컬 스토리지에 저장
+ - 처음생성시, default 사진 들어가 있음
+ - 파일 크기는 5MB로 제한, 형식은 jpg,jpeg,png,gif로 제한. 서버부하를 막기 위해 파일 크기는 프론트에서도 확인.
+ - 에러 메시지 추가
+
+ - 흐름도: `MySpacePage.tsx(uploadPhoto) -> useUploadPhoto.tsx(apiClient 호출로 백 연결) -> user.controller.ts(@Post('uploadPhoto')로 받은 뒤, 형식 및 크기 확인) -> user-service.ts(handleFileUpload에서 파일 접근 url생성 후 유저 디비 업데이트 위해 updateProfile호출) `
+
+ ### 추가 및 알게된 내용
+
+ - apiClient에 formData전송로직 추가 (파일 전송은 JSON형식이 아니라 FormData형식으로 하는 게 효율적)
+ - user-service 내에서 formData형식을 읽기 위한 Multer 추가 (바이너리 데이터를 읽게 함)

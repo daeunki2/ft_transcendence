@@ -14,7 +14,7 @@ export function useUploadPhoto() {
   const uploadPhoto = async (file: File) => {
     if (!file || !user) return;
 
-    const maxSize = 2 * 1024 * 1024; // 5MB를 Byte 단위로 계산
+    const maxSize = 5 * 1024 * 1024; // 5MB를 Byte 단위로 계산
     if (file.size > maxSize) {
       setErrorMsg(messages.errors.TOO_BIG_FILE);
       return; // 서버로 보내지 않고 여기서 중단
@@ -25,13 +25,11 @@ export function useUploadPhoto() {
 
     setIsUploading(true);
     try {
-      // 1. userService를 통해 파일 업로드 실행
       const response = await userService.uploadPhoto(formData);
 
       if (response?.success && response.url) {
-        // 2. 업로드 성공해서 받은 URL로 프로필 정보 최종 업데이트
         await updateProfile({ userPhoto: response.url });
-		return response.url;
+		    return response.url;
       } else {
         setErrorMsg(messages.errors.IMAGE_FORMAT_NOT_ALLOWED);
       }
