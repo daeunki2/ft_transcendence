@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   userService.tsx                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/10 17:23:09 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/15 14:43:34 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/24 18:54:29 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import apiClient from './apiClient';
 
 interface UpdateFields {
-  userPhoto?: number;
+  userPhoto?: string;
   nickname?: string;
 }
 
@@ -26,5 +26,9 @@ export const userService = {
 
   updateProfile: async (fields: UpdateFields) => {
 	return await apiClient('patch', 'api/users/me', fields);
+  },
+
+  uploadPhoto: async (formData: FormData) => {
+    return await apiClient('post', 'api/users/uploadPhoto', formData);
   }
 };

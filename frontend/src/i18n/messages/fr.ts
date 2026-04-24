@@ -70,6 +70,7 @@ HomePage: {
     title: "Espace de {userId}",
     editAvatar: 'Changer l\'avatar',
     selectAvatar: 'Sélectionner un avatar',
+    submitting: 'Changement en cours...',
     nickname: 'Pseudo',
     nicknamePlaceholder: 'Entrez votre pseudo',
     save: 'Enregistrer',
@@ -152,6 +153,8 @@ errors: {
     NICKNAME_REQUIRED: "Veuillez entrer un pseudo.",
     NICKNAME_NOT_ALLOWED: "Ce pseudo n'est pas autorisé.",
     SESSION_EXPIRED: "Votre session a expiré. Veuillez vous reconnecter.",
+    IMAGE_FORMAT_NOT_ALLOWED: "Le format n'est pas bon",
+    TOO_BIG_FILE:"Ficher trop grand. (5MB max)",
   },
   result: {
     success: "Succès",

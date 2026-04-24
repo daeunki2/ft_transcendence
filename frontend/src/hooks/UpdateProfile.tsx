@@ -5,7 +5,7 @@ import { useI18n } from '../i18n/useI18n';
 
 // 변경할 수 있는 필드들을 정의 (Partial을 써서 선택적으로 받음)
 interface UpdateFields {
-  userPhoto?: number;
+  userPhoto?: string;
   nickname?: string;
 }
 

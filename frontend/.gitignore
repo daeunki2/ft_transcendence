@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Photo
+user-service/uploads/*
+!user-service/uploads/default.jpg

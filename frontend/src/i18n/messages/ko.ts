@@ -72,6 +72,7 @@ HomePage: {
     title: "{userId}님의 스페이스",
     editAvatar: '아바타 수정',
     selectAvatar: '아바타 선택',
+    submitting: '변경중...',
     nickname: '닉네임',
     nicknamePlaceholder: '닉네임을 입력하세요',
     save: '저장',
@@ -154,6 +155,8 @@ HomePage: {
     NICKNAME_REQUIRED: "닉네임을 입력해 주세요.",
     NICKNAME_NOT_ALLOWED: "사용할 수 없는 닉네임입니다.",
     SESSION_EXPIRED: "세션이 만료되었습니다. 다시 로그인해 주세요.",
+    IMAGE_FORMAT_NOT_ALLOWED: "사용할 수 없는 이미지 형식입니다",
+    TOO_BIG_FILE:"파일 크기가 너무 큽니다. (최대 5MB)",
   },
   result: {
     success: "성공",

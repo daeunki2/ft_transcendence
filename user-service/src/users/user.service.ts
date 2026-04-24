@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { isNicknameAllowed } from '../utils/nickname-filter';
+import { join } from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -31,7 +33,7 @@ export class UserService {
       userId: id, // 전달받은 UUID
       email: email,
       nickname: normalizedNickname,
-      userPhoto: 1, 
+      userPhoto: "http://localhost:4001/uploads/default.jpg", 
       role: "normal",
       });
 
@@ -49,14 +51,31 @@ export class UserService {
 
   async getMe(userId: string) {
     const user = await this.userRepository.findOne({ where: { userId } });
-    if (user)
-      console.log('[getMe] DB에서 찾은 실제 userId:', user.userId);
-    else
-      console.log('[getMe] userId 못 찾음');
+    
+    if (!user) return null;
+
+    // 🟢 [추가] 사진이 default가 아닌데, 실제 파일이 서버에 없는 경우 체크
+    const DEFAULT_PHOTO_URL = "http://localhost:4001/uploads/default.jpg";
+    
+    if (user.userPhoto && user.userPhoto !== DEFAULT_PHOTO_URL) {
+      // URL에서 파일명만 추출 (예: http://.../uploads/abc.jpg -> abc.jpg)
+      const fileName = user.userPhoto.split('/').pop();
+      if (fileName) {
+      const filePath = join(process.cwd(), 'uploads', fileName);
+      
+      // 4. 파일이 실제로 없으면 DB 업데이트
+      if (!fs.existsSync(filePath)) {
+        console.log(`📂 파일 없음: ${fileName}. 기본값으로 복구.`);
+        user.userPhoto = DEFAULT_PHOTO_URL;
+        await this.userRepository.save(user);
+      }
+    }
+    }
+
     return user;
   }
 
-  async updateProfile(userId: string, data: { userPhoto?: number; nickname?: string }) {
+  async updateProfile(userId: string, data: { userPhoto?: string; nickname?: string }) {
     const user = await this.getMe(userId); 
     
     if (!user) {
@@ -89,7 +108,25 @@ export class UserService {
     );
 
     // 3. 업데이트된 최신 유저 정보를 다시 가져와서 반환
-    console.log('[updateProfile] update 성공');
+    console.log('[updateProfile] update 성공', user.userPhoto);
     return await this.userRepository.findOne({ where: { userId: user.userId } });
+  }
+
+  async handleFileUpload(userId: string, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('파일이 존재하지 않습니다.');
+    }
+
+    // 1. 파일 접근 URL 생성
+    const fileUrl = `http://localhost:4001/uploads/${file.filename}`;
+
+    // 2. DB 업데이트 (기존 updateProfile 로직 재활용 가능)
+    const updatedUser = await this.updateProfile(userId, { userPhoto: fileUrl });
+
+    return {
+      success: true,
+      url: fileUrl,
+      user: updatedUser
+    };
   }
 }

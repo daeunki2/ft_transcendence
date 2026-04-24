@@ -5,7 +5,7 @@ export interface UserType {
   userId: string;
   id: string;
   nickname: string;
-  userPhoto: number;
+  userPhoto: string;
 }
 
 export interface AuthContextType {
