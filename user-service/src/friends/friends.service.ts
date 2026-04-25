@@ -16,7 +16,7 @@ export interface FriendListItem {
   friendId: number; // friends 테이블의 row id (삭제할 때 사용)
   userId: string; // 상대방 user id (uuid)
   nickname: string; // 상대방 닉네임
-  userPhoto: number; // 상대방 아바타 번호 (1~4)
+  userPhoto: string; // 상대방 아바타 URL
 }
 
 @Injectable()
