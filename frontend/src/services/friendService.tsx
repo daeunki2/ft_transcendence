@@ -6,7 +6,7 @@ export interface FriendItem {
   friendId: number;
   userId: string;
   nickname: string;
-  userPhoto: number;
+  userPhoto: string;
   isOnline?: boolean;
 }
 
