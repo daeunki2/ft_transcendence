@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/10 18:15:09 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/24 22:01:00 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,43 +19,61 @@ import Avatar from '../components/ui/Avatar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState } from 'react';
-import AvatarModal from '../components/modals/AvatarModal';
-import { AVATAR_MAP } from '../constants/Avatars';
-import { useUpdateProfile } from '../hooks/UpdateProfile';
+import Alert from '../components/ui/Alert';
+import React from 'react';
+// import { useUpdateProfile } from '../hooks/UpdateProfile';
 import EditableNickname from '../components/profile/EditableNickname';
+import { useUploadPhoto } from '../hooks/useUploadPhoto';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
   const { user } = useAuth();
-  const { updateProfile } = useUpdateProfile();
+  // const { updateProfile } = useUpdateProfile();
+  const { uploadPhoto, isProcessing, errorMsg, setErrorMsg } = useUploadPhoto();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   
   if (!user) {
     return (
       <PageContainer header={<Navbar />} footer={<FooterLinks />}>
         <div style={{ textAlign: 'center', padding: '50px', color: theme.colors.text }}>
+          Loading...
         </div>
       </PageContainer>
     );
   }
-  const currentAvatarUrl = AVATAR_MAP[user.userPhoto];
 
-  const handleAvatarSelect = async (id: number) => {
+  const currentAvatarUrl = user.userPhoto;
 
-    await updateProfile({ userPhoto: id });
-    console.log(`Selected Avatar ID: ${id}`);
-    // 여기서 유저 정보 업데이트 로직 실행
-    setIsModalOpen(false);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadPhoto(file);
+      // 선택 후 input 초기화 (같은 파일 다시 올릴 때를 대비)
+      e.target.value = '';
+    }
   };
+
+  const pageTitle = messages.mySpace?.title && user.nickname
+    ? messages.mySpace.title.replace('{userId}', user.nickname) 
+    : "My Space";
 
   return (
     <PageContainer
       header={<Navbar />}
       footer={<FooterLinks />}
     >
+
+     <Alert 
+      open={!!errorMsg} 
+      title={pageTitle} // 혹은 '알림' 같은 적절한 타이틀
+      message={errorMsg || ''} 
+      confirmText={messages.result?.false || "OK"} 
+      onClose={() => setErrorMsg(null)} 
+      />
       <div
         style={{
           width: '100%',
@@ -67,7 +85,7 @@ export default function MySpacePage() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: '32px', color: theme.colors.text, textAlign: 'center' }}>
-          {messages.mySpace.title}
+          {pageTitle}
         </h1>
 
         {/* 프로필 카드 - 아바타 + 닉네임 */}
@@ -81,14 +99,26 @@ export default function MySpacePage() {
               padding: '16px 0',
             }}
           >
-            {/* 아바타 */}
+            {/* 아바타 표시 */}
             <Avatar size={120} url={currentAvatarUrl}/>
+            
+            {/* 아바타 수정 버튼 하나로 통일 */}
             <Button
-              onClick={() => setIsModalOpen(true)}
-              style={{ fontSize: '12px', padding: '8px 16px', minHeight: 'auto' }}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isProcessing}
+              style={{ fontSize: '14px', padding: '10px 20px' }}
             >
-              {messages.mySpace.editAvatar}
+              {isProcessing ? messages.mySpace.submitting : messages.mySpace.editAvatar}
             </Button>
+
+            {/* 숨겨진 Input */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              style={{ display: 'none' }} 
+              accept="image/*"
+            />
 
             {/* 닉네임 */}
             <div
@@ -118,12 +148,6 @@ export default function MySpacePage() {
         </Card>
       </div>
 
-      <AvatarModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSelect={handleAvatarSelect}
-        theme={theme}
-      />
     </PageContainer>
   );
 }

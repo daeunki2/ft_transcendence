@@ -16,7 +16,7 @@ export class User {
   created_at: Date;
 
   @Column()
-  userPhoto: number;
+  userPhoto: string;
 
   @Column()
   role: string;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   apiClient.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:09 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/15 16:00:10 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/24 17:47:22 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,16 +38,24 @@ const apiClient = async (method : 'get' | 'post' | 'put' | 'delete' | 'patch', u
   }
   */
 
+  const isFormData = data instanceof FormData;
+
   //재시도를 위해 요청 설정을 함수로 분리
-  const createConfig = () => ({
-    method,
-    url: `${BASE_URL}${url}`,
-    data,
-    withCredentials: true,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  const createConfig = () => {
+    const config: any = {
+      method,
+      url: `${BASE_URL}${url}`,
+      data,
+      withCredentials: true,
+      headers: {},
+    };
+
+    if (!isFormData) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
+    return config;
+  };
 
   //  공통 에러 포맷을 message로 통일
   const normalizeError = (error: any) => ({

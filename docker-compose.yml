@@ -15,16 +15,23 @@ services:
     container_name: auth-service
     ports:
       - "4000:4000"
+    env_file:
+    - ./auth-service/.env
     volumes:
       - ./auth-service:/app
       - /app/node_modules
     depends_on:
+<<<<<<< HEAD
       auth-database:
         condition: service_healthy
       redis:
         condition: service_healthy
     env_file:
     - ./auth-service/.env
+=======
+      - auth-database
+      - redis
+>>>>>>> origin/main
     stdin_open: true
     tty: true
 
