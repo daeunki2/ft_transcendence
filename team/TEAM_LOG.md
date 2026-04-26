@@ -335,3 +335,12 @@ Commit: docker health check, package-lock in user-service
 
  - apiClient에 formData전송로직 추가 (파일 전송은 JSON형식이 아니라 FormData형식으로 하는 게 효율적)
  - user-service 내에서 formData형식을 읽기 위한 Multer 추가 (바이너리 데이터를 읽게 함)
+
+  ## [2026-04-25] suna
+
+Commit: changing userphoto type
+
+### what
+
+   - userPhoto 타입을 number -> strin정정
+   - <Avatar url={AVATAR_MAP[friend.userPhoto]} /> 방식에서 매핑이 사라지고 url 받은 값 그대로 <Avatar url={friend.userPhoto} /> 프론트에서 수정
