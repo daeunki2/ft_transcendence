@@ -24,7 +24,6 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
-import { AVATAR_MAP } from '../constants/Avatars';
 
 function SocialPage() {
   const { theme } = useTheme();
@@ -195,7 +194,7 @@ function SocialPage() {
                   }}
                 >
                   <div style={{ position: 'relative', display: 'inline-block' }}>
-                    <Avatar url={AVATAR_MAP[friend.userPhoto]} />
+                    <Avatar url={friend.userPhoto} />
                     <span
                       title={friend.isOnline ? 'online' : 'offline'}
                       style={{

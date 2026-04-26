@@ -304,6 +304,17 @@ Commit: friend online status, request success feedback
    - social page에서 `isOnline?: boolean`로 서버로부터 온라인 상태 변수값 받을 수 있도록 수정
    - 친구 아바타에 온라인/오프라인 상태 표시용 점
    - `SocialPage`에 `successMessage` state 추가, 요청 성공 직후 Alert 오픈 → 닫으면 null로 초기화,친구 요청 성공 시 성공 Alert 컴포넌트로 "친구 요청을 보냈습니다."
+
+ ## [2026-04-22] suna
+
+Commit: docker health check, package-lock in user-service
+
+### what
+
+   - docker compose에 컨테이너 시작 순서 설정
+   - auth-db, user-db,redis 먼저 시작, 그 다음 auth-service,user-service컨테이너 시작, gateway 마지막, frontend는 의존성 없이 독립적으로 시작
+   - user-service에만 package-lock이 없어 package.json의 버전이 유저에 따라 다르게 설치될 수 있어, lock 파일 생성.
+   
    
 
  ## [2026-04-24] chanypar
@@ -324,3 +335,12 @@ Commit: friend online status, request success feedback
 
  - apiClient에 formData전송로직 추가 (파일 전송은 JSON형식이 아니라 FormData형식으로 하는 게 효율적)
  - user-service 내에서 formData형식을 읽기 위한 Multer 추가 (바이너리 데이터를 읽게 함)
+
+  ## [2026-04-25] suna
+
+Commit: changing userphoto type
+
+### what
+
+   - userPhoto 타입을 number -> strin정정
+   - <Avatar url={AVATAR_MAP[friend.userPhoto]} /> 방식에서 매핑이 사라지고 url 받은 값 그대로 <Avatar url={friend.userPhoto} /> 프론트에서 수정
