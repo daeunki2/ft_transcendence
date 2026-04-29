@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { RedisModule } from './redis/redis.module';
+import { HealthModule } from './health/health.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { RedisModule } from './redis/redis.module';
       signOptions: { expiresIn: '1h' }, // 토큰 유효 기간 (1시간)
     }),
     RedisModule,
+    HealthModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

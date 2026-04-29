@@ -344,3 +344,18 @@ Commit: changing userphoto type
 
    - userPhoto 타입을 number -> strin정정
    - <Avatar url={AVATAR_MAP[friend.userPhoto]} /> 방식에서 매핑이 사라지고 url 받은 값 그대로 <Avatar url={friend.userPhoto} /> 프론트에서 수정
+
+   ## [2026-04-29] suna
+
+Commit: status page
+
+### what
+
+   - health와 health\ready 엔드 포인트 생성
+   - health는 단순히 라우터, http 작동 잘되는지, health\ready는 그와 관련된 의존성까지 잘 작동하는지(db, redis) 확인
+   - uptime kuma라이브러리로 상태 페이지, localhost:3001에 할당
+   - uptime kuma에서 직접 각  서비스 http 엔드 포인트 health, health\ready url을 설정하면 검사 시작.
+   - docker build한 바로 직후 uptime kuma에서 아무 이유 없이 빨간불 들어오면서 오프라인이 된다면 재시도 횟수를 늘려 줘야 함. 빌드 될 때 상대적으로 느리게 빌드 되는 서비스를 kuma는 1번 시도 후 오프라인으로 인식 
+### 생각해볼 내용
+   - 현재 상태페이지는 호스트 서버에만 열람 가능, 이걸 공개적으로 열람 가능하도록 설정해야할지 고민
+   - 공개적으로 열람한면 보안상 조치 취해야 함.
