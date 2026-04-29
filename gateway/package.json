@@ -9,11 +9,14 @@
     "start:prod": "node dist/main"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.1.17",
     "@nestjs/core": "^11.1.17",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/jwt": "^11.0.0",
+    "@nestjs/terminus": "^11.0.0",
+    "axios": "^1.7.0",
     "cookie-parser": "^1.4.6",
     "http-proxy-middleware": "^3.0.0",
     "reflect-metadata": "^0.2.2",
