@@ -13,6 +13,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { JwtModule } from '@nestjs/jwt';
       // secret: process.env.MY_SECRET_KEY ?? 'default_secret',
       secret: process.env.MY_SECRET_KEY,
     }),
+    HealthModule,
   ],
   controllers: [],
   providers: [],

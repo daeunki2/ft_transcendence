@@ -7,6 +7,7 @@ import { Friend } from '../entities/friend.entity';
 import { FriendsModule } from '../friends/friends.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { HealthModule } from '../health/health.module';
 
 
 @Module({
@@ -34,6 +35,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
 
     FriendsModule, // 친구 기능 모듈
+    HealthModule,
   ],
   controllers: [UserController],
   providers: [UserService],
