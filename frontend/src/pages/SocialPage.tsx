@@ -95,6 +95,7 @@ function SocialPage() {
       setSuccessMessage(messages.social.requestSent);
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
@@ -106,6 +107,7 @@ function SocialPage() {
       await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
@@ -117,6 +119,7 @@ function SocialPage() {
       await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
@@ -128,6 +131,7 @@ function SocialPage() {
       await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
