@@ -47,13 +47,17 @@ export class UserController {
   }
 
   @Post('init') // auth-service가 호출하는 경로
-  async initializeUser(@Body() data: { id: string; email: string; nickname: string }) {
-    const user = await this.userService.createUserProfile(data.id, data.email, data.nickname);
+  async initializeUser(@Body() data: { id: string; loginId?: string; email?: string; nickname: string }) {
+    const loginId = data.loginId ?? data.email;
+    if (!loginId) {
+      throw new BadRequestException('LOGIN_ID_REQUIRED');
+    }
+    const user = await this.userService.createUserProfile(data.id, loginId, data.nickname);
     return {
       success: true,
       user: {
         userId: user.userId,
-        email: user.email,
+        loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
         role:user.role,
@@ -79,7 +83,7 @@ export class UserController {
       success: true,
       user: {
         userId: user.userId,
-        email: user.email,
+        loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
         role: user.role,
@@ -109,7 +113,7 @@ export class UserController {
       success: true,
       user: {
         userId: updatedUser.userId,
-        email: updatedUser.email,
+        loginId: updatedUser.loginId,
         nickname: updatedUser.nickname,
         userPhoto: updatedUser.userPhoto,
         role: updatedUser.role,

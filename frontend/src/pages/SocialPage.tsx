@@ -24,6 +24,15 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
+import { io, type Socket } from 'socket.io-client';
+
+type PresenceUpdatedPayload = {
+  userId: string;
+  internalStatus: 'OFFLINE' | 'ONLINE' | 'MATCHING' | 'IN_GAME';
+  publicStatus: 'OFFLINE' | 'ONLINE' | 'IN_GAME';
+  at: string;
+  version: 1;
+};
 
 function SocialPage() {
   const { theme } = useTheme();
@@ -75,6 +84,31 @@ function SocialPage() {
       }
     })();
   }, [refresh]);
+
+  // presence.updated 실시간 구독: 친구 목록의 상태 점을 즉시 갱신
+  useEffect(() => {
+    const socket: Socket = io('http://localhost:8000/presence', {
+      withCredentials: true,
+      transports: ['websocket'],
+    });
+
+    const handlePresenceUpdated = (event: PresenceUpdatedPayload) => {
+      setFriends((prev) =>
+        prev.map((friend) =>
+          friend.userId === event.userId
+            ? { ...friend, status: event.publicStatus }
+            : friend,
+        ),
+      );
+    };
+
+    socket.on('presence.updated', handlePresenceUpdated);
+
+    return () => {
+      socket.off('presence.updated', handlePresenceUpdated);
+      socket.disconnect();
+    };
+  }, []);
 
   // 친구 요청 보내기
   const handleSendRequest = async () => {
@@ -196,7 +230,7 @@ function SocialPage() {
                   <div style={{ position: 'relative', display: 'inline-block' }}>
                     <Avatar url={friend.userPhoto} />
                     <span
-                      title={friend.isOnline ? 'online' : 'offline'}
+                      title={friend.status === 'ONLINE' ? 'online' : friend.status === 'IN_GAME' ? 'in_game' : 'offline'}
                       style={{
                         position: 'absolute',
                         right: 0,
@@ -204,7 +238,12 @@ function SocialPage() {
                         width: '12px',
                         height: '12px',
                         borderRadius: '50%',
-                        background: friend.isOnline ? '#22c55e' : '#ef4444',
+                        background:
+                          friend.status === 'IN_GAME'
+                            ? '#f59e0b'
+                            : friend.status === 'ONLINE'
+                            ? '#22c55e'
+                            : '#ef4444',
                         border: `2px solid ${theme.colors.background}`,
                         boxSizing: 'border-box',
                       }}

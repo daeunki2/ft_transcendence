@@ -7,7 +7,7 @@ export interface FriendItem {
   userId: string;
   nickname: string;
   userPhoto: string;
-  isOnline?: boolean;
+  status?: 'OFFLINE' | 'ONLINE' | 'IN_GAME';
 }
 
 // apiClient는 에러 시 { success: false, message } 를 반환한다.

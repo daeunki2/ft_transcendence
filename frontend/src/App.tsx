@@ -20,10 +20,11 @@ import PrivacyPage from './pages/PrivacyPage';
 import SocialPage from './pages/SocialPage';
 import MySpacePage from './pages/MySpacePage';
 import { useAuthInit } from './hooks/useAuthInit';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Alert from './components/ui/Alert';
 import { useI18n } from './i18n/useI18n';
 import { useAuth } from './contexts/AuthContext';
+import { io, type Socket } from 'socket.io-client';
 
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 
@@ -33,6 +34,7 @@ function App() {
   const { user, setUser } = useAuth();
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const presenceSocketRef = useRef<Socket | null>(null);
   
   useEffect(() => {
     // 앱 진입 시 쿠키가 있다면 유저 정보를 가져오고, 가드는 이 확인 완료 후 동작
@@ -55,6 +57,32 @@ function App() {
       );
     };
   }, []);
+
+  useEffect(() => {
+    // 로그인 직후 즉시 presence 소켓을 붙여 connected 이벤트를 빠르게 올린다.
+    if (!user) {
+      presenceSocketRef.current?.disconnect();
+      presenceSocketRef.current = null;
+      return;
+    }
+
+    if (presenceSocketRef.current) {
+      return;
+    }
+
+    const socket = io('http://localhost:8000/presence', {
+      withCredentials: true,
+      transports: ['websocket'],
+    });
+    presenceSocketRef.current = socket;
+
+    return () => {
+      socket.disconnect();
+      if (presenceSocketRef.current === socket) {
+        presenceSocketRef.current = null;
+      }
+    };
+  }, [user]);
 
   const handleUnauthenticated = useCallback(() => {
     const isIntentLogout = sessionStorage.getItem('intent_logout') === '1';

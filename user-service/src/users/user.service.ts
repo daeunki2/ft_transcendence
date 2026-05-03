@@ -14,7 +14,7 @@ export class UserService {
 
   ) {}
 
-  async createUserProfile(id: string, email: string, nickname: string, )
+  async createUserProfile(id: string, loginId: string, nickname: string, )
   {
     try
     {
@@ -31,7 +31,7 @@ export class UserService {
 
       const newUser = this.userRepository.create({
       userId: id, // 전달받은 UUID
-      email: email,
+      loginId,
       nickname: normalizedNickname,
       userPhoto: "http://localhost:4001/uploads/default.jpg", 
       role: "normal",
@@ -76,6 +76,9 @@ export class UserService {
   }
 
   async updateProfile(userId: string, data: { userPhoto?: string; nickname?: string }) {
+    // 상태 기반 제한: 매칭/게임 중에는 프로필 수정(닉네임/아바타) 차단
+    await this.assertProfileEditable(userId);
+
     const user = await this.getMe(userId); 
     
     if (!user) {
@@ -128,5 +131,31 @@ export class UserService {
       url: fileUrl,
       user: updatedUser
     };
+  }
+
+
+  // 가드용 공통함수
+  private async assertProfileEditable(userId: string): Promise<void> {
+    const baseUrl =
+      process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    try {
+      const response = await fetch(`${baseUrl}/${userId}`);
+      if (!response.ok) {
+        throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
+      }
+
+      const presence = (await response.json()) as {
+        internalStatus?: 'OFFLINE' | 'ONLINE' | 'MATCHING' | 'IN_GAME';
+      };
+
+      if (presence.internalStatus === 'MATCHING' || presence.internalStatus === 'IN_GAME') {
+        throw new BadRequestException('PRESENCE_ACTION_BLOCKED');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
+    }
   }
 }

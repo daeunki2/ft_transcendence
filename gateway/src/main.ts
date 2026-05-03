@@ -80,7 +80,9 @@ async function bootstrap() {
 }
 bootstrap();
 
-function createAccessTokenMiddleware(jwtService: JwtService) // 인증로직 
+function createAccessTokenMiddleware(
+  jwtService: JwtService,
+) // 인증로직
 {
   return (req: Request, res: Response, next: NextFunction) =>
   {
@@ -104,7 +106,8 @@ function createAccessTokenMiddleware(jwtService: JwtService) // 인증로직
     try
     {
       const payload = jwtService.verify(token);
-      req.headers['x-user-id'] = String(payload.sub ?? '');
+      const userId = String(payload.sub ?? '');
+      req.headers['x-user-id'] = userId;
 
       console.log('[게이트웨이] 액세스 토큰 검증 성공', { sub: payload.sub });
       

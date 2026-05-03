@@ -136,6 +136,7 @@ errors: {
     CONFIRM_PASSWORD_REQUIRED: string;
     INVALID_PASSWORD_FORMAT: string;
     INVALID_ID_FORMAT: string;
+    ALREADY_ONLINE: string;
     INVALID_NICKNAME_FORMAT: string;
     USER_ALREADY_EXISTS: string;
     NICKNAME_ALREADY_EXISTS: string;

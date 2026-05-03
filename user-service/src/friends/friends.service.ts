@@ -5,6 +5,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +18,7 @@ export interface FriendListItem {
   userId: string; // 상대방 user id (uuid)
   nickname: string; // 상대방 닉네임
   userPhoto: string; // 상대방 아바타 URL
+  status: 'OFFLINE' | 'ONLINE' | 'IN_GAME'; // 상태 추가
 }
 
 @Injectable()
@@ -34,6 +36,9 @@ export class FriendsService {
    * - 본인/중복/이미 친구 케이스를 거른 뒤 pending row를 만든다
    */
   async sendRequest(requesterId: string, nickname: string): Promise<Friend> {
+    // 상태 기반 제한: 매칭/게임 중에는 친구 요청 불가
+    await this.assertFriendActionAllowed(requesterId);
+
     const addressee = await this.userRepo.findOne({ where: { nickname } });
     if (!addressee) {
       throw new NotFoundException('USER_NOT_FOUND');
@@ -76,15 +81,25 @@ export class FriendsService {
       .andWhere('(f.requesterId = :uid OR f.addresseeId = :uid)', { uid: userId })
       .getMany();
 
-    return rows.map((row) => {
+    const friends = rows.map((row) => {
       const other = row.requesterId === userId ? row.addressee : row.requester;
       return {
         friendId: row.id,
         userId: other.userId,
         nickname: other.nickname,
         userPhoto: other.userPhoto,
+        status: 'OFFLINE' as const,
       };
     });
+
+    const statuses = await Promise.all(
+      friends.map((friend) => this.getPublicPresenceStatus(friend.userId)),
+    );
+
+    return friends.map((friend, index) => ({
+      ...friend,
+      status: statuses[index],
+    }));
   }
 
   /**
@@ -98,11 +113,21 @@ export class FriendsService {
       .andWhere('f.addresseeId = :uid', { uid: userId })
       .getMany();
 
-    return rows.map((row) => ({
+    const requests = rows.map((row) => ({
       friendId: row.id,
       userId: row.requester.userId,
       nickname: row.requester.nickname,
       userPhoto: row.requester.userPhoto,
+      status: 'OFFLINE' as const,
+    }));
+
+    const statuses = await Promise.all(
+      requests.map((request) => this.getPublicPresenceStatus(request.userId)),
+    );
+
+    return requests.map((request, index) => ({
+      ...request,
+      status: statuses[index],
     }));
   }
 
@@ -110,6 +135,9 @@ export class FriendsService {
    * 친구 요청 수락 — 받은 사람만 수락 가능
    */
   async acceptRequest(userId: string, friendId: number): Promise<Friend> {
+    // 상태 기반 제한: 매칭/게임 중에는 친구 요청 수락 불가
+    await this.assertFriendActionAllowed(userId);
+
     const row = await this.friendRepo.findOne({ where: { id: friendId } });
     if (!row) throw new NotFoundException('REQUEST_NOT_FOUND');
     if (row.addresseeId !== userId) {
@@ -141,6 +169,9 @@ export class FriendsService {
    * 친구 삭제 — 친구 관계의 양쪽 모두 삭제 가능
    */
   async removeFriend(userId: string, friendId: number): Promise<void> {
+    // 상태 기반 제한: 매칭/게임 중에는 친구 삭제 불가
+    await this.assertFriendActionAllowed(userId);
+
     const row = await this.friendRepo.findOne({ where: { id: friendId } });
     if (!row) throw new NotFoundException('FRIEND_NOT_FOUND');
     if (row.requesterId !== userId && row.addresseeId !== userId) {
@@ -150,5 +181,49 @@ export class FriendsService {
       throw new BadRequestException('NOT_ACCEPTED_FRIENDSHIP');
     }
     await this.friendRepo.delete(row.id);
+  }
+
+  // 친구 관련 변경 액션(요청/수락/삭제) 공통 가드
+  private async assertFriendActionAllowed(userId: string): Promise<void> {
+    const baseUrl =
+      process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    try {
+      const response = await fetch(`${baseUrl}/${userId}`);
+      if (!response.ok) {
+        throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
+      }
+
+      const presence = (await response.json()) as {
+        internalStatus?: 'OFFLINE' | 'ONLINE' | 'MATCHING' | 'IN_GAME';
+      };
+
+      if (presence.internalStatus === 'MATCHING' || presence.internalStatus === 'IN_GAME') {
+        throw new BadRequestException('PRESENCE_ACTION_BLOCKED');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
+    }
+  }
+
+  private async getPublicPresenceStatus(
+    userId: string,
+  ): Promise<'OFFLINE' | 'ONLINE' | 'IN_GAME'> {
+    const baseUrl =
+      process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    try {
+      const response = await fetch(`${baseUrl}/${userId}`);
+      if (!response.ok) return 'OFFLINE';
+      const presence = (await response.json()) as {
+        publicStatus?: 'OFFLINE' | 'ONLINE' | 'IN_GAME';
+      };
+      if (presence.publicStatus === 'IN_GAME') return 'IN_GAME';
+      if (presence.publicStatus === 'ONLINE') return 'ONLINE';
+      return 'OFFLINE';
+    } catch {
+      return 'OFFLINE';
+    }
   }
 }

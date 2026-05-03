@@ -149,6 +149,7 @@ register: {
         CONFIRM_PASSWORD_REQUIRED: "Please confirm your password.",
         INVALID_PASSWORD_FORMAT: "Password must be 4-32 characters using only letters and numbers.",
         INVALID_ID_FORMAT: "ID must be 1-20 characters using only letters and numbers.",
+        ALREADY_ONLINE: "This account is already online. Please close the existing session and try again.",
         INVALID_NICKNAME_FORMAT: "Nickname must be 1-20 characters using only letters and numbers.",
 		    USER_ALREADY_EXISTS: "This ID is already registered.",
         NICKNAME_ALREADY_EXISTS: "This nickname is already in use.",

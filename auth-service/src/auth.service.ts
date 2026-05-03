@@ -95,7 +95,6 @@ export class AuthService {
         {
           id: savedUser.id,
           loginId: id,
-          email: id,
           nickname: nick,
         }),
       );
@@ -132,6 +131,13 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
+      // 상태 기반 제한: 이미 ONLINE 상태면 중복 로그인 차단
+      const effectiveState =
+        (await this.redis.get(`presence:effective:${user.id}`)) ?? 'OFFLINE';
+      if (effectiveState !== 'OFFLINE') {
+        return { success: false, message: 'ALREADY_ONLINE' };
+      }
+
       const payload = { sub: user.id, id: user.loginId }; // 토큰안에 들어갈 식별자
       const accessTtl = this.getAccessTokenTtl();
       const refreshTtl = this.getRefreshTokenTtl();
@@ -153,6 +159,7 @@ export class AuthService {
       console.log('re 토큰 저장');
 
       console.log('[login]로그인 성공');
+
       return {
         success: true,
         message: 'LOGIN_SUCCESS',
