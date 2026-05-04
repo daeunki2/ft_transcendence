@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/15 16:33:18 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/04/30 13:32:01 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,24 @@ async function bootstrap() {
     }),
   );
 
+  // 4. Chat Service로 토스 (주소가 /api/chat으로 시작하면 3000번으로)
+  app.use(
+    '/api/chat',
+    verifyAccessToken,
+    createProxyMiddleware({
+      target: 'http://chat-service:3000',
+      changeOrigin: true,
+      ws: true,
+      pathRewrite: { '^/api/chat': '' },
+    }),
+  );
+
   await app.listen(8000);
   console.log('API Gateway is running on http://localhost:8000');
 }
 bootstrap();
+
+
 
 function createAccessTokenMiddleware(jwtService: JwtService) // 인증로직 
 {

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   useAuthInit.tsx                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/30 13:14:46 by chanypar          #+#    #+#             */
+/*   Updated: 2026/04/30 13:14:47 by chanypar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 import { useCallback, useContext} from 'react';
 import { AuthContext } from '../contexts/AuthContext.types';
 import { userService } from '../services/userService';

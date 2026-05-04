@@ -26,8 +26,8 @@ export class ChatMessage {
   @Column('text')
   content: string;
 
-  @Column({ default: false })
-  isRead: boolean;
+  // @Column({ default: false })
+  // isRead: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

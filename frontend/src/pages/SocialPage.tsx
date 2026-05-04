@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocialPage.tsx                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 20:14:57 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/01 12:27:37 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,7 @@ function SocialPage() {
                     {friend.nickname}
                   </span>
                   <Button
-                    onClick={() => setChatTarget(friend.nickname)}
+                    onClick={() => setChatTarget({ id: friend.userId, nickname: friend.nickname })}
                     style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
                   >
                     {messages.social.sendMessage}
@@ -343,7 +343,9 @@ function SocialPage() {
       <ChatModal
         open={chatTarget !== null}
         onClose={() => setChatTarget(null)}
-        friendName={chatTarget ?? ''}
+        targetId={chatTarget?.id ?? ''}
+        friendName={chatTarget?.nickname ?? ''}
+        currentUserId={currentUserId}
       />
 
       <Alert

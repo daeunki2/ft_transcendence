@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 18:50:46 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/29 18:59:42 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/30 12:58:05 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ export class ChatRepository {
   async findUnreadMessages(userId: string): Promise<ChatMessage[]> {
     try {
       const messages = await this.repo.find({
-        where: { receiverId: userId, isRead: false },
+        where: { receiverId: userId},
+        // where: { receiverId: userId, isRead: false },
         order: { createdAt: 'ASC' }, // 오래된 메시지부터 순서대로
       });
       
@@ -61,17 +62,17 @@ export class ChatRepository {
   /**
    * 특정 유저의 메시지들을 '읽음' 상태로 업데이트합니다.
    */
-  async markAsRead(receiverId: string, senderId: string): Promise<void> {
-    try {
-      await this.repo.update(
-        { receiverId, senderId, isRead: false },
-        { isRead: true }
-      );
-      console.log(`[Repository] ${senderId}가 보낸 메시지를 ${receiverId}가 읽음 처리함`);
-    } catch (error) {
-      console.error(`[Repository Error] 읽음 처리 실패: ${error.message}`);
-    }
-  }
+  // async markAsRead(receiverId: string, senderId: string): Promise<void> {
+  //   try {
+  //     await this.repo.update(
+  //       { receiverId, senderId, isRead: false },
+  //       { isRead: true }
+  //     );
+  //     console.log(`[Repository] ${senderId}가 보낸 메시지를 ${receiverId}가 읽음 처리함`);
+  //   } catch (error) {
+  //     console.error(`[Repository Error] 읽음 처리 실패: ${error.message}`);
+  //   }
+  // }
 
   /**
  * 두 유저 간의 1:1 대화 내역 조회

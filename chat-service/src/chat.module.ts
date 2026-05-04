@@ -1,31 +1,46 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   chat.module.ts                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/29 18:50:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/29 18:50:40 by chanypar         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { ChatRepository } from './repository/chat.repository';
-import { ChatMessage } from './entities/chat.entity'; // 엔티티 경로 확인!
+import { ChatGateway } from './chat.gateway';
+import { ChatMessage } from './entities/chat.entity'; // 엔티티 확인!
+import { ConfigModule } from '@nestjs/config';
+import { ChatController } from './chat.controller';
+import Redis from 'ioredis';
 
 @Module({
   imports: [
-    // 1. 엔티티를 TypeORM에 등록
-    TypeOrmModule.forFeature([ChatMessage])
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    // 1. 여기서 DB 연결 설정을 직접 합니다 (forRoot)
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'chat-database', // 채팅 전용 DB 호스트
+      port: 5432,
+      username: process.env.CHATDB_USER,
+      password: process.env.CHATDB_PASSWORD,
+      database: 'chat-db',
+      entities: [ChatMessage], 
+      synchronize: true,
+    }),
+
+    // 2. Repository 사용을 위해 엔티티 등록 (forFeature)
+    TypeOrmModule.forFeature([ChatMessage]),
   ],
+  controllers: [ChatController], // 컨트롤러 있으면 추가
   providers: [
-    ChatGateway, 
+	ChatGateway,
     ChatService, 
-    ChatRepository // 2. 리포지토리를 프로바이더로 등록
+    ChatRepository,
+    {
+      provide: 'REDIS_CLIENT',
+      useFactory: () => {
+        return new Redis({
+          host: 'redis', // redis 서비스 이름
+          port: 6379,
+        });
+      },
+    },
   ],
 })
 export class ChatModule {}

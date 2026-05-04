@@ -71,7 +71,7 @@ export class UserService {
       }
     }
     }
-
+    console.log('[getme] 성공', user.nickname);
     return user;
   }
 

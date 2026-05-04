@@ -6,21 +6,21 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 18:45:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/29 18:58:40 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/04/30 12:57:20 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { InjectRedis } from '@nest-modules/ioredis'; // 환경에 따라 다를 수 있음
-import { ChatRepository } from './entity/chat.entity';
+import { ChatRepository } from './repository/chat.repository';
 
 @Injectable()
 export class ChatService {
   constructor(
-    private readonly redis: Redis,
+    //private readonly redis: Redis,
+	@Inject('REDIS_CLIENT') private readonly redis: Redis, // 이 부분!
     private readonly chatRepo: ChatRepository,
   ) {}
 
@@ -34,7 +34,7 @@ export class ChatService {
         senderId: from,
         receiverId: to,
         content: message,
-        isRead: false,
+        // isRead: false,
       });
 
       console.log(`[Service] 메시지 DB 저장 성공 (ID: ${chatLog.id})`);
