@@ -13,14 +13,24 @@
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Button from '../components/ui/Button';
+import TextButton from '../components/ui/TextButton';
 import TopControls from '../components/ui/TopControls';
 import FooterLinks from '../components/common/FooterLinks';
 import Logo from '../components/common/Logo';
 import { useI18n } from '../i18n/useI18n';
+import { useTheme } from '../theme/useTheme';
+import { useAuth } from '../contexts/AuthContext';
 
 function LandingPage() {
   const { messages } = useI18n();
+  const { theme } = useTheme();
   const navigate = useNavigate();
+  const { enterGuestMode } = useAuth();
+
+  const handleGuestEnter = () => {
+    enterGuestMode();
+    navigate('/home');
+  };
 
   return (
     <PageContainer
@@ -62,6 +72,18 @@ function LandingPage() {
           <Button onClick={() => navigate('/register')}>
             {messages.landing.register}
           </Button>
+        </div>
+
+        <div
+          style={{
+            fontSize: '14px',
+            color: theme.colors.textMuted,
+          }}
+        >
+          {messages.guest.entryText}
+          <TextButton onClick={handleGuestEnter}>
+            {messages.guest.entryLink}
+          </TextButton>
         </div>
       </div>
     </PageContainer>

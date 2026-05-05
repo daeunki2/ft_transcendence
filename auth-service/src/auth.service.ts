@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { RefreshSession } from './entities/refresh-session.entity';
-import { createHash } from 'crypto';
+import { createHash, randomBytes, randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from './redis/redis.module';
@@ -37,12 +37,24 @@ type LoginResult =
       message: string;
     };
 
+// 게스트는 refresh token 이 없어서 LoginResult 와 모양이 다름. 만료되면 그냥 새 게스트로 다시 발급.
+type GuestResult = {
+  success: true;
+  message: string;
+  accessToken: string;
+  accessTokenMaxAgeMs: number;
+  user: { id: string; isGuest: true };
+};
+
 @Injectable()
 export class AuthService {
   private readonly defaultAccessTtl = '15m'; //15분
   private readonly defaultRefreshTtl = '7d'; //7일
   private readonly defaultAccessTtlMs = 15 * 60 * 1000;
   private readonly defaultRefreshTtlMs = 7 * 24 * 60 * 60 * 1000;
+  // 게스트는 refresh 가 없으므로 access 자체를 좀 더 길게 — 한 세션 분량(2h).
+  private readonly defaultGuestTtl = '2h';
+  private readonly defaultGuestTtlMs = 2 * 60 * 60 * 1000;
 
   constructor(
     @InjectRepository(Auth)
@@ -272,12 +284,52 @@ export class AuthService {
     };
   }
 
+  // 게스트 토큰 발급. DB 에 row 를 만들지 않고 JWT 만 서명해서 돌려준다.
+  // - sub: `guest_<uuid>` (일반 유저의 numeric id 와 충돌하지 않도록 prefix)
+  // - id: 화면에 표시할 랜덤 닉네임 (Guest_ + 6 hex)
+  // - isGuest: true (다운스트림 가드/매칭 서비스가 권한 분기에 사용)
+  // refresh token 은 발급하지 않는다 — 만료되면 클라가 다시 /guest 를 호출해 새 게스트로 진입.
+  guest(): GuestResult {
+    const guestSub = `guest_${randomUUID()}`;
+    const nickname = `Guest_${randomBytes(3).toString('hex')}`; // 6 hex chars
+
+    const ttl = this.getGuestTokenTtl();
+    const accessTokenMaxAgeMs = this.parseTtlToMs(ttl, this.defaultGuestTtlMs);
+
+    const payload = {
+      sub: guestSub,
+      id: nickname,
+      isGuest: true,
+    };
+
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: accessTokenMaxAgeMs / 1000,
+    });
+
+    console.log('[guest] 게스트 토큰 발급', { sub: guestSub, nickname });
+
+    return {
+      success: true,
+      message: 'GUEST_ISSUED',
+      accessToken,
+      accessTokenMaxAgeMs,
+      user: {
+        id: nickname,
+        isGuest: true,
+      },
+    };
+  }
+
   private getAccessTokenTtl(): string {
     return this.configService.get<string>('ACCESS_TOKEN_TTL') ?? this.defaultAccessTtl;
   }
 
   private getRefreshTokenTtl(): string {
     return this.configService.get<string>('REFRESH_TOKEN_TTL') ?? this.defaultRefreshTtl;
+  }
+
+  private getGuestTokenTtl(): string {
+    return this.configService.get<string>('GUEST_TOKEN_TTL') ?? this.defaultGuestTtl;
   }
 
   private parseTtlToMs(ttl: string, fallback: number): number {

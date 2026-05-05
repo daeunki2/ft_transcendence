@@ -17,9 +17,16 @@ import { AuthContext } from '../contexts/AuthContext.types';
 
 export const useLogout = () => {
   const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext)!; 
+  const { setUser, isGuest, exitGuestMode } = useContext(AuthContext)!;
 
   const handleLogout = async () => {
+    // 게스트는 백엔드 세션이 없으므로 logout API 호출을 스킵한다.
+    if (isGuest) {
+      exitGuestMode();
+      navigate('/login');
+      return;
+    }
+
     try {
       await authService.logout();
       // 의도된 로그아웃은 세션만료 경고창과 구분하기 위해 플래그를 남긴다.

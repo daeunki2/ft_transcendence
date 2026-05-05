@@ -11,9 +11,21 @@
 /* ************************************************************************** */
 
 import axios from 'axios';
+import {
+  isUserServiceDown,
+  markServiceDown,
+} from './serviceHealthStore';
 
 const BASE_URL = 'http://localhost:8000/'; // gateway 주소
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
+const USER_SERVICE_PATH_PREFIX = 'api/users';
+const USER_SERVICE_UNAVAILABLE_CODE = 'USER_SERVICE_UNAVAILABLE';
+
+// hook 밖에서도 동일 store를 보고 있어서 폴링 결과에 즉시 반응한다.
+const targetsUserService = (url: string) => {
+  const trimmed = url.startsWith('/') ? url.slice(1) : url;
+  return trimmed.startsWith(USER_SERVICE_PATH_PREFIX);
+};
 
 // 찬영님이 요청한 '공통 함수'
 const apiClient = async (method : 'get' | 'post' | 'put' | 'delete' | 'patch', url : string, data : any = null) => {
@@ -63,6 +75,14 @@ const apiClient = async (method : 'get' | 'post' | 'put' | 'delete' | 'patch', u
     message: error?.response?.data?.message || 'SERVER_ERROR',
   });
 
+  // user-service가 down으로 표시돼 있으면 네트워크 호출 자체를 안 하고 즉시 차단한다.
+  if (targetsUserService(url) && isUserServiceDown()) {
+    return {
+      success: false,
+      message: USER_SERVICE_UNAVAILABLE_CODE,
+    };
+  }
+
   const isSessionExpiredCode = (message: string) =>
     message === 'REFRESH_TOKEN_REQUIRED' ||
     message === 'REFRESH_TOKEN_INVALID' ||
@@ -78,6 +98,17 @@ const apiClient = async (method : 'get' | 'post' | 'put' | 'delete' | 'patch', u
   {
     const status = error?.response?.status;
     const code = error?.response?.data?.message;
+
+    // 게이트웨이가 user-service 다운을 503으로 알려주면 store에도 즉시 반영해서
+    // 다음 폴링까지 기다리지 않고 동일 화면의 후속 호출을 차단한다.
+    if (status === 503 && code === USER_SERVICE_UNAVAILABLE_CODE) {
+      markServiceDown('user');
+      window.dispatchEvent(new CustomEvent('service-health:recheck'));
+      return {
+        success: false,
+        message: USER_SERVICE_UNAVAILABLE_CODE,
+      };
+    }
 
     // Access Token 만료/부재일 때 모두 refresh 시도
     const shouldTryRefresh =

@@ -1,5 +1,6 @@
-import { Controller, Post, Body, Res, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, Res, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { JwtService } from '@nestjs/jwt';
 import * as express from 'express';
 import type { CookieOptions, Response } from 'express';
 
@@ -7,7 +8,39 @@ import type { CookieOptions, Response } from 'express';
 export class AuthController {
   private readonly isProduction = process.env.NODE_ENV === 'production';
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  // 인증 검증 전용 엔드포인트.
+  // user-service 의 /me 와 분리해서, 프로필이 죽어도 인증 자체는 살아있을 수 있게 한다.
+  // (graceful degradation: hard dependency → soft dependency)
+  @Get('me')
+  me(@Req() request: express.Request) {
+    const token = request.cookies?.accessToken;
+    if (!token) {
+      throw new HttpException(
+        { success: false, message: 'ACCESS_TOKEN_REQUIRED' },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    try {
+      const payload = this.jwtService.verify(token);
+      return {
+        success: true,
+        user: {
+          userId: String(payload.sub ?? ''),
+          id: payload.id ?? '',
+        },
+      };
+    } catch {
+      throw new HttpException(
+        { success: false, message: 'ACCESS_TOKEN_INVALID' },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
 
   @Post('login')
   async login(
@@ -69,6 +102,22 @@ export class AuthController {
         maxAge: result.refreshTokenMaxAgeMs,
       });
     }
+
+    return result;
+  }
+
+  // 게스트 토큰 발급. 일반 로그인과 달리 refresh token 은 굽지 않는다(쿠키 안 세팅).
+  // 만료되면 프론트가 다시 이 엔드포인트를 호출해 새 게스트로 진입.
+  @Post('guest')
+  guest(@Res({ passthrough: true }) response: Response) {
+    const result = this.authService.guest();
+
+    const baseCookieOptions = this.getBaseCookieOptions();
+    response.cookie('accessToken', result.accessToken, {
+      ...baseCookieOptions,
+      maxAge: result.accessTokenMaxAgeMs,
+    });
+    console.log('[게스트컨트롤러] 게스트 access token 쿠키 설정 완료');
 
     return result;
   }

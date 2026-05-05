@@ -28,6 +28,13 @@ export type Messages = {
     footerText: string;
     footerLink: string;
   };
+  guest: {
+    entryText: string;
+    entryLink: string;
+    blockedTitle: string;
+    blockedBody: string;
+    disabledTooltip: string;
+  };
   register: {
     title: string;
     subtitle: string;
@@ -153,6 +160,39 @@ errors: {
     SESSION_EXPIRED: string;
     IMAGE_FORMAT_NOT_ALLOWED: string;
     TOO_BIG_FILE: string;
+    USER_SERVICE_UNAVAILABLE: string;
+  };
+  errorPage: {
+    errorCode: string;
+    retry: string;
+    goHome: string;
+    reload: string;
+    variants: {
+      notFound: {
+        status: string;
+        title: string;
+        body: string;
+        errorCode: string;
+      };
+      serverError: {
+        status: string;
+        title: string;
+        body: string;
+        errorCode: string;
+      };
+      serviceUnavailable: {
+        status: string;
+        title: string;
+        body: string;
+        errorCode: string;
+      };
+      network: {
+        status: string;
+        title: string;
+        body: string;
+        errorCode: string;
+      };
+    };
   };
   result: {
     success: string;

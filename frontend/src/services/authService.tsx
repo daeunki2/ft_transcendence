@@ -28,8 +28,14 @@ export const authService = {
     return await apiClient('post', 'api/auth/logout', {});
   },
 
-  // 게이트웨이가 at만료일때 리프레시 
+  // 게이트웨이가 at만료일때 리프레시
   refresh: async () => {
     return await apiClient('post', 'api/auth/refresh', {});
+  },
+
+  // 인증 검증 전용: JWT 만 검증, user-service 의존 없음.
+  // user-service 가 다운돼도 이 호출은 살아있다.
+  me: async () => {
+    return await apiClient('get', 'api/auth/me');
   },
 };

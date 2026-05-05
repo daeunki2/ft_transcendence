@@ -19,6 +19,13 @@ export const en: Messages = {
     footerText: "Don't have an account? ",
     footerLink: 'Register',
 	},
+	guest: {
+	  entryText: 'Want to play without an account? ',
+	  entryLink: 'Continue as guest',
+	  blockedTitle: 'Guest mode',
+	  blockedBody: 'This feature is not available in guest mode. Please sign up to continue.',
+	  disabledTooltip: 'Not available in guest mode',
+	},
 
 	//회원가입
 register: {
@@ -166,6 +173,39 @@ register: {
     SESSION_EXPIRED: "Your session has expired. Please log in again.",
     IMAGE_FORMAT_NOT_ALLOWED: "This image format is not allowed",
     TOO_BIG_FILE:"Too big file. (5MB max)",
+    USER_SERVICE_UNAVAILABLE: "This feature is temporarily unavailable. Please try again later.",
+  },
+  errorPage: {
+    errorCode: "Error code",
+    retry: "Retry",
+    goHome: "Go home",
+    reload: "Reload",
+    variants: {
+      notFound: {
+        status: "Not Found",
+        title: "Page not found",
+        body: "The address you requested is invalid, or the page may have been removed.",
+        errorCode: "PAGE_NOT_FOUND",
+      },
+      serverError: {
+        status: "Internal Server Error",
+        title: "Something went wrong",
+        body: "Please try again in a moment. If the problem persists, contact the team.",
+        errorCode: "UNEXPECTED_ERROR",
+      },
+      serviceUnavailable: {
+        status: "Service Unavailable",
+        title: "Cannot reach the server",
+        body: "The user service is not responding. Please try again in a moment.",
+        errorCode: "USER_SERVICE_UNAVAILABLE",
+      },
+      network: {
+        status: "Offline",
+        title: "Network unavailable",
+        body: "Check your internet connection and try again.",
+        errorCode: "NETWORK_UNAVAILABLE",
+      },
+    },
   },
   result: {
     success: "Success",

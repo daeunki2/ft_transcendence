@@ -18,6 +18,8 @@ import LanguageSwitcher from '../ui/LanguageSwitcher';
 import { useTheme } from '../../theme/useTheme';
 import Button from '../ui/Button';
 import { useLogout } from '../../hooks/Logout';
+import { useServiceHealth } from '../../contexts/ServiceHealthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const styles = {
   root: {
@@ -54,11 +56,15 @@ const { themeName, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { messages } = useI18n();
   const { handleLogout } = useLogout();
+  const { health } = useServiceHealth();
+  const { isGuest } = useAuth();
+
+  const userServiceDown = health.user === 'down';
 
   const menus = [
-    { label: messages.navbar.pong, path: '/home' },
-    { label: messages.navbar.social, path: '/social' },
-    { label: messages.navbar.mySpace, path: '/myspace' },
+    { label: messages.navbar.pong, path: '/home', requiresFullAccount: false },
+    { label: messages.navbar.social, path: '/social', requiresFullAccount: true },
+    { label: messages.navbar.mySpace, path: '/myspace', requiresFullAccount: true },
   ];
 
   return (
@@ -72,14 +78,27 @@ const { themeName, toggleTheme } = useTheme();
           <Logo width="180px" />
         </button>
 
-        {menus.map((menu) => (
-          <Button
-            key={menu.path}
-            onClick={() => navigate(menu.path)}
-          >
-            {menu.label}
-          </Button>
-        ))}
+        {menus.map((menu) => {
+          const blockedByService = menu.requiresFullAccount && userServiceDown;
+          const blockedByGuest = menu.requiresFullAccount && isGuest;
+          const disabled = blockedByService || blockedByGuest;
+          const title = blockedByGuest
+            ? messages.guest.disabledTooltip
+            : blockedByService
+            ? messages.errorPage.variants.serviceUnavailable.title
+            : undefined;
+          return (
+            <Button
+              key={menu.path}
+              onClick={() => navigate(menu.path)}
+              disabled={disabled}
+              title={title}
+              style={disabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+            >
+              {menu.label}
+            </Button>
+          );
+        })}
       </div>
 
       <div style={styles.right}>

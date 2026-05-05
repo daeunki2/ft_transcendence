@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { ThemeProvider } from '../theme/ThemeContext';
 import { I18nProvider } from '../i18n/I18nContext';
 import { AuthProvider } from '../contexts/AuthContext';
+import { ServiceHealthProvider } from '../contexts/ServiceHealthContext';
 
 type ProvidersProps = {
   children: ReactNode;
@@ -23,7 +24,9 @@ export default function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <I18nProvider>{children}</I18nProvider>
+        <ServiceHealthProvider>
+          <I18nProvider>{children}</I18nProvider>
+        </ServiceHealthProvider>
       </AuthProvider>
     </ThemeProvider>
   );

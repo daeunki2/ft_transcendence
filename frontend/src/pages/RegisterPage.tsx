@@ -22,11 +22,18 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import TextButton from '../components/ui/TextButton';
 import { useRegister } from '../hooks/Register';
+import { useAuth } from '../contexts/AuthContext';
 
 function RegisterPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { messages } = useI18n();
+  const { enterGuestMode } = useAuth();
+
+  const handleGuestEnter = () => {
+    enterGuestMode();
+    navigate('/home');
+  };
 
   const {
     id, setId,
@@ -154,6 +161,19 @@ function RegisterPage() {
               {messages.register.footerText}{' '}
               <TextButton onClick={() => navigate('/login')}>
                 {messages.register.footerLink}
+              </TextButton>
+            </div>
+
+            <div
+              style={{
+                textAlign: 'center',
+                fontSize: '14px',
+                color: theme.colors.textMuted,
+              }}
+            >
+              {messages.guest.entryText}
+              <TextButton onClick={handleGuestEnter}>
+                {messages.guest.entryLink}
               </TextButton>
             </div>
           </div>
