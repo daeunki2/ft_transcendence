@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   PRESENCE_RAW_CHANNEL,
@@ -11,7 +11,11 @@ import {
 import { PresenceRedis } from './presence.redis';
 
 @Injectable()
-export class PresenceService {
+export class PresenceService implements OnModuleDestroy {
+  private readonly heartbeatTtlSec = 15;
+  private readonly heartbeatSweepMs = 5000;
+  private heartbeatSweepTimer: NodeJS.Timeout | null = null;
+
   constructor(private readonly redis: PresenceRedis) {}
 
   async publishRawEvent(event: PresenceRawEvent): Promise<void> {
@@ -36,6 +40,10 @@ export class PresenceService {
     await this.publishRawEvent(event);
   }
 
+  async markHeartbeat(userId: string): Promise<void> {
+    await this.redis.touchAlive(userId, this.heartbeatTtlSec);
+  }
+
   async startRawEventConsumer(): Promise<void> {
     const sub = this.redis.getSubscriber();
     await sub.subscribe(PRESENCE_RAW_CHANNEL);
@@ -46,6 +54,13 @@ export class PresenceService {
       await this.handleRawEvent(event);
     });
     console.log('[presence] subscribed channel:', PRESENCE_RAW_CHANNEL);
+  }
+
+  startHeartbeatReconciler(): void {
+    if (this.heartbeatSweepTimer) return;
+    this.heartbeatSweepTimer = setInterval(() => {
+      void this.reconcileHeartbeatTimeouts();
+    }, this.heartbeatSweepMs);
   }
 
   async getPresence(userId: string) {
@@ -100,8 +115,10 @@ export class PresenceService {
     switch (event.type) {
       case 'connected':
         await this.redis.incrementConnection(event.userId);
+        await this.redis.touchAlive(event.userId, this.heartbeatTtlSec);
         return;
       case 'disconnected':
+        await this.redis.clearAlive(event.userId);
         await this.redis.decrementConnection(event.userId);
         return;
       case 'matching_started':
@@ -129,9 +146,10 @@ export class PresenceService {
   private async recomputeEffectiveStatus(userId: string): Promise<PresenceState> {
     const connCount = await this.redis.getConnectionCount(userId);
     const flags = await this.redis.getFlags(userId);
+    const alive = await this.redis.isAlive(userId);
     if (flags.inGame) return 'IN_GAME';
     if (flags.matching) return 'MATCHING';
-    if (connCount > 0) return 'ONLINE';
+    if (connCount > 0 && alive) return 'ONLINE';
     return 'OFFLINE';
   }
 
@@ -170,5 +188,35 @@ export class PresenceService {
     const eventAtMs = Date.parse(event.at);
     if (Number.isNaN(eventAtMs)) return false;
     return eventAtMs >= lastAtMs;
+  }
+
+  private async reconcileHeartbeatTimeouts(): Promise<void> {
+    const users = await this.redis.getUsersWithConnections();
+    for (const userId of users) {
+      const alive = await this.redis.isAlive(userId);
+      if (alive) continue;
+      const prevStatus = await this.redis.getEffectiveState(userId);
+      await this.redis.setConnectionCount(userId, 0);
+      const nextStatus = await this.recomputeEffectiveStatus(userId);
+      await this.redis.setEffectiveState(userId, nextStatus);
+      if (prevStatus === nextStatus) continue;
+      const updatedEvent: PresenceUpdatedEvent = {
+        userId,
+        internalStatus: nextStatus,
+        publicStatus: this.toPublicStatus(nextStatus),
+        at: new Date().toISOString(),
+        version: 1,
+      };
+      await this.redis
+        .getPublisher()
+        .publish(PRESENCE_UPDATED_CHANNEL, JSON.stringify(updatedEvent));
+    }
+  }
+
+  onModuleDestroy() {
+    if (this.heartbeatSweepTimer) {
+      clearInterval(this.heartbeatSweepTimer);
+      this.heartbeatSweepTimer = null;
+    }
   }
 }

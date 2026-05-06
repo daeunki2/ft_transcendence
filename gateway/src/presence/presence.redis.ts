@@ -113,6 +113,42 @@ export class PresenceRedis implements OnModuleDestroy {
     return result === 'OK';
   }
 
+  async touchAlive(userId: string, ttlSec: number): Promise<void> {
+    await this.kv.set(this.aliveKey(userId), '1', 'EX', ttlSec);
+  }
+
+  async clearAlive(userId: string): Promise<void> {
+    await this.kv.del(this.aliveKey(userId));
+  }
+
+  async isAlive(userId: string): Promise<boolean> {
+    const exists = await this.kv.exists(this.aliveKey(userId));
+    return exists === 1;
+  }
+
+  async setConnectionCount(userId: string, count: number): Promise<void> {
+    const normalized = count > 0 ? count : 0;
+    await this.kv.set(this.connKey(userId), String(normalized));
+  }
+
+  async getUsersWithConnections(): Promise<string[]> {
+    const users: string[] = [];
+    let cursor = '0';
+    do {
+      const [nextCursor, keys] = await this.kv.scan(cursor, 'MATCH', 'presence:conn:*', 'COUNT', 100);
+      cursor = nextCursor;
+      for (const key of keys) {
+        const userId = key.slice('presence:conn:'.length);
+        if (!userId) continue;
+        const count = Number((await this.kv.get(key)) ?? 0);
+        if (count > 0) {
+          users.push(userId);
+        }
+      }
+    } while (cursor !== '0');
+    return users;
+  }
+
   async getFriendIdsCache(userId: string): Promise<string[] | null> {
     const raw = await this.kv.get(this.friendIdsKey(userId));
     if (!raw) return null;
@@ -163,5 +199,9 @@ export class PresenceRedis implements OnModuleDestroy {
 
   private friendIdsKey(userId: string) {
     return `presence:friends:${userId}`;
+  }
+
+  private aliveKey(userId: string) {
+    return `presence:alive:${userId}`;
   }
 }

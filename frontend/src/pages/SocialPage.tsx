@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 20:14:57 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/06 23:56:12 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,9 +88,9 @@ function SocialPage() {
   // presence.updated 실시간 구독: 친구 목록의 상태 점을 즉시 갱신
   useEffect(() => {
     const handlePresenceUpdated = (evt: Event) => {
-      const event = (evt as CustomEvent<PresenceUpdatedPayload>).detail;
+      const event = (evt as CustomEvent<PresenceUpdatedPayload>).detail; // 누구의 상태가 무엇으로 바뀌었는지 
       if (!event) return;
-      setFriends((prev) =>
+      setFriends((prev) => // 친구목록에서 이벤트로 받은 아이디 찾아서 상태 변경
         prev.map((friend) =>
           friend.userId === event.userId
             ? { ...friend, status: event.publicStatus }
@@ -98,12 +98,12 @@ function SocialPage() {
         ),
       );
     };
-
+    // 상태변경 관련 이벤트 구독
     window.addEventListener(
       PRESENCE_UPDATED_EVENT,
       handlePresenceUpdated as EventListener,
     );
-
+    // 이벤트 받아서 상태 받은 뒤에는 다시 새로운 이벤트를 받을 준비. 
     return () => {
       window.removeEventListener(
         PRESENCE_UPDATED_EVENT,

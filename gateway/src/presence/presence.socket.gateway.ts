@@ -45,6 +45,9 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
       }
       this.socketUserMap.set(client.id, userId);
       client.join(`user:${userId}`);
+      client.on('presence.heartbeat', async () => {
+        await this.presenceService.markHeartbeat(userId);
+      });
       // 이벤트 발생: 실제 WS 연결 생성 시 connected 발행
       await this.presenceService.publishGatewayConnectionEvent(userId, 'connected');
     } catch {

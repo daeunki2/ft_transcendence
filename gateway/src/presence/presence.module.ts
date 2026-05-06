@@ -20,5 +20,6 @@ export class PresenceModule implements OnModuleInit {
 
   async onModuleInit() {
     await this.presenceService.startRawEventConsumer();
+    this.presenceService.startHeartbeatReconciler();
   }
 }
