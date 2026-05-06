@@ -183,12 +183,29 @@ export class FriendsService {
     await this.friendRepo.delete(row.id);
   }
 
+  // 내부용: 수락된 친구의 userId 목록 조회 (presence fan-out 대상 계산)
+  async getAcceptedFriendUserIds(userId: string): Promise<string[]> {
+    const rows = await this.friendRepo
+      .createQueryBuilder('f')
+      .select(['f.requesterId', 'f.addresseeId'])
+      .where('f.status = :status', { status: 'accepted' })
+      .andWhere('(f.requesterId = :uid OR f.addresseeId = :uid)', { uid: userId })
+      .getMany();
+
+    return rows.map((row) =>
+      row.requesterId === userId ? row.addresseeId : row.requesterId,
+    );
+  }
+
   // 친구 관련 변경 액션(요청/수락/삭제) 공통 가드
   private async assertFriendActionAllowed(userId: string): Promise<void> {
     const baseUrl =
       process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    const timeoutMs = 700;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${baseUrl}/${userId}`);
+      const response = await fetch(`${baseUrl}/${userId}`, { signal: controller.signal });
       if (!response.ok) {
         throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
       }
@@ -205,6 +222,8 @@ export class FriendsService {
         throw error;
       }
       throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -213,8 +232,11 @@ export class FriendsService {
   ): Promise<'OFFLINE' | 'ONLINE' | 'IN_GAME'> {
     const baseUrl =
       process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    const timeoutMs = 700;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${baseUrl}/${userId}`);
+      const response = await fetch(`${baseUrl}/${userId}`, { signal: controller.signal });
       if (!response.ok) return 'OFFLINE';
       const presence = (await response.json()) as {
         publicStatus?: 'OFFLINE' | 'ONLINE' | 'IN_GAME';
@@ -224,6 +246,8 @@ export class FriendsService {
       return 'OFFLINE';
     } catch {
       return 'OFFLINE';
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }

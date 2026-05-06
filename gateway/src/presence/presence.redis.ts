@@ -113,6 +113,22 @@ export class PresenceRedis implements OnModuleDestroy {
     return result === 'OK';
   }
 
+  async getFriendIdsCache(userId: string): Promise<string[] | null> {
+    const raw = await this.kv.get(this.friendIdsKey(userId));
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as string[];
+      if (!Array.isArray(parsed)) return null;
+      return parsed.filter((id): id is string => typeof id === 'string' && id.length > 0);
+    } catch {
+      return null;
+    }
+  }
+
+  async setFriendIdsCache(userId: string, friendIds: string[], ttlSec = 15): Promise<void> {
+    await this.kv.set(this.friendIdsKey(userId), JSON.stringify(friendIds), 'EX', ttlSec);
+  }
+
   async onModuleDestroy() {
     await Promise.all([this.pub.quit(), this.sub.quit(), this.kv.quit()]);
   }
@@ -143,5 +159,9 @@ export class PresenceRedis implements OnModuleDestroy {
 
   private lastSeenKey(userId: string) {
     return `presence:lastSeen:${userId}`;
+  }
+
+  private friendIdsKey(userId: string) {
+    return `presence:friends:${userId}`;
   }
 }

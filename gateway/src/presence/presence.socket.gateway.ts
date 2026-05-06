@@ -74,16 +74,56 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
   private async subscribePresenceUpdates() {
     const sub = this.presenceRedis.createSubscriber();
     await sub.subscribe(PRESENCE_UPDATED_CHANNEL);
-    sub.on('message', (channel, payload) => {
+    sub.on('message', async (channel, payload) => {
       if (channel !== PRESENCE_UPDATED_CHANNEL) return;
       try {
         const event = JSON.parse(payload) as PresenceUpdatedEvent;
         if (!this.server) return;
-        // 지금 단계는 단순 브로드캐스트: SocialPage에서 바로 상태 반영 가능
-        this.server.emit('presence.updated', event);
+        // 2차 범위 축소: 본인 + 친구 룸에만 전파 (실패 시 본인만)
+        const targets = new Set<string>([`user:${event.userId}`]);
+        const friendIds = await this.fetchFriendIds(event.userId);
+        for (const friendId of friendIds) {
+          targets.add(`user:${friendId}`);
+        }
+        for (const room of targets) {
+          this.server.to(room).emit('presence.updated', event);
+        }
       } catch {
         // invalid payload ignore
       }
     });
+  }
+
+  private async fetchFriendIds(userId: string): Promise<string[]> {
+    const cached = await this.presenceRedis.getFriendIdsCache(userId);
+    if (cached) {
+      return cached;
+    }
+
+    const internalToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim() || 'dev-presence-token';
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 700);
+    try {
+      const response = await fetch(`http://user-service:4001/friends/internal/${userId}/ids`, {
+        method: 'GET',
+        headers: {
+          'x-internal-token': internalToken,
+        },
+        signal: controller.signal,
+      });
+      if (!response.ok) return [];
+      const body = (await response.json()) as { friendIds?: string[] };
+      if (!Array.isArray(body.friendIds)) return [];
+      const friendIds = body.friendIds.filter(
+        (id): id is string => typeof id === 'string' && id.length > 0,
+      );
+      await this.presenceRedis.setFriendIdsCache(userId, friendIds, 15);
+      return friendIds;
+    } catch {
+      return [];
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 }

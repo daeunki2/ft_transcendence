@@ -138,8 +138,11 @@ export class UserService {
   private async assertProfileEditable(userId: string): Promise<void> {
     const baseUrl =
       process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    const timeoutMs = 700;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${baseUrl}/${userId}`);
+      const response = await fetch(`${baseUrl}/${userId}`, { signal: controller.signal });
       if (!response.ok) {
         throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
       }
@@ -156,6 +159,8 @@ export class UserService {
         throw error;
       }
       throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }

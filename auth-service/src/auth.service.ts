@@ -131,6 +131,16 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
+      // 동시 로그인 경쟁 조건 방지: 짧은 TTL의 사용자별 로그인 락
+      const loginLockKey = `presence:login-lock:${user.id}`;
+      const loginLockTtlSec = 15;
+      const lockResult = await this.redis.set(loginLockKey, '1', 'EX', loginLockTtlSec, 'NX');
+      if (lockResult !== 'OK') {
+        return { success: false, message: 'ALREADY_ONLINE' };
+      }
+
+      let releaseLoginLock = true;
+      try {
       // 상태 기반 제한: 이미 ONLINE 상태면 중복 로그인 차단
       const effectiveState =
         (await this.redis.get(`presence:effective:${user.id}`)) ?? 'OFFLINE';
@@ -160,6 +170,10 @@ export class AuthService {
 
       console.log('[login]로그인 성공');
 
+      // 성공 시에는 락을 즉시 지우지 않고 TTL로만 유지해
+      // 소켓 connected 이벤트 반영 전 짧은 레이스 구간을 줄인다.
+      releaseLoginLock = false;
+
       return {
         success: true,
         message: 'LOGIN_SUCCESS',
@@ -171,6 +185,11 @@ export class AuthService {
           id: user.loginId,
         },
       };
+      } finally {
+        if (releaseLoginLock) {
+          await this.redis.del(loginLockKey);
+        }
+      }
     }
     // 실패 시
     return { success: false, message: 'INVALID_PASSWORD' };

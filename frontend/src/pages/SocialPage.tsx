@@ -24,7 +24,7 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
-import { io, type Socket } from 'socket.io-client';
+import { PRESENCE_UPDATED_EVENT } from '../App';
 
 type PresenceUpdatedPayload = {
   userId: string;
@@ -87,12 +87,9 @@ function SocialPage() {
 
   // presence.updated 실시간 구독: 친구 목록의 상태 점을 즉시 갱신
   useEffect(() => {
-    const socket: Socket = io('http://localhost:8000/presence', {
-      withCredentials: true,
-      transports: ['websocket'],
-    });
-
-    const handlePresenceUpdated = (event: PresenceUpdatedPayload) => {
+    const handlePresenceUpdated = (evt: Event) => {
+      const event = (evt as CustomEvent<PresenceUpdatedPayload>).detail;
+      if (!event) return;
       setFriends((prev) =>
         prev.map((friend) =>
           friend.userId === event.userId
@@ -102,11 +99,16 @@ function SocialPage() {
       );
     };
 
-    socket.on('presence.updated', handlePresenceUpdated);
+    window.addEventListener(
+      PRESENCE_UPDATED_EVENT,
+      handlePresenceUpdated as EventListener,
+    );
 
     return () => {
-      socket.off('presence.updated', handlePresenceUpdated);
-      socket.disconnect();
+      window.removeEventListener(
+        PRESENCE_UPDATED_EVENT,
+        handlePresenceUpdated as EventListener,
+      );
     };
   }, []);
 

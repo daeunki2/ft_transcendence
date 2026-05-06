@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PresenceService } from './presence.service';
 import type { PresenceRawEvent } from './presence.types';
 
@@ -12,7 +20,14 @@ export class PresenceController {
   }
 
   @Post('events')
-  async publishEvent(@Body() event: PresenceRawEvent) {
+  async publishEvent(
+    @Headers('x-internal-token') internalToken: string | undefined,
+    @Body() event: PresenceRawEvent,
+  ) {
+    const expectedToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim() || 'dev-presence-token';
+    if (!expectedToken || internalToken !== expectedToken) {
+      throw new UnauthorizedException('INTERNAL_UNAUTHORIZED');
+    }
     await this.presenceService.publishRawEvent(event);
     return { success: true };
   }

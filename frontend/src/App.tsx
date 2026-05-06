@@ -27,11 +27,13 @@ import { useAuth } from './contexts/AuthContext';
 import { io, type Socket } from 'socket.io-client';
 
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
+export const PRESENCE_UPDATED_EVENT = 'presence:updated';
 
 function App() {
   const { fetchMe } = useAuthInit();
   const { messages } = useI18n();
   const { user, setUser } = useAuth();
+  const currentUserId = user?.userId ?? null;
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const presenceSocketRef = useRef<Socket | null>(null);
@@ -60,7 +62,7 @@ function App() {
 
   useEffect(() => {
     // 로그인 직후 즉시 presence 소켓을 붙여 connected 이벤트를 빠르게 올린다.
-    if (!user) {
+    if (!currentUserId) {
       presenceSocketRef.current?.disconnect();
       presenceSocketRef.current = null;
       return;
@@ -74,6 +76,13 @@ function App() {
       withCredentials: true,
       transports: ['websocket'],
     });
+    socket.on('presence.updated', (event) => {
+      window.dispatchEvent(
+        new CustomEvent(PRESENCE_UPDATED_EVENT, {
+          detail: event,
+        }),
+      );
+    });
     presenceSocketRef.current = socket;
 
     return () => {
@@ -82,7 +91,7 @@ function App() {
         presenceSocketRef.current = null;
       }
     };
-  }, [user]);
+  }, [currentUserId]);
 
   const handleUnauthenticated = useCallback(() => {
     const isIntentLogout = sessionStorage.getItem('intent_logout') === '1';
