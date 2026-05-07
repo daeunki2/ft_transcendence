@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ChatController } from './chat.controller';
 import { HttpModule } from '@nestjs/axios'
 import Redis from 'ioredis';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import Redis from 'ioredis';
 
     // 2. Repository 사용을 위해 엔티티 등록 (forFeature)
     TypeOrmModule.forFeature([ChatMessage]),
+    HealthModule,
   ],
   controllers: [ChatController], // 컨트롤러 있으면 추가
   providers: [

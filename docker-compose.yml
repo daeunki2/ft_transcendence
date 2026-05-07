@@ -98,12 +98,12 @@ services:
         condition: service_healthy
     stdin_open: true
     tty: true
-    # healthcheck:
-    #   test: ["CMD-SHELL", "wget -q --spider http://localhost:3002/health || exit 1"]
-    #   interval: 10s
-    #   timeout: 3s
-    #   retries: 5
-    #   start_period: 30s
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3002/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
 
   chat-database:
     image: postgres:15
