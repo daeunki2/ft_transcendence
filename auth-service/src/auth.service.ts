@@ -280,6 +280,22 @@ export class AuthService {
     }
 
     const tokenHash = this.hashToken(refreshToken);
+
+    // 토큰의 주인이 게스트면 cron 을 기다리지 않고 즉시 풀 정리.
+    // (logout 으로 refresh_sessions row 만 사라지면 cron 의 expiresAt 검색에 걸리지 않아
+    //  auth row 와 user-service 프로필이 영구 누락되는 문제 방지)
+    const session = await this.refreshSessionRepository.findOne({ where: { tokenHash } });
+    if (session) {
+      const owner = await this.userRepository.findOne({ where: { id: session.userId } });
+      if (owner?.role === 'guest') {
+        await this.deleteGuestFully(owner.id);
+        await this.addRefreshTokenToBlacklist(refreshToken);
+        console.log('[logout]게스트 풀 정리 완료', { id: owner.id });
+        return { success: true, message: 'LOGOUT_SUCCESS' };
+      }
+    }
+
+    // 일반 유저 — 기존 흐름 그대로
     await this.refreshSessionRepository.delete({ tokenHash });
     await this.addRefreshTokenToBlacklist(refreshToken);
 
@@ -288,6 +304,36 @@ export class AuthService {
       success: true,
       message: 'LOGOUT_SUCCESS',
     };
+  }
+
+  // 게스트의 user-service 프로필 + auth row 를 즉시 삭제. CASCADE 로 refresh_sessions 도 함께 정리.
+  // user-service 일시 장애 시 refresh_sessions.expiresAt 을 과거로 당겨
+  // GuestCleanupService cron(expiresAt < now) 이 다음 주기에 재시도하도록 위임 — self-healing 보장.
+  private async deleteGuestFully(authId: string): Promise<void> {
+    const userServiceUrl =
+      this.configService.get<string>('USER_SERVICE_URL') ?? 'http://user-service:4001';
+    const internalSecret = this.configService.get<string>('INTERNAL_SECRET');
+
+    try {
+      await firstValueFrom(
+        this.httpService.delete(`${userServiceUrl}/internal/users/${authId}`, {
+          headers: internalSecret ? { 'x-internal-secret': internalSecret } : {},
+        }),
+      );
+    } catch (error: any) {
+      console.warn(
+        `[deleteGuestFully] user-service 삭제 실패 (${authId}), cron 재시도 위임:`,
+        error.response?.status ?? error.code ?? error.message,
+      );
+      await this.refreshSessionRepository.update(
+        { userId: authId },
+        { expiresAt: new Date(0) },
+      );
+      return;
+    }
+
+    // user-service 정리 성공 → auth row 삭제. onDelete CASCADE 로 refresh_sessions 도 같이 사라짐.
+    await this.userRepository.delete({ id: authId });
   }
 
   // 게스트 토큰 발급 (패턴 3 — 게스트도 정식 row + refresh).

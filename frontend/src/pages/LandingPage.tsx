@@ -10,11 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Button from '../components/ui/Button';
 import TextButton from '../components/ui/TextButton';
 import TopControls from '../components/ui/TopControls';
+import Alert from '../components/ui/Alert';
 import FooterLinks from '../components/common/FooterLinks';
 import Logo from '../components/common/Logo';
 import { useI18n } from '../i18n/useI18n';
@@ -26,11 +28,12 @@ function LandingPage() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const { enterGuestMode } = useAuth();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleGuestEnter = async () => {
     const ok = await enterGuestMode();
     if (!ok) {
-      window.alert(messages.errors.SERVER_ERROR ?? 'Server error');
+      setErrorMsg(messages.errors.SERVER_ERROR ?? 'Server error');
       return;
     }
     navigate('/home');
@@ -41,6 +44,14 @@ function LandingPage() {
       header={<TopControls />}
       footer={<FooterLinks />}
     >
+      <Alert
+        open={!!errorMsg}
+        title={messages.landing.title}
+        message={errorMsg || ''}
+        confirmText={messages.result?.false || 'OK'}
+        onClose={() => setErrorMsg(null)}
+      />
+
       <div
         style={{
           display: 'flex',
