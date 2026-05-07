@@ -138,6 +138,7 @@ errors: {
     CONFIRM_PASSWORD_REQUIRED: "Veuillez confirmer votre mot de passe.",
     INVALID_PASSWORD_FORMAT: "Le mot de passe doit contenir 4 à 32 caractères alphanumériques.",
     INVALID_ID_FORMAT: "L'identifiant doit contenir 1 à 20 caractères alphanumériques.",
+    ALREADY_ONLINE: "Ce compte est déjà en ligne. Fermez la session existante puis réessayez.",
     INVALID_NICKNAME_FORMAT: "Le pseudo doit contenir 1 à 20 caractères alphanumériques.",
     USER_ALREADY_EXISTS: "Cet identifiant est déjà utilisé.",
     NICKNAME_ALREADY_EXISTS: "Ce pseudo est déjà utilisé.",

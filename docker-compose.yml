@@ -41,6 +41,8 @@ services:
       - "8000:8000"
     env_file:
       - ./gateway/.env
+    environment:
+      - PRESENCE_INTERNAL_TOKEN=${PRESENCE_INTERNAL_TOKEN}
     depends_on:
       auth-service:
         condition: service_healthy
@@ -62,6 +64,8 @@ services:
       - "4001:4001"
     env_file:
       - ./user-service/.env
+    environment:
+      - PRESENCE_INTERNAL_TOKEN=${PRESENCE_INTERNAL_TOKEN}
     volumes:
       - ./user-service:/app
       - /app/node_modules

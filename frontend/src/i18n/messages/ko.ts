@@ -140,6 +140,7 @@ HomePage: {
     CONFIRM_PASSWORD_REQUIRED: "비밀번호 확인을 입력해 주세요.",
     INVALID_PASSWORD_FORMAT: "비밀번호가 틀렸습니다.",
     INVALID_ID_FORMAT: "사용할 수 없는 아이디 입니다. 1~20자 영어+숫자조합만 사용가능합니다.",
+    ALREADY_ONLINE: "이미 접속 중인 계정입니다. 기존 세션을 종료한 뒤 다시 시도해 주세요.",
     INVALID_NICKNAME_FORMAT: "사용할 수 없는 닉네임입니다. 1~20자 영어+숫자조합만 사용가능합니다.",
     USER_ALREADY_EXISTS: "이미 가입된 아이디입니다.",
     NICKNAME_ALREADY_EXISTS: "이미 사용 중인 닉네임입니다.",

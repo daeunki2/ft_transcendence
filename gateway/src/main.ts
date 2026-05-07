@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/30 13:32:01 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 10:23:05 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,9 @@ async function bootstrap() {
 }
 bootstrap();
 
-
-
-function createAccessTokenMiddleware(jwtService: JwtService) // 인증로직 
+function createAccessTokenMiddleware(
+  jwtService: JwtService,
+) // 인증로직
 {
   return (req: Request, res: Response, next: NextFunction) =>
   {
@@ -118,7 +118,8 @@ function createAccessTokenMiddleware(jwtService: JwtService) // 인증로직
     try
     {
       const payload = jwtService.verify(token);
-      req.headers['x-user-id'] = String(payload.sub ?? '');
+      const userId = String(payload.sub ?? '');
+      req.headers['x-user-id'] = userId;
 
       console.log('[게이트웨이] 액세스 토큰 검증 성공', { sub: payload.sub });
       

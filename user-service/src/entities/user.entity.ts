@@ -6,8 +6,9 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   userId: string;
 
-  @Column({ unique: true })
-  email: string;
+  // DB 컬럼명은 기존(email)을 유지해 마이그레이션 없이 코드 의미만 loginId로 정리
+  @Column({ name: 'email', unique: true })
+  loginId: string;
 
   @Column()
   nickname: string;
