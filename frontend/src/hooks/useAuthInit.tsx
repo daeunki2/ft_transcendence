@@ -13,12 +13,12 @@ export const useAuthInit = () => {
 
   const fetchMe = useCallback(async (): Promise<boolean> => {
     const response = await userService.getMe().catch(() => null);
-    // 프로필을 가져온 경우에만 user 채움. 실패해도 인증 상태는 건드리지 않는다.
-    // 진짜 세션 만료는 apiClient의 AUTH_SESSION_EXPIRED_EVENT가 처리한다.
     if (response?.success) {
       setUser(response.user);
+      return true;
     }
-    return true;
+    setUser(null);
+    return false;
   }, [setUser]);
 
   return { fetchMe };

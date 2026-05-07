@@ -13,7 +13,7 @@ import * as jwt from 'jsonwebtoken';
 @WebSocketGateway({
   namespace: '/presence',
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
     credentials: true,
   },
 })
@@ -103,7 +103,10 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
       return cached;
     }
 
-    const internalToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim() || 'dev-presence-token';
+    const internalToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim();
+    if (!internalToken) {
+      return [];
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 700);

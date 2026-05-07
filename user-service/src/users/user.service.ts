@@ -8,6 +8,8 @@ import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
+  private readonly publicBaseUrl = process.env.USER_PUBLIC_BASE_URL ?? 'http://localhost:4001';
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -33,7 +35,7 @@ export class UserService {
       userId: id, // 전달받은 UUID
       loginId,
       nickname: normalizedNickname,
-      userPhoto: "http://localhost:4001/uploads/default.jpg", 
+      userPhoto: `${this.publicBaseUrl}/uploads/default.jpg`,
       role: "normal",
       });
 
@@ -55,7 +57,7 @@ export class UserService {
     if (!user) return null;
 
     // 🟢 [추가] 사진이 default가 아닌데, 실제 파일이 서버에 없는 경우 체크
-    const DEFAULT_PHOTO_URL = "http://localhost:4001/uploads/default.jpg";
+    const DEFAULT_PHOTO_URL = `${this.publicBaseUrl}/uploads/default.jpg`;
     
     if (user.userPhoto && user.userPhoto !== DEFAULT_PHOTO_URL) {
       // URL에서 파일명만 추출 (예: http://.../uploads/abc.jpg -> abc.jpg)
@@ -121,7 +123,7 @@ export class UserService {
     }
 
     // 1. 파일 접근 URL 생성
-    const fileUrl = `http://localhost:4001/uploads/${file.filename}`;
+    const fileUrl = `${this.publicBaseUrl}/uploads/${file.filename}`;
 
     // 2. DB 업데이트 (기존 updateProfile 로직 재활용 가능)
     const updatedUser = await this.updateProfile(userId, { userPhoto: fileUrl });
@@ -138,11 +140,20 @@ export class UserService {
   private async assertProfileEditable(userId: string): Promise<void> {
     const baseUrl =
       process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    const internalToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim();
+    if (!internalToken) {
+      throw new InternalServerErrorException('PRESENCE_INTERNAL_TOKEN_MISSING');
+    }
     const timeoutMs = 700;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${baseUrl}/${userId}`, { signal: controller.signal });
+      const response = await fetch(`${baseUrl}/${userId}`, {
+        signal: controller.signal,
+        headers: {
+          'x-internal-token': internalToken,
+        },
+      });
       if (!response.ok) {
         throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
       }

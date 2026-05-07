@@ -12,7 +12,7 @@
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/'; // gateway 주소
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}/`; // gateway 주소
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 
 // 찬영님이 요청한 '공통 함수'

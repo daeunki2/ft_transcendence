@@ -165,6 +165,12 @@ export class PresenceRedis implements OnModuleDestroy {
     await this.kv.set(this.friendIdsKey(userId), JSON.stringify(friendIds), 'EX', ttlSec);
   }
 
+  async invalidateFriendIdsCache(userIds: string[]): Promise<void> {
+    if (userIds.length === 0) return;
+    const keys = userIds.map((userId) => this.friendIdsKey(userId));
+    await this.kv.del(...keys);
+  }
+
   async onModuleDestroy() {
     await Promise.all([this.pub.quit(), this.sub.quit(), this.kv.quit()]);
   }

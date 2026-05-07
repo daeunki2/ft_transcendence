@@ -46,7 +46,7 @@ export class FriendsController {
     @Param('userId') userId: string,
     @Headers('x-internal-token') internalToken: string | undefined,
   ) {
-    const expectedToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim() || 'dev-presence-token';
+    const expectedToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim();
     if (!expectedToken || internalToken !== expectedToken) {
       throw new UnauthorizedException('INTERNAL_UNAUTHORIZED');
     }

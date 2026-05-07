@@ -25,7 +25,7 @@ import { HealthModule } from '../health/health.module';
       password: process.env.USERDB_PASSWORD, // .env 에서 주입
       database: 'user-db', // 본인의 DB 이름
       entities: [User, Friend], // 우리가 만든 Entity 등록
-      synchronize: true, // Entity 수정 시 DB 테이블 자동 업데이트 (개발용)
+      synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
     }),
     TypeOrmModule.forFeature([User]), // Repository를 쓰기 위해 필요
 

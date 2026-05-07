@@ -76,6 +76,13 @@ export class PresenceService implements OnModuleDestroy {
     };
   }
 
+  async invalidateFriendCaches(userIds: string[]): Promise<void> {
+    const normalized = Array.from(
+      new Set(userIds.filter((id): id is string => typeof id === 'string' && id.length > 0)),
+    );
+    await this.redis.invalidateFriendIdsCache(normalized);
+  }
+
   private async handleRawEvent(event: PresenceRawEvent): Promise<void> {
     // 흐름 제어: fallback/retry로 같은 이벤트가 들어오면 eventId 기준으로 1회만 처리
     const firstSeen = await this.redis.markEventProcessed(event.eventId);

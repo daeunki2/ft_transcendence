@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/06 23:35:28 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/07 09:45:29 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ import { io, type Socket } from 'socket.io-client';
 
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 export const PRESENCE_UPDATED_EVENT = 'presence:updated';
+const PRESENCE_SOCKET_URL = import.meta.env.VITE_PRESENCE_SOCKET_URL ?? 'http://localhost:8000/presence';
 
 function App() {
   const { fetchMe } = useAuthInit();
@@ -63,7 +64,7 @@ function App() {
 
   // 상태표시 기능 
   useEffect(() => {
-    // 포르칱치 안된 상태라면 기존 소켓의 연결 끊고 ref박스 초기화
+    // 로그인 안 된 상태면 기존 소켓 연결을 끊고 ref를 초기화
     if (!currentUserId) {
       presenceSocketRef.current?.disconnect();
       presenceSocketRef.current = null;
@@ -74,14 +75,15 @@ function App() {
       return;
     }
     // 최초 로그인이면 게이트웨이의 네임스페이스로 웹소켓 연결 만들기
-    const socket = io('http://localhost:8000/presence', {
+    const socket = io(PRESENCE_SOCKET_URL, {
       withCredentials: true,
       transports: ['websocket'], // 쿠키를 포함시킴
     });// 서버가 보내줄 상태 업데이트 이벤트 구독
     const heartbeatTimer = window.setInterval(() => {
       socket.emit('presence.heartbeat');
-    }, 5000);
-    socket.emit('presence.heartbeat');
+    }, 5000); 
+    socket.emit('presence.heartbeat');  // 연결확인 보조용
+    // 게이트웨이의 소켓을 받으면 프론트 내에 전역으로 뿌려서 소셜페이지가 받아보게 함
     socket.on('presence.updated', (event) => {
       window.dispatchEvent(
         new CustomEvent(PRESENCE_UPDATED_EVENT, {
@@ -90,7 +92,6 @@ function App() {
       );
     });
     presenceSocketRef.current = socket;
-
     return () => {
       window.clearInterval(heartbeatTimer);
       socket.disconnect();
