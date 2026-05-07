@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/01 10:55:27 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/01 12:25:02 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/04 09:31:25 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,11 @@ type ChatModalProps = {
   onClose: () => void
   targetId: string;
   friendName: string;
+  friendPhoto?: string;
   currentUserId: string | null; // ✅ 내 ID 추가 전달 필요
 };
 
-export default function ChatModal({ open, onClose, targetId, friendName, currentUserId }: ChatModalProps) {
+export default function ChatModal({ open, onClose, targetId, friendName, friendPhoto, currentUserId }: ChatModalProps) {
   const { theme } = useTheme();
   const { messages: i18n } = useI18n();
   const [inputText, setInputText] = useState('');
@@ -92,7 +93,7 @@ export default function ChatModal({ open, onClose, targetId, friendName, current
       {/* Header */}
       <div style={headerStyle}>
         <div style={{ position: 'relative' }}>
-          <Avatar size={32} />
+          <Avatar size={32} url={friendPhoto}/>
           {/* ✅ 실시간 연결 상태 표시 점 */}
           <span style={{
             position: 'absolute',

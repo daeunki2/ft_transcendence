@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 13:14:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/02 08:17:53 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/04 09:22:08 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,16 +29,23 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
 
   // 1. 초기 히스토리 로드 (HTTP API 사용)
   const loadHistory = useCallback(async () => {
-    if (!targetId) return;
-    try {
-      const history = await chatService.getHistory(targetId);
-      console.log('[Chat] 가져온 히스토리 데이터:', history);
-      setMessages(Array.isArray(history) ? history : []);
-    } catch (err) {
-      console.error('[Chat] 히스토리 로드 실패:', err);
-      setMessages([]); // 에러 시 빈 배열로 초기화하여 'not iterable' 에러 방지
-    }
-  }, [targetId]);
+  if (!targetId) return;
+  try {
+    const response = await chatService.getHistory(targetId);
+    console.log('[Chat] 가져온 히스토리 데이터:', response);
+
+    // 🛠️ 수정: 객체 형태를 배열로 변환하거나, 배열이 맞는지 다시 확인
+    let historyArray = [];
+    if (Array.isArray(response)) {
+      historyArray = response;
+    } else if (typeof response === 'object' && response !== null) 
+      historyArray = Object.values(response);
+    setMessages(historyArray);
+  } catch (err) {
+    console.error('[Chat] 히스토리 로드 실패:', err);
+    setMessages([]);
+  }
+}, [targetId]);
 
   useEffect(() => {
     if (!targetId || !currentUserId) return;
@@ -68,6 +75,10 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
       if (newMessage.senderId === targetId || newMessage.receiverId === targetId) {
         setMessages((prev) => {
           const currentMessages = Array.isArray(prev) ? prev : [];
+          // 🛡️ 중요: 이미 리스트에 같은 ID(진짜 ID)가 있다면 중복해서 넣지 않음
+          if (currentMessages.some(m => m.id === newMessage.id)) {
+            return currentMessages;
+          }
           return [...currentMessages, newMessage];
         });
       }
@@ -93,31 +104,27 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
     console.log('[보내기 시도] 소켓 존재여부:', !!socketRef.current);
     console.log('[보내기 시도] 소켓 연결상태:', socketRef.current?.connected);
 
-    if (!socketRef.current || !targetId || !content.trim()) {
-        console.log('[보내기 중단] 원인:', { 
-            noSocket: !socketRef.current, 
-            noTarget: !targetId, 
-            noContent: !content.trim() 
-        });
+    if (!socketRef.current || !targetId || !content.trim())
         return;
-    }
 
-    socketRef.current.emit('send_dm', {
-      to: targetId,
-      message: content,
-    });
+    const tempId = Date.now(); 
 
-    // 낙관적 업데이트
     const tempMsg: Message = {
+      id: tempId, // 임시 번호표
       senderId: currentUserId!,
       receiverId: targetId,
       content,
       createdAt: new Date().toISOString(),
     };
-    setMessages((prev) => {
-      const currentMessages = Array.isArray(prev) ? prev : [];
-      return [...currentMessages, tempMsg];
+
+    // 화면에 즉시 반영 (낙관적 업데이트)
+    setMessages((prev) => [...(Array.isArray(prev) ? prev : []), tempMsg]);
+
+    socketRef.current.emit('send_dm', {
+      to: targetId,
+      message: content,
     });
+   
   }, [targetId, currentUserId]);
 
   return { messages, sendMessage, isConnected };

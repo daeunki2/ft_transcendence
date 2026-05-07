@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/01 12:27:37 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/04 09:28:26 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,7 +218,7 @@ function SocialPage() {
                     {friend.nickname}
                   </span>
                   <Button
-                    onClick={() => setChatTarget({ id: friend.userId, nickname: friend.nickname })}
+                    onClick={() => setChatTarget({ id: friend.userId, nickname: friend.nickname, photo: friend.userPhoto })}
                     style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
                   >
                     {messages.social.sendMessage}
@@ -349,6 +349,7 @@ function SocialPage() {
         onClose={() => setChatTarget(null)}
         targetId={chatTarget?.id ?? ''}
         friendName={chatTarget?.nickname ?? ''}
+        friendPhoto={chatTarget?.photo}
         currentUserId={currentUserId}
       />
 
