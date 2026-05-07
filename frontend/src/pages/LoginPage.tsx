@@ -32,8 +32,12 @@ function LoginPage() {
 
 const { id, setId, password, setPassword, handleLogin, isLoading,errorMsg,setErrorMsg } = useLogin();
 
-  const handleGuestEnter = () => {
-    enterGuestMode();
+  const handleGuestEnter = async () => {
+    const ok = await enterGuestMode();
+    if (!ok) {
+      setErrorMsg(messages.errors.SERVER_ERROR ?? 'Server error');
+      return;
+    }
     navigate('/home');
   };
 

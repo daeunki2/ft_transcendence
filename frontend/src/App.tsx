@@ -33,7 +33,7 @@ const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 function App() {
   const { fetchMe } = useAuthInit();
   const { messages } = useI18n();
-  const { user, setUser, isGuest } = useAuth();
+  const { user, setUser, isGuest, setIsGuest } = useAuth();
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isOffline, setIsOffline] = useState(
@@ -53,12 +53,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // 게스트 모드는 백엔드 인증을 사용하지 않으므로 fetchMe 를 호출하지 않는다.
-    // (호출하면 unauthenticated 응답으로 세션만료 알림이 잘못 뜬다.)
-    if (isGuest) {
-      setIsAuthReady(true);
-      return;
-    }
+    // 게스트도 백엔드 쿠키를 갖고 있으므로 fetchMe 가 isGuest 여부를 결정한다.
+    // 새로고침 후에도 쿠키가 살아있으면 isGuest 가 복원됨.
     fetchMe().finally(() => setIsAuthReady(true));
   }, []); // 딱 한 번 실행
 
@@ -177,6 +173,7 @@ function App() {
         onClose={() => {
           setSessionExpiredOpen(false);
           setUser(null);
+          setIsGuest(false);
           window.location.href = '/login';
         }}
       />

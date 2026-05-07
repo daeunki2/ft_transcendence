@@ -32,6 +32,7 @@ export class AuthController {
         user: {
           userId: String(payload.sub ?? ''),
           id: payload.id ?? '',
+          isGuest: payload.isGuest === true,
         },
       };
     } catch {
@@ -93,31 +94,42 @@ export class AuthController {
 
     if (result.success) {
       const baseCookieOptions = this.getBaseCookieOptions();
+      // 게스트는 session cookie 유지(maxAge 생략). 일반 유저는 persistent.
+      const isGuest = result.user.isGuest === true;
       response.cookie('accessToken', result.accessToken, {
         ...baseCookieOptions,
-        maxAge: result.accessTokenMaxAgeMs,
+        ...(!isGuest && { maxAge: result.accessTokenMaxAgeMs }),
       });
       response.cookie('refreshToken', result.refreshToken, {
         ...baseCookieOptions,
-        maxAge: result.refreshTokenMaxAgeMs,
+        ...(!isGuest && { maxAge: result.refreshTokenMaxAgeMs }),
       });
     }
 
     return result;
   }
 
-  // 게스트 토큰 발급. 일반 로그인과 달리 refresh token 은 굽지 않는다(쿠키 안 세팅).
-  // 만료되면 프론트가 다시 이 엔드포인트를 호출해 새 게스트로 진입.
+  // 게스트 토큰 발급. 옵션 C — session cookie + 짧은 refresh TTL.
+  // 쿠키에 maxAge 를 주지 않으면 브라우저가 탭/창 종료 시 쿠키를 폐기(session cookie).
+  // 백엔드 refresh TTL 도 짧게(30m default) → 쿠키가 어쩌다 살아남아도 곧 만료.
+  // DB row 정리는 GuestCleanupService 가 만료된 refresh_sessions 기준으로 cron 처리.
   @Post('guest')
-  guest(@Res({ passthrough: true }) response: Response) {
-    const result = this.authService.guest();
-
-    const baseCookieOptions = this.getBaseCookieOptions();
-    response.cookie('accessToken', result.accessToken, {
-      ...baseCookieOptions,
-      maxAge: result.accessTokenMaxAgeMs,
+  async guest(
+    @Req() request: express.Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.guest({
+      userAgent: request.headers['user-agent'],
+      ipAddress: request.ip,
     });
-    console.log('[게스트컨트롤러] 게스트 access token 쿠키 설정 완료');
+
+    if (result.success) {
+      const baseCookieOptions = this.getBaseCookieOptions();
+      // 의도적으로 maxAge 생략 → session cookie. 탭 닫으면 사라짐.
+      response.cookie('accessToken', result.accessToken, baseCookieOptions);
+      response.cookie('refreshToken', result.refreshToken, baseCookieOptions);
+      console.log('[게스트컨트롤러] 게스트 session cookie 설정 완료');
+    }
 
     return result;
   }

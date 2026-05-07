@@ -30,8 +30,12 @@ function RegisterPage() {
   const { messages } = useI18n();
   const { enterGuestMode } = useAuth();
 
-  const handleGuestEnter = () => {
-    enterGuestMode();
+  const handleGuestEnter = async () => {
+    const ok = await enterGuestMode();
+    if (!ok) {
+      setAlertMsg(messages.errors.SERVER_ERROR ?? 'Server error');
+      return;
+    }
     navigate('/home');
   };
 

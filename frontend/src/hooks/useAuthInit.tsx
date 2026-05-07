@@ -10,7 +10,7 @@ export const useAuthInit = () => {
     throw new Error('useAuthInit must be used within an AuthProvider');
   }
 
-  const { setUser } = context;
+  const { setUser, setIsGuest } = context;
 
   // 인증 검증과 프로필 조회를 분리한다.
   // - 인증 검증: auth-service 의 /me 한 번만. JWT 만 검증하므로 user-service 다운에 영향 없음.
@@ -20,12 +20,17 @@ export const useAuthInit = () => {
     const authResult = await authService.me().catch(() => null);
     if (!authResult?.success) {
       // 진짜 미인증: 토큰 없음/무효 + apiClient 의 자동 refresh 도 실패한 상태.
+      setIsGuest(false);
       return false;
     }
 
+    // JWT payload 의 isGuest 클레임이 진실의 원천. user-service 가 죽어도 이 값은 살아있다.
+    const isGuest = authResult.user.isGuest === true;
+    setIsGuest(isGuest);
+
     const profileResult = await userService.getMe().catch(() => null);
     if (profileResult?.success) {
-      setUser(profileResult.user);
+      setUser({ ...profileResult.user, isGuest });
       return true;
     }
 
@@ -34,11 +39,12 @@ export const useAuthInit = () => {
     setUser((prev) => prev ?? {
       userId: authResult.user.userId,
       id: authResult.user.id,
-      nickname: '',
+      nickname: isGuest ? authResult.user.id : '',
       userPhoto: '',
+      isGuest,
     });
     return true;
-  }, [setUser]);
+  }, [setUser, setIsGuest]);
 
   return { fetchMe };
 }

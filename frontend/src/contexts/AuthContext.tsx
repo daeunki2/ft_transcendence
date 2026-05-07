@@ -1,7 +1,8 @@
 import { useState, useContext, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { AuthContext, GUEST_STORAGE_KEY } from './AuthContext.types';
+import { AuthContext } from './AuthContext.types';
 import type { UserType } from './AuthContext.types';
+import { authService } from '../services/authService';
 
 
 export const useAuth = () => {
@@ -18,24 +19,36 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserType | null>(null);
   const [isLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState<boolean>(
-    () => sessionStorage.getItem(GUEST_STORAGE_KEY) === '1',
-  );
+  // 새로고침 직후엔 false 로 시작. useAuthInit.fetchMe 가 /me 응답의 isGuest 클레임으로 복원.
+  const [isGuest, setIsGuest] = useState<boolean>(false);
 
-  const enterGuestMode = useCallback(() => {
-    sessionStorage.setItem(GUEST_STORAGE_KEY, '1');
-    setUser(null);
+  // 백엔드에 게스트 진입 요청. 성공하면 access/refresh 쿠키가 설정되고
+  // 응답으로 받은 닉네임으로 user/isGuest 를 동시에 채운다.
+  const enterGuestMode = useCallback(async (): Promise<boolean> => {
+    const result = await authService.guest();
+    if (!result?.success) {
+      console.error('[enterGuestMode] 게스트 진입 실패:', result?.message);
+      return false;
+    }
+    setUser({
+      userId: '',
+      id: result.user.id,
+      nickname: result.user.id,
+      userPhoto: '',
+      isGuest: true,
+    });
     setIsGuest(true);
+    return true;
   }, []);
 
   const exitGuestMode = useCallback(() => {
-    sessionStorage.removeItem(GUEST_STORAGE_KEY);
+    setUser(null);
     setIsGuest(false);
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, isLoading, isGuest, enterGuestMode, exitGuestMode }}
+      value={{ user, setUser, isLoading, isGuest, setIsGuest, enterGuestMode, exitGuestMode }}
     >
       {children}
     </AuthContext.Provider>

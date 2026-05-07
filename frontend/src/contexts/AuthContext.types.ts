@@ -6,6 +6,7 @@ export interface UserType {
   id: string;
   nickname: string;
   userPhoto: string;
+  isGuest?: boolean;
 }
 
 export interface AuthContextType {
@@ -13,12 +14,10 @@ export interface AuthContextType {
   setUser: Dispatch<SetStateAction<UserType | null>>;
   isLoading: boolean;
   isGuest: boolean;
-  enterGuestMode: () => void;
+  setIsGuest: Dispatch<SetStateAction<boolean>>;
+  // 백엔드에 게스트 진입 요청 → 성공 시 user/isGuest 동시 갱신. 실패 시 false.
+  enterGuestMode: () => Promise<boolean>;
   exitGuestMode: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// 클라이언트 게스트 플래그. 추후 백엔드 게스트 JWT 도입 시 이 키 대신
-// /me 응답의 role 으로 갈아끼우면 소비자 코드는 그대로 둘 수 있다.
-export const GUEST_STORAGE_KEY = 'guest_mode';

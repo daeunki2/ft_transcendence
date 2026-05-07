@@ -27,8 +27,12 @@ function LandingPage() {
   const navigate = useNavigate();
   const { enterGuestMode } = useAuth();
 
-  const handleGuestEnter = () => {
-    enterGuestMode();
+  const handleGuestEnter = async () => {
+    const ok = await enterGuestMode();
+    if (!ok) {
+      window.alert(messages.errors.SERVER_ERROR ?? 'Server error');
+      return;
+    }
     navigate('/home');
   };
 

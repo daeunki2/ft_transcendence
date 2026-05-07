@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { RefreshSession } from './entities/refresh-session.entity';
-import { createHash, randomBytes, randomUUID } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from './redis/redis.module';
@@ -30,21 +30,12 @@ type LoginResult =
       refreshToken: string;
       accessTokenMaxAgeMs: number;
       refreshTokenMaxAgeMs: number;
-      user: { id: string };
+      user: { id: string; isGuest?: boolean };
     }
   | {
       success: false;
       message: string;
     };
-
-// 게스트는 refresh token 이 없어서 LoginResult 와 모양이 다름. 만료되면 그냥 새 게스트로 다시 발급.
-type GuestResult = {
-  success: true;
-  message: string;
-  accessToken: string;
-  accessTokenMaxAgeMs: number;
-  user: { id: string; isGuest: true };
-};
 
 @Injectable()
 export class AuthService {
@@ -52,9 +43,10 @@ export class AuthService {
   private readonly defaultRefreshTtl = '7d'; //7일
   private readonly defaultAccessTtlMs = 15 * 60 * 1000;
   private readonly defaultRefreshTtlMs = 7 * 24 * 60 * 60 * 1000;
-  // 게스트는 refresh 가 없으므로 access 자체를 좀 더 길게 — 한 세션 분량(2h).
-  private readonly defaultGuestTtl = '2h';
-  private readonly defaultGuestTtlMs = 2 * 60 * 60 * 1000;
+  // 게스트 refresh TTL — 짧게(30m). 옵션 C(session cookie) 와 함께,
+  // 쿠키가 어쩌다 살아남아도 백엔드에서 곧 만료 처리되도록 보호.
+  private readonly defaultGuestRefreshTtl = '30m';
+  private readonly defaultGuestRefreshTtlMs = 30 * 60 * 1000;
 
   constructor(
     @InjectRepository(Auth)
@@ -138,8 +130,9 @@ export class AuthService {
     }
 
     const user = await this.userRepository.findOne({ where: { loginId: id } });
-  
-    if (!user)
+
+    // user.password 가 NULL 인 row 는 게스트 → 일반 로그인 진입 차단.
+    if (!user || !user.password || !user.loginId)
       return { success: false, message: 'USER_NOT_FOUND' };
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -195,8 +188,9 @@ export class AuthService {
       return { success: false, message: 'REFRESH_TOKEN_REVOKED' };
     }
 
+    let oldPayload: { sub: string; id?: string; isGuest?: boolean };
     try {
-      this.jwtService.verify<{ sub: string; id?: string }>(refreshToken);
+      oldPayload = this.jwtService.verify<{ sub: string; id?: string; isGuest?: boolean }>(refreshToken);
       console.log('[인증서비스] 리프레시 토큰 서명 검증 성공');
     } catch (error) {
       console.log('[인증서비스] 리프레시 토큰 서명 검증 실패');
@@ -227,19 +221,30 @@ export class AuthService {
       return { success: false, message: 'USER_NOT_FOUND' };
     }
 
+    // 게스트는 loginId 가 NULL 이므로 화면용 식별자(닉네임)는 직전 토큰 payload 에서 그대로 가져온다.
+    // 일반 유저는 loginId 사용. refresh TTL 도 게스트는 짧은 값 유지(30m default).
+    const isGuest = user.role === 'guest';
     const accessTtl = this.getAccessTokenTtl();
-    const refreshTtl = this.getRefreshTokenTtl();
+    const refreshTtl = isGuest ? this.getGuestRefreshTokenTtl() : this.getRefreshTokenTtl();
     const accessTokenMaxAgeMs = this.parseTtlToMs(accessTtl, this.defaultAccessTtlMs);
-    const refreshTokenMaxAgeMs = this.parseTtlToMs(refreshTtl, this.defaultRefreshTtlMs);
+    const refreshTokenMaxAgeMs = this.parseTtlToMs(
+      refreshTtl,
+      isGuest ? this.defaultGuestRefreshTtlMs : this.defaultRefreshTtlMs,
+    );
 
-    const newAccessToken = this.jwtService.sign(
-      { sub: user.id, id: user.loginId },
-      { expiresIn: accessTokenMaxAgeMs / 1000 },
-    );
-    const newRefreshToken = this.jwtService.sign(
-      { sub: user.id, id: user.loginId },
-      { expiresIn: refreshTokenMaxAgeMs / 1000 },
-    );
+    const displayId = isGuest ? oldPayload.id ?? '' : user.loginId ?? '';
+    const newPayload = {
+      sub: user.id,
+      id: displayId,
+      ...(isGuest && { isGuest: true }),
+    };
+
+    const newAccessToken = this.jwtService.sign(newPayload, {
+      expiresIn: accessTokenMaxAgeMs / 1000,
+    });
+    const newRefreshToken = this.jwtService.sign(newPayload, {
+      expiresIn: refreshTokenMaxAgeMs / 1000,
+    });
     console.log('[인증서비스] 새 액세스/리프레시 토큰 발급 완료');
 
     const previousExpiryMs = session.expiresAt.getTime();
@@ -259,7 +264,8 @@ export class AuthService {
       accessTokenMaxAgeMs,
       refreshTokenMaxAgeMs,
       user: {
-        id: user.loginId,
+        id: displayId,
+        ...(isGuest && { isGuest: true }),
       },
     };
   }
@@ -284,39 +290,98 @@ export class AuthService {
     };
   }
 
-  // 게스트 토큰 발급. DB 에 row 를 만들지 않고 JWT 만 서명해서 돌려준다.
-  // - sub: `guest_<uuid>` (일반 유저의 numeric id 와 충돌하지 않도록 prefix)
-  // - id: 화면에 표시할 랜덤 닉네임 (Guest_ + 6 hex)
-  // - isGuest: true (다운스트림 가드/매칭 서비스가 권한 분기에 사용)
-  // refresh token 은 발급하지 않는다 — 만료되면 클라가 다시 /guest 를 호출해 새 게스트로 진입.
-  guest(): GuestResult {
-    const guestSub = `guest_${randomUUID()}`;
-    const nickname = `Guest_${randomBytes(3).toString('hex')}`; // 6 hex chars
+  // 게스트 토큰 발급 (패턴 3 — 게스트도 정식 row + refresh).
+  // 매칭/큐가 user_id FK 를 요구하고, 재접속·통계·밴이 stable identity 를 가정하므로
+  // 게스트도 일반 유저와 동일한 흐름을 거친다. 차이는 단 두 가지:
+  //   1) Auth.loginId/password 가 NULL, role='guest'
+  //   2) JWT payload 에 isGuest:true 클레임 추가
+  // 닉네임은 Guest_<6hex> 랜덤 — 충돌 시 재시도.
+  async guest(context?: LoginContext): Promise<LoginResult> {
+    // Auth row 먼저 생성. user-service /init 실패 시 롤백 대상.
+    const newAuth = this.userRepository.create({
+      loginId: null,
+      password: null,
+      role: 'guest',
+    });
+    const savedAuth = await this.userRepository.save(newAuth);
+    console.log(`[guest] auth row 생성: ${savedAuth.id}`);
 
-    const ttl = this.getGuestTokenTtl();
-    const accessTokenMaxAgeMs = this.parseTtlToMs(ttl, this.defaultGuestTtlMs);
+    // user-service 에 프로필 row 생성. 닉네임 충돌(NICKNAME_ALREADY_EXISTS)만 재시도.
+    const MAX_NICKNAME_RETRIES = 5;
+    let nickname = `Guest_${randomBytes(3).toString('hex')}`;
+    let initOk = false;
+    for (let attempt = 0; attempt < MAX_NICKNAME_RETRIES; attempt++) {
+      try {
+        await firstValueFrom(
+          this.httpService.post('http://user-service:4001/init', {
+            id: savedAuth.id,
+            email: null,
+            nickname,
+            role: 'guest',
+          }),
+        );
+        initOk = true;
+        break;
+      } catch (error: any) {
+        const upstreamMessage = error.response?.data?.message;
+        if (upstreamMessage === 'NICKNAME_ALREADY_EXISTS') {
+          nickname = `Guest_${randomBytes(3).toString('hex')}`;
+          continue;
+        }
+        await this.userRepository.delete({ id: savedAuth.id });
+        console.error(
+          '[guest] User 서비스 초기화 실패:',
+          error.response?.data || error.message,
+        );
+        return {
+          success: false,
+          message:
+            typeof upstreamMessage === 'string' && upstreamMessage.length > 0
+              ? upstreamMessage
+              : 'GUEST_INIT_FAILED',
+        };
+      }
+    }
+    if (!initOk) {
+      await this.userRepository.delete({ id: savedAuth.id });
+      return { success: false, message: 'GUEST_NICKNAME_RETRY_EXHAUSTED' };
+    }
 
-    const payload = {
-      sub: guestSub,
-      id: nickname,
-      isGuest: true,
-    };
+    // 일반 로그인과 동일한 access/refresh 발급. refresh TTL 만 게스트용 짧은 값 사용.
+    const payload = { sub: savedAuth.id, id: nickname, isGuest: true };
+    const accessTtl = this.getAccessTokenTtl();
+    const refreshTtl = this.getGuestRefreshTokenTtl();
+    const accessTokenMaxAgeMs = this.parseTtlToMs(accessTtl, this.defaultAccessTtlMs);
+    const refreshTokenMaxAgeMs = this.parseTtlToMs(refreshTtl, this.defaultGuestRefreshTtlMs);
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: accessTokenMaxAgeMs / 1000,
     });
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: refreshTokenMaxAgeMs / 1000,
+    });
 
-    console.log('[guest] 게스트 토큰 발급', { sub: guestSub, nickname });
+    await this.refreshSessionRepository.save({
+      userId: savedAuth.id,
+      tokenHash: this.hashToken(refreshToken),
+      userAgent: context?.userAgent ?? null,
+      ipAddress: context?.ipAddress ?? null,
+      expiresAt: new Date(Date.now() + refreshTokenMaxAgeMs),
+    });
+
+    console.log('[guest] 게스트 토큰 발급 완료', {
+      userId: savedAuth.id,
+      nickname,
+    });
 
     return {
       success: true,
       message: 'GUEST_ISSUED',
       accessToken,
+      refreshToken,
       accessTokenMaxAgeMs,
-      user: {
-        id: nickname,
-        isGuest: true,
-      },
+      refreshTokenMaxAgeMs,
+      user: { id: nickname, isGuest: true },
     };
   }
 
@@ -328,8 +393,8 @@ export class AuthService {
     return this.configService.get<string>('REFRESH_TOKEN_TTL') ?? this.defaultRefreshTtl;
   }
 
-  private getGuestTokenTtl(): string {
-    return this.configService.get<string>('GUEST_TOKEN_TTL') ?? this.defaultGuestTtl;
+  private getGuestRefreshTokenTtl(): string {
+    return this.configService.get<string>('GUEST_REFRESH_TTL') ?? this.defaultGuestRefreshTtl;
   }
 
   private parseTtlToMs(ttl: string, fallback: number): number {
