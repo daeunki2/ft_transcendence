@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 19:06:54 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/01 12:51:39 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 11:24:02 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,23 @@ import {
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
+import { OnModuleInit, Inject } from '@nestjs/common';
+import { PRESENCE_UPDATED_CHANNEL, PresenceUpdatedEvent } from 'src/types/presence.types';
 import { SendDmDto, GetHistoryDto } from './dto/message.dto'; // DTO 임포트
+import { Redis } from 'ioredis';
 
 @WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer() server: Server;
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService, @Inject('REDIS_SUB') private readonly redisSub: Redis,
+  ) {}
 
+  // 서버가 시작될 때 Redis 구독 설정
+  onModuleInit() {
+    this.setupPresenceSubscription();
+  }
+  
   private extractUserId(client: Socket): string | null {
     const userId = client.handshake.headers['x-user-id'];
     if (!userId) {
@@ -41,7 +50,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     return userId;
   }
+  
+  private setupPresenceSubscription() {
+    this.redisSub.subscribe(PRESENCE_UPDATED_CHANNEL);
+    this.redisSub.on('message', (channel, message) => {
+      if (channel === PRESENCE_UPDATED_CHANNEL) {
+        try {
+          // 🛡️ JSON 파싱 시 에러 방지
+          const event: PresenceUpdatedEvent = JSON.parse(message);
+          
+          if (!event || !event.userId) return;
 
+          // 📢 방송
+          this.server.emit('user_presence_changed', {
+            userId: event.userId,
+            status: event.publicStatus, 
+          });
+          
+          console.log(`[Presence Update] User ${event.userId} is now ${event.publicStatus}`);
+        } catch (error) {
+          console.error(`[Redis Sub Error] 메시지 파싱 실패: ${error.message}`);
+        }
+      }
+    });
+  }
   async handleConnection(client: Socket) {
     console.log('소캣 chat-gateway 도착');
     try {
@@ -53,7 +85,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       client.data.userId = userId;
-      await this.chatService.setUserOnline(userId, client.id);
+      await this.chatService.saveSocketId(userId, client.id);
       console.log(`[Chat] 유저 온라인: ${userId}`);
     } catch (error: any) {
       console.error(`[Chat] 연결 처리 중 예외 발생: ${error.message}`);
@@ -94,7 +126,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.userId;
     if (userId) {
       try {
-        await this.chatService.setUserOffline(userId);
+        await this.chatService.removeSocketId(userId);
         console.log(`[Disconnected] User: ${userId}`);
       } catch (err: any) {
         console.error(`[Redis Error] 오프라인 상태 변경 실패: ${err.message}`);

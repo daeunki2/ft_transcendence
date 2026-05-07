@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 13:00:31 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/01 11:45:00 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 11:25:10 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ import {
   Headers 
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { Request } from 'express';
 
 @Controller()
 export class ChatController {
@@ -50,6 +51,16 @@ export class ChatController {
     
     // 서비스 로직 호출
     return await this.chatService.getDmHistory(myId, targetId);
+  }
+
+   /**
+   * 상대방 상태조회 
+   * GET http://localhost:8000/api/chat/status/:userId
+   */
+  @Get('status/:userId')
+  async getStatus(@Param('userId') userId: string) {
+    const status = await this.chatService.getUserStatus(userId);
+    return { status };
   }
   
   /**

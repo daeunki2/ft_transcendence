@@ -85,7 +85,7 @@ services:
     build: ./chat-service
     container_name: chat-service
     ports:
-      - "3000:3000"
+      - "3002:3002"
     env_file:
       - ./chat-service/.env
     volumes:
@@ -99,7 +99,7 @@ services:
     stdin_open: true
     tty: true
     # healthcheck:
-    #   test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/health || exit 1"]
+    #   test: ["CMD-SHELL", "wget -q --spider http://localhost:3002/health || exit 1"]
     #   interval: 10s
     #   timeout: 3s
     #   retries: 5

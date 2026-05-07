@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 18:45:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/30 12:57:20 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 12:16:04 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,12 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { ChatRepository } from './repository/chat.repository';
+import axios from 'axios';
+
 
 @Injectable()
 export class ChatService {
+  private readonly presenceApiUrl = 'http://gateway:8000/presence';
   constructor(
     //private readonly redis: Redis,
 	@Inject('REDIS_CLIENT') private readonly redis: Redis, // 이 부분!
@@ -48,25 +51,25 @@ export class ChatService {
   /**
    * 유저가 온라인일 때 소켓 ID를 Redis에 기록합니다.
    */
-  async setUserOnline(userId: string, socketId: string) {
+  async saveSocketId(userId: string, socketId: string) {
     try {
       // 키 형식: user:socket:{userId}, 값: {socketId}, 유효시간: 24시간
       await this.redis.set(`user:socket:${userId}`, socketId, 'EX', 86400);
       console.log(`[Redis] 유저 ${userId} 상태 저장 (Socket: ${socketId})`);
     } catch (error) {
-      console.error(`[Redis Error] setUserOnline 실패: ${error.message}`);
+      console.error(`[Redis Error] saveSocketId 실패: ${error.message}`);
     }
   }
 
   /**
    * 유저 접속 종료 시 Redis에서 정보를 삭제합니다.
    */
-  async setUserOffline(userId: string) {
+  async removeSocketId(userId: string) {
     try {
       await this.redis.del(`user:socket:${userId}`);
       console.log(`[Redis] 유저 ${userId} 상태 삭제 완료`);
     } catch (error) {
-      console.error(`[Redis Error] setUserOffline 실패: ${error.message}`);
+      console.error(`[Redis Error] removeSocketId 실패: ${error.message}`);
     }
   }
 
@@ -95,4 +98,21 @@ export class ChatService {
       return [];
     }
   }
+
+    /**
+ * 상대방의 로그인 상태를 확인합니다.
+ */
+  async getUserStatus(userId: string): Promise<string> {
+    try {
+      // 팀원분이 만든 Presence 서비스의 Endpoint 호출
+      const response = await axios.get(`${this.presenceApiUrl}/${userId}`);
+      
+      // PresenceController가 리턴하는 publicStatus 반환 ('ONLINE', 'OFFLINE', 'IN_GAME')
+      return response.data.publicStatus || 'OFFLINE';
+    } catch (error) {
+      console.error(`[Presence API Error] 유저 상태 조회 실패: ${error.message}`);
+      return 'OFFLINE'; // 에러 발생 시 기본값은 오프라인
+    }
+  }
 }
+

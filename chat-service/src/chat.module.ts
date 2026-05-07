@@ -6,11 +6,13 @@ import { ChatGateway } from './chat.gateway';
 import { ChatMessage } from './entities/chat.entity'; // 엔티티 확인!
 import { ConfigModule } from '@nestjs/config';
 import { ChatController } from './chat.controller';
+import { HttpModule } from '@nestjs/axios'
 import Redis from 'ioredis';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    HttpModule,
 
     // 1. 여기서 DB 연결 설정을 직접 합니다 (forRoot)
     TypeOrmModule.forRoot({
@@ -37,6 +39,15 @@ import Redis from 'ioredis';
       useFactory: () => {
         return new Redis({
           host: 'redis', // redis 서비스 이름
+          port: 6379,
+        });
+      },
+    },
+    {
+      provide: 'REDIS_SUB',
+      useFactory: () => {
+        return new Redis({
+          host: 'redis',
           port: 6379,
         });
       },

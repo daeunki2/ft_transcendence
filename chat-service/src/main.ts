@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 19:03:10 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/30 12:03:25 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 11:54:33 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ async function bootstrap() {
   const app = await NestFactory.create(ChatModule);
 
 //   await app.listen(process.env.PORT ?? 3000);
-await app.listen(3000, '0.0.0.0');
-  console.log(`connect success with port 3000`);
+await app.listen(3002, '0.0.0.0');
+  console.log(`connect success with port 3002`);
 }
 bootstrap();

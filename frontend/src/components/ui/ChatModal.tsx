@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/01 10:55:27 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/04 09:31:25 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 11:07:53 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ export default function ChatModal({ open, onClose, targetId, friendName, friendP
 
   // ✅ 실시간 채팅 훅 연결
   // 모달이 열려 있을 때만 friendName을 전달하여 소켓 연결을 시작합니다.
-  const { messages, sendMessage, isConnected } = useChat(
+  const { messages, sendMessage, isConnected, targetStatus } = useChat(
     open ? targetId : null,
     currentUserId
   );
@@ -102,7 +102,9 @@ export default function ChatModal({ open, onClose, targetId, friendName, friendP
             width: '10px',
             height: '10px',
             borderRadius: '50%',
-            background: isConnected ? '#22c55e' : '#ef4444',
+            background: 
+              targetStatus === 'ONLINE' ? '#22c55e' :
+              targetStatus === 'IN_GAME' ? '#f59e0b' :'#ef4444',
             border: `2px solid ${theme.colors.background}`,
           }} />
         </div>
