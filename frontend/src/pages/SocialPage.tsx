@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocialPage.tsx                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/06 23:56:12 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/08 10:35:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,11 @@ type PresenceUpdatedPayload = {
 function SocialPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
-  const [chatTarget, setChatTarget] = useState<string | null>(null);
+  const [chatTarget, setChatTarget] = useState<{
+  id: string;
+  nickname: string;
+  photo?: string;
+} | null>(null);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [friends, setFriends] = useState<FriendItem[]>([]);
@@ -131,6 +135,7 @@ function SocialPage() {
       setSuccessMessage(messages.social.requestSent);
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
@@ -142,6 +147,7 @@ function SocialPage() {
       await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
@@ -153,6 +159,7 @@ function SocialPage() {
       await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
 
@@ -164,9 +171,10 @@ function SocialPage() {
       await refresh();
     } catch (err: any) {
       setErrorCode(err.message);
+      await refresh();
     }
   };
-
+  const targetFriend = friends.find(f => f.userId === chatTarget?.id);
   return (
     <PageContainer
       header={<Navbar />}
@@ -255,7 +263,7 @@ function SocialPage() {
                     {friend.nickname}
                   </span>
                   <Button
-                    onClick={() => setChatTarget(friend.nickname)}
+                    onClick={() => setChatTarget({ id: friend.userId, nickname: friend.nickname, photo: friend.userPhoto })}
                     style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
                   >
                     {messages.social.sendMessage}
@@ -384,7 +392,11 @@ function SocialPage() {
       <ChatModal
         open={chatTarget !== null}
         onClose={() => setChatTarget(null)}
-        friendName={chatTarget ?? ''}
+        targetId={chatTarget?.id ?? ''}
+        friendName={chatTarget?.nickname ?? ''}
+        friendPhoto={chatTarget?.photo}
+        currentUserId={currentUserId}
+        targetStatus={targetFriend?.status ?? 'OFFLINE'}
       />
 
       <Alert

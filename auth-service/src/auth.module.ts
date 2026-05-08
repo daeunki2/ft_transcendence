@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { GuestCleanupService } from './guest-cleanup.service';
 import { Auth } from './entities/auth.entity';
 import { RefreshSession } from './entities/refresh-session.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from './redis/redis.module';
 import { HealthModule } from './health/health.module';
 
@@ -40,10 +42,11 @@ import { HealthModule } from './health/health.module';
       secret: process.env.MY_SECRET_KEY, // .env 파일로 생성해야함!
       signOptions: { expiresIn: '1h' }, // 토큰 유효 기간 (1시간)
     }),
+    ScheduleModule.forRoot(),
     RedisModule,
     HealthModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, GuestCleanupService],
 })
 export class AuthModule {}

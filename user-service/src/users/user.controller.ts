@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Get, Req, Patch, UnauthorizedException, BadRequestException, NotFoundException, Headers, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, Req, Patch, Delete, Param, UnauthorizedException, BadRequestException, NotFoundException, Headers, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -47,12 +47,16 @@ export class UserController {
   }
 
   @Post('init') // auth-service가 호출하는 경로
-  async initializeUser(@Body() data: { id: string; loginId?: string; email?: string; nickname: string }) {
-    const loginId = data.loginId ?? data.email;
-    if (!loginId) {
-      throw new BadRequestException('LOGIN_ID_REQUIRED');
-    }
-    const user = await this.userService.createUserProfile(data.id, loginId, data.nickname);
+  async initializeUser(
+    @Body()
+    data: { id: string; email: string | null; nickname: string; role?: string },
+  ) {
+    const user = await this.userService.createUserProfile(
+      data.id,
+      data.email,
+      data.nickname,
+      data.role ?? 'normal',
+    );
     return {
       success: true,
       user: {
@@ -60,9 +64,23 @@ export class UserController {
         loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
-        role:user.role,
+        role: user.role,
       },
     };
+  }
+
+  // 내부 호출 전용 — auth-service 의 게스트 cleanup cron 이 호출.
+  // 외부 노출 차단은 향후 gateway 가 /internal/* 경로를 막거나 internal-secret 헤더 검사로 보강.
+  @Delete('internal/users/:userId')
+  async deleteGuestUser(
+    @Param('userId') userId: string,
+    @Headers('x-internal-secret') secret?: string,
+  ) {
+    const expected = process.env.INTERNAL_SECRET;
+    if (expected && secret !== expected) {
+      throw new UnauthorizedException('INTERNAL_SECRET_INVALID');
+    }
+    return this.userService.deleteGuestUser(userId);
   }
 
   @Get('me')
@@ -73,6 +91,7 @@ export class UserController {
       throw new UnauthorizedException('[getMe] 인증 정보가 없습니다.');
     }
 
+    console.log('[getme] 입장');
     const user = await this.userService.getMe(currentUserId);
 
     if (!user) {

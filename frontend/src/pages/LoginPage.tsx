@@ -22,13 +22,24 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import TextButton from '../components/ui/TextButton';
 import { useLogin } from '../hooks/Login';
+import { useAuth } from '../contexts/AuthContext';
 
 function LoginPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { messages } = useI18n();
+  const { enterGuestMode } = useAuth();
 
 const { id, setId, password, setPassword, handleLogin, isLoading,errorMsg,setErrorMsg } = useLogin();
+
+  const handleGuestEnter = async () => {
+    const ok = await enterGuestMode();
+    if (!ok) {
+      setErrorMsg(messages.errors.SERVER_ERROR ?? 'Server error');
+      return;
+    }
+    navigate('/home');
+  };
 
   return (
     <PageContainer
@@ -130,6 +141,19 @@ const { id, setId, password, setPassword, handleLogin, isLoading,errorMsg,setErr
   			<TextButton onClick={() => navigate('/register')}>
     			{messages.login.footerLink}
   			</TextButton>{' '}
+			</div>
+
+			<div
+			style={{
+    		textAlign: 'center',
+    		fontSize: '14px',
+    		color: theme.colors.textMuted,
+  			}}
+			>
+			{messages.guest.entryText}
+  			<TextButton onClick={handleGuestEnter}>
+    			{messages.guest.entryLink}
+  			</TextButton>
 			</div>
           </div>
         </Card>

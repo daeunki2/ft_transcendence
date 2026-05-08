@@ -11,10 +11,12 @@
 /* ************************************************************************** */
 
 
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import FooterLinks from '../components/common/FooterLinks';
 import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
@@ -24,6 +26,16 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { messages } = useI18n();
   const { theme } = useTheme();
+  const [matchModalOpen, setMatchModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!matchModalOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMatchModalOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [matchModalOpen]);
 
   return (
     <PageContainer
@@ -108,7 +120,7 @@ export default function HomePage() {
             }}
           >
             <Button
-              onClick={() => navigate('/match')}
+              onClick={() => setMatchModalOpen(true)}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.match}
@@ -125,6 +137,22 @@ export default function HomePage() {
 
 
       </div>
+
+      <Modal
+        open={matchModalOpen}
+        onClose={() => setMatchModalOpen(false)}
+        closeOnOverlayClick={false}
+      >
+        <div
+          style={{
+            padding: '32px',
+            color: theme.colors.text,
+            textAlign: 'center',
+          }}
+        >
+          테스트, 클릭 제한, esc누르면 모달창에서 나옴
+        </div>
+      </Modal>
     </PageContainer>
   );
 }

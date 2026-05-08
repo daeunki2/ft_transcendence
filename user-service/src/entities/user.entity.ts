@@ -6,11 +6,11 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   userId: string;
 
-  // DB 컬럼명은 기존(email)을 유지해 마이그레이션 없이 코드 의미만 loginId로 정리
-  @Column({ name: 'email', unique: true })
-  loginId: string;
+  // 게스트는 email 이 NULL. PG 의 unique+nullable 은 NULL 다중 허용.
+  @Column({ unique: true, nullable: true, type: 'varchar' })
+  email: string | null;
 
-  @Column()
+  @Column({ unique: true })
   nickname: string;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

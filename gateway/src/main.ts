@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/15 16:33:18 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/07 18:42:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,31 @@ async function bootstrap() {
       target: 'http://user-service:4001',
       changeOrigin: true,
 	  pathRewrite: { '^/api/users': '' },
+      // user-service 다운 시 502 대신 표준 503 + 코드로 응답 (프론트 헬스 가드와 연결)
+      on: {
+        error(_err, _req, res) {
+          const response = res as Response;
+          if (response.headersSent) {
+            return;
+          }
+          response.status(503).json({
+            success: false,
+            message: 'USER_SERVICE_UNAVAILABLE',
+          });
+        },
+      },
+    }),
+  );
+
+  // 4. Chat Service로 토스 (주소가 /api/chat으로 시작하면 3002번으로)
+  app.use(
+    '/api/chat',
+    verifyAccessToken,
+    createProxyMiddleware({
+      target: 'http://chat-service:3002',
+      changeOrigin: true,
+      ws: true,
+      pathRewrite: { '^/api/chat': '' },
     }),
   );
 
@@ -92,6 +117,7 @@ function createAccessTokenMiddleware(
       return next();
     }
     const token = req.cookies?.accessToken;
+    const isSocket = req.path.includes('socket.io'); // 소켓 요청인지 확인
 
   console.log('[게이트웨이] 액세스 토큰 검사 시작', { path: req.path,hasAccessToken: Boolean(req.cookies?.accessToken), });
 
@@ -119,6 +145,10 @@ function createAccessTokenMiddleware(
     }
     catch (error)
     {
+      if (isSocket) {
+        console.log('[게이트웨이] 소켓 인증 실패 -> 연결 강제 종료');
+        return req.destroy(); // JSON 응답 없이 스트림을 파괴 (에러 폭발 방지)
+      }
       console.log('[게이트웨이] 액세스 토큰 검증 실패 -> ACCESS_TOKEN_INVALID');
       return res.status(401).json({
         success: false,

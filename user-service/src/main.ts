@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(UserModule);
   app.use(cookieParser());
 
- app.useStaticAssets(join(process.cwd(), 'uploads'), { // process.cwd()는 프로젝트 루트를 의미합니다.
+ app.useStaticAssets(join(process.cwd(), 'uploads'), {
   prefix: '/uploads',
 });
 

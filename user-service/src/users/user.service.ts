@@ -8,16 +8,18 @@ import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
-  private readonly publicBaseUrl = process.env.USER_PUBLIC_BASE_URL ?? 'http://localhost:4001';
-
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
   ) {}
 
-  async createUserProfile(id: string, loginId: string, nickname: string, )
-  {
+  async createUserProfile(
+    id: string,
+    email: string | null,
+    nickname: string,
+    role: string = 'normal',
+  ) {
     try
     {
       if ( typeof nickname !== 'string' || nickname.trim() === '' || !isNicknameAllowed(nickname) )
@@ -35,17 +37,30 @@ export class UserService {
       userId: id, // 전달받은 UUID
       loginId,
       nickname: normalizedNickname,
-      userPhoto: `${this.publicBaseUrl}/uploads/default.jpg`,
-      role: "normal",
+      userPhoto: "http://localhost:4001/uploads/default.jpg",
+      role,
       });
 
-      console.log('유저 db생성');
+      console.log('유저 db생성', { id, role });
       return await this.userRepository.save(newUser);
     }
     catch (error)
     {
       if (error instanceof BadRequestException)
         {throw error;}
+
+      // PG unique violation(23505) — select 체크와 INSERT 사이의 race 에서 발생.
+      // auth-service 의 게스트 닉네임 retry 가 같은 메시지로 반응하도록 BadRequest 로 변환.
+      const pgCode = error.code ?? error.driverError?.code;
+      if (pgCode === '23505') {
+        const detail: string = error.driverError?.detail ?? error.detail ?? '';
+        if (detail.includes('email')) {
+          throw new BadRequestException('EMAIL_ALREADY_EXISTS');
+        }
+        // nickname 충돌이거나 detail 정보가 없는 경우(게스트는 email=NULL 이므로 nickname 일 확률이 압도적).
+        throw new BadRequestException('NICKNAME_ALREADY_EXISTS');
+      }
+
       console.error('프로필 생성 중 DB 에러:', error.message);
       throw new InternalServerErrorException('유저 프로필 생성 중 서버 에러가 발생했습니다.');
     }
@@ -57,7 +72,7 @@ export class UserService {
     if (!user) return null;
 
     // 🟢 [추가] 사진이 default가 아닌데, 실제 파일이 서버에 없는 경우 체크
-    const DEFAULT_PHOTO_URL = `${this.publicBaseUrl}/uploads/default.jpg`;
+    const DEFAULT_PHOTO_URL = "http://localhost:4001/uploads/default.jpg";
     
     if (user.userPhoto && user.userPhoto !== DEFAULT_PHOTO_URL) {
       // URL에서 파일명만 추출 (예: http://.../uploads/abc.jpg -> abc.jpg)
@@ -73,7 +88,7 @@ export class UserService {
       }
     }
     }
-
+    console.log('[getme] 성공', user.nickname);
     return user;
   }
 
@@ -117,13 +132,27 @@ export class UserService {
     return await this.userRepository.findOne({ where: { userId: user.userId } });
   }
 
+  // auth-service 의 게스트 cleanup cron 이 호출. 만료된 게스트 row 삭제.
+  // 일반 유저(role='normal') 는 이 경로로 들어와도 거부 — 안전망.
+  async deleteGuestUser(userId: string) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      return { success: true, message: 'USER_ALREADY_GONE' };
+    }
+    if (user.role !== 'guest') {
+      throw new BadRequestException('NOT_A_GUEST');
+    }
+    await this.userRepository.delete({ userId });
+    return { success: true, message: 'GUEST_DELETED' };
+  }
+
   async handleFileUpload(userId: string, file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('파일이 존재하지 않습니다.');
     }
 
     // 1. 파일 접근 URL 생성
-    const fileUrl = `${this.publicBaseUrl}/uploads/${file.filename}`;
+    const fileUrl = `http://localhost:4001/uploads/${file.filename}`;
 
     // 2. DB 업데이트 (기존 updateProfile 로직 재활용 가능)
     const updatedUser = await this.updateProfile(userId, { userPhoto: fileUrl });
@@ -140,20 +169,11 @@ export class UserService {
   private async assertProfileEditable(userId: string): Promise<void> {
     const baseUrl =
       process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
-    const internalToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim();
-    if (!internalToken) {
-      throw new InternalServerErrorException('PRESENCE_INTERNAL_TOKEN_MISSING');
-    }
     const timeoutMs = 700;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${baseUrl}/${userId}`, {
-        signal: controller.signal,
-        headers: {
-          'x-internal-token': internalToken,
-        },
-      });
+      const response = await fetch(`${baseUrl}/${userId}`, { signal: controller.signal });
       if (!response.ok) {
         throw new InternalServerErrorException('PRESENCE_CHECK_FAILED');
       }
