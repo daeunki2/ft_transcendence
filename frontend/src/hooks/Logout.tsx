@@ -17,18 +17,19 @@ import { AuthContext } from '../contexts/AuthContext.types';
 
 export const useLogout = () => {
   const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext)!; 
+  const { setUser, isGuest, exitGuestMode } = useContext(AuthContext)!;
 
   const handleLogout = async () => {
     try {
+      // 게스트도 백엔드 logout 호출 — refresh 쿠키 정리 + DB row 즉시 삭제(아니면 cron 까지 대기).
       await authService.logout();
       // 의도된 로그아웃은 세션만료 경고창과 구분하기 위해 플래그를 남긴다.
       sessionStorage.setItem('intent_logout', '1');
-      setUser(null); // 프론트엔드의 유저 상태도 수동으로 비워주기
     } catch (error) {
       console.error("로그아웃 서버 통신 에러:", error);
     } finally {
-      setUser(null); //유저 삭제
+      setUser(null);
+      if (isGuest) exitGuestMode();
       navigate('/login');
 	  console.log('로그아웃 성공');
     }

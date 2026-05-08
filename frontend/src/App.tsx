@@ -6,11 +6,11 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/07 18:33:38 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 17:26:32 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -19,6 +19,9 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SocialPage from './pages/SocialPage';
 import MySpacePage from './pages/MySpacePage';
+import ServiceGuard from './components/common/ServiceGuard';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import ErrorPage from './pages/ErrorPage';
 import { useAuthInit } from './hooks/useAuthInit';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Alert from './components/ui/Alert';
@@ -32,14 +35,30 @@ export const PRESENCE_UPDATED_EVENT = 'presence:updated';
 function App() {
   const { fetchMe } = useAuthInit();
   const { messages } = useI18n();
-  const { user, setUser } = useAuth();
+  const { user, setUser, isGuest, setIsGuest } = useAuth();
   const currentUserId = user?.userId ?? null;
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const presenceSocketRef = useRef<Socket | null>(null); // 소켓 객체
-  
+  const [isOffline, setIsOffline] = useState(
+    typeof navigator !== 'undefined' && navigator.onLine === false,
+  );
+
+  // 브라우저 오프라인 이벤트로 네트워크 단절을 감지해 풀페이지 에러로 교체.
   useEffect(() => {
-    // 앱 진입 시 쿠키가 있다면 유저 정보를 가져오고, 가드는 이 확인 완료 후 동작
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  const presenceSocketRef = useRef<Socket | null>(null); // 소켓 객체
+
+  useEffect(() => {
+    // 게스트도 백엔드 쿠키를 갖고 있으므로 fetchMe 가 isGuest 여부를 결정한다.
+    // 새로고침 후에도 쿠키가 살아있으면 isGuest 가 복원됨.
     fetchMe().finally(() => setIsAuthReady(true));
   }, []); // 딱 한 번 실행
 
@@ -111,54 +130,86 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute
-              isAuthReady={isAuthReady}
-              isAuthenticated={Boolean(user)}
-              onUnauthenticated={handleUnauthenticated}
-              revalidateAuth={fetchMe}
-            >
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route
-          path="/social" // 가드 추가
-          element={
-            <ProtectedRoute
-              isAuthReady={isAuthReady}
-              isAuthenticated={Boolean(user)}
-              onUnauthenticated={handleUnauthenticated}
-              revalidateAuth={fetchMe}
-            >
-              <SocialPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/myspace" // 가드 추가
-          element={
-            <ProtectedRoute
-              isAuthReady={isAuthReady}
-              isAuthenticated={Boolean(user)}
-              onUnauthenticated={handleUnauthenticated}
-              revalidateAuth={fetchMe}
-            >
-              <MySpacePage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <ErrorBoundary>
+        {isOffline ? (
+          <ErrorPage variant="network" />
+        ) : (
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute isAuthenticated={Boolean(user) || isGuest}>
+                  <LoginPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute isAuthenticated={Boolean(user) || isGuest}>
+                  <RegisterPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute
+                  isAuthReady={isAuthReady}
+                  isAuthenticated={Boolean(user)}
+                  isGuest={isGuest}
+                  allowGuest
+                  onUnauthenticated={handleUnauthenticated}
+                  revalidateAuth={fetchMe}
+                >
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route
+              path="/social" // 가드 추가
+              element={
+                // 서비스가 죽었으면 인증 체크 전에 ErrorPage를 보여주려고
+                // ServiceGuard를 ProtectedRoute 바깥에 둔다. (새로고침 시 user-service 503 →
+                // fetchMe 실패 → user null → 세션만료 알람으로 잘못 빠지는 문제 방지)
+                <ServiceGuard requires="user">
+                  <ProtectedRoute
+                    isAuthReady={isAuthReady}
+                    isAuthenticated={Boolean(user)}
+                    isGuest={isGuest}
+                    onUnauthenticated={handleUnauthenticated}
+                    revalidateAuth={fetchMe}
+                  >
+                    <SocialPage />
+                  </ProtectedRoute>
+                </ServiceGuard>
+              }
+            />
+            <Route
+              path="/myspace" // 가드 추가
+              element={
+                <ServiceGuard requires="user">
+                  <ProtectedRoute
+                    isAuthReady={isAuthReady}
+                    isAuthenticated={Boolean(user)}
+                    isGuest={isGuest}
+                    onUnauthenticated={handleUnauthenticated}
+                    revalidateAuth={fetchMe}
+                  >
+                    <MySpacePage />
+                  </ProtectedRoute>
+                </ServiceGuard>
+              }
+            />
+            <Route path="*" element={<ErrorPage variant="notFound" />} />
+          </Routes>
+        )}
+      </ErrorBoundary>
       <Alert
-       //세션 만료 시 경고창으로 재로그인 유도 
+       //세션 만료 시 경고창으로 재로그인 유도
         open={sessionExpiredOpen}
         title={messages.social.alertTitle}
         message={messages.errors.SESSION_EXPIRED}
@@ -166,6 +217,7 @@ function App() {
         onClose={() => {
           setSessionExpiredOpen(false);
           setUser(null);
+          setIsGuest(false);
           window.location.href = '/login';
         }}
       />
@@ -176,18 +228,25 @@ function App() {
 function ProtectedRoute({
   isAuthReady,
   isAuthenticated,
+  isGuest,
+  allowGuest = false,
   onUnauthenticated,
   revalidateAuth,
   children,
 }: {
   isAuthReady: boolean;
   isAuthenticated: boolean;
+  isGuest: boolean;
+  allowGuest?: boolean;
   onUnauthenticated: () => void;
   revalidateAuth: () => Promise<boolean>;
   children: React.ReactElement;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { messages } = useI18n();
   const [isChecking, setIsChecking] = useState(false);
+  const [guestBlockedOpen, setGuestBlockedOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -196,6 +255,16 @@ function ProtectedRoute({
       if (!isAuthReady) {
         return;
       }
+
+      // 게스트 처리: allow 라우트면 통과, 아니면 알림 후 /home 으로 보낸다.
+      if (isGuest) {
+        if (allowGuest) {
+          return;
+        }
+        setGuestBlockedOpen(true);
+        return;
+      }
+
       if (!isAuthenticated) {
         onUnauthenticated();
         return;
@@ -220,6 +289,8 @@ function ProtectedRoute({
   }, [
     isAuthReady,
     isAuthenticated,
+    isGuest,
+    allowGuest,
     onUnauthenticated,
     revalidateAuth,
     location.pathname,
@@ -229,10 +300,53 @@ function ProtectedRoute({
     return null;
   }
 
+  // 게스트 분기를 isAuthenticated 체크보다 먼저 둔다.
+  // 안 그러면 isGuest=true, isAuthenticated=false 조합에서 children 렌더 전에 null 로 떨어진다.
+  if (isGuest) {
+    if (allowGuest) {
+      return children;
+    }
+    return (
+      <Alert
+        open={guestBlockedOpen}
+        title={messages.guest.blockedTitle}
+        message={messages.guest.blockedBody}
+        confirmText={messages.result.false}
+        onClose={() => {
+          setGuestBlockedOpen(false);
+          navigate('/home', { replace: true });
+        }}
+      />
+    );
+  }
+
   if (!isAuthenticated) {
     return null;
   }
 
+  return children;
+}
+
+// 이미 로그인(또는 게스트) 상태에서 /login·/register 직접 진입 시 /home 으로 보낸다.
+// 쿠키가 살아있으면 fetchMe 가 비동기로 user 를 채우므로, user 가 set 되는 시점에 리다이렉트한다.
+function PublicOnlyRoute({
+  isAuthenticated,
+  children,
+}: {
+  isAuthenticated: boolean;
+  children: React.ReactElement;
+}) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/home', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated) {
+    return null;
+  }
   return children;
 }
 

@@ -5,9 +5,15 @@ type ModalProps = {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  closeOnOverlayClick?: boolean;
 };
 
-export default function Modal({ open, onClose, children }: ModalProps) {
+export default function Modal({
+  open,
+  onClose,
+  children,
+  closeOnOverlayClick = true,
+}: ModalProps) {
   const { theme } = useTheme();
 
   if (!open) return null;
@@ -38,7 +44,7 @@ export default function Modal({ open, onClose, children }: ModalProps) {
   };
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div style={overlayStyle} onClick={closeOnOverlayClick ? onClose : undefined}>
       <div style={panelStyle} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>

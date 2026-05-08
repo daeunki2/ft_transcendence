@@ -359,3 +359,18 @@ Commit: status page
 ### 생각해볼 내용
    - 현재 상태페이지는 호스트 서버에만 열람 가능, 이걸 공개적으로 열람 가능하도록 설정해야할지 고민
    - 공개적으로 열람한면 보안상 조치 취해야 함.
+
+   ## [2026-05-08] suna
+
+Commit: guest + guard
+
+### what
+
+   - service health guard에서는 frontend/src/services/serviceHealthStore.ts에서 서비스 상태 전역 변수로 저장.
+   - frontend/src/contexts/ServiceHealthContext.tsx에서 provider가 변수 상태를 관찰
+   - provider에서 상태 값 변화시 알림, 이 알림을 받고 싶은 react 컴포넌트는 const { health } = useServiceHealth();로 상태 변화 감지
+   - apiclient는 react컴포넌트가 아닌 우리가 만든 자체적인 함수. 따라서 import { isUserServiceDown, markServiceDown } from './serviceHealthStore'; 와 같은 별개의 함수를 import하는 방식으로 상태 감지
+   - 게스트 역시 전역 변수에 isguest상태값과 db에 role에 표시.
+   - isguest 사용처는 가드, db role의 사용처는 db에서 게스트 데이터 값 지울 때 일반 유저와의 구별
+### 앞으로 할것
+   - 친구 페이지 새로고침 수정

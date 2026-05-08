@@ -72,6 +72,19 @@ async function bootstrap() {
       target: 'http://user-service:4001',
       changeOrigin: true,
 	  pathRewrite: { '^/api/users': '' },
+      // user-service 다운 시 502 대신 표준 503 + 코드로 응답 (프론트 헬스 가드와 연결)
+      on: {
+        error(_err, _req, res) {
+          const response = res as Response;
+          if (response.headersSent) {
+            return;
+          }
+          response.status(503).json({
+            success: false,
+            message: 'USER_SERVICE_UNAVAILABLE',
+          });
+        },
+      },
     }),
   );
 

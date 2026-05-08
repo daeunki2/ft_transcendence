@@ -6,14 +6,16 @@ export class Auth {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
-  loginId: string;
+  // 게스트 row 는 loginId/password 가 NULL. PG 의 unique+nullable 은 NULL 다중 허용.
+  @Column({ unique: true, nullable: true, type: 'varchar' })
+  loginId: string | null;
 
-  @Column()
-  password: string; 
+  @Column({ nullable: true, type: 'varchar' })
+  password: string | null;
 
-  // @Column({ type: 'varchar', nullable: true })
-  // refresh_token: string | null;
+  // 'member' | 'guest'. 매칭/가드 분기에 사용.
+  @Column({ type: 'varchar', default: 'member' })
+  role: string;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

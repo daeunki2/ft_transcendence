@@ -10,23 +10,48 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/ui/PageContainer';
 import Button from '../components/ui/Button';
+import TextButton from '../components/ui/TextButton';
 import TopControls from '../components/ui/TopControls';
+import Alert from '../components/ui/Alert';
 import FooterLinks from '../components/common/FooterLinks';
 import Logo from '../components/common/Logo';
 import { useI18n } from '../i18n/useI18n';
+import { useTheme } from '../theme/useTheme';
+import { useAuth } from '../contexts/AuthContext';
 
 function LandingPage() {
   const { messages } = useI18n();
+  const { theme } = useTheme();
   const navigate = useNavigate();
+  const { enterGuestMode } = useAuth();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleGuestEnter = async () => {
+    const ok = await enterGuestMode();
+    if (!ok) {
+      setErrorMsg(messages.errors.SERVER_ERROR ?? 'Server error');
+      return;
+    }
+    navigate('/home');
+  };
 
   return (
     <PageContainer
       header={<TopControls />}
       footer={<FooterLinks />}
     >
+      <Alert
+        open={!!errorMsg}
+        title={messages.landing.title}
+        message={errorMsg || ''}
+        confirmText={messages.result?.false || 'OK'}
+        onClose={() => setErrorMsg(null)}
+      />
+
       <div
         style={{
           display: 'flex',
@@ -62,6 +87,18 @@ function LandingPage() {
           <Button onClick={() => navigate('/register')}>
             {messages.landing.register}
           </Button>
+        </div>
+
+        <div
+          style={{
+            fontSize: '14px',
+            color: theme.colors.textMuted,
+          }}
+        >
+          {messages.guest.entryText}
+          <TextButton onClick={handleGuestEnter}>
+            {messages.guest.entryLink}
+          </TextButton>
         </div>
       </div>
     </PageContainer>
