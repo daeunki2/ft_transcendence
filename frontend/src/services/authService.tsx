@@ -28,8 +28,20 @@ export const authService = {
     return await apiClient('post', 'api/auth/logout', {});
   },
 
-  // 게이트웨이가 at만료일때 리프레시 
+  // 게스트 진입 — 백엔드가 임시 Auth/User row + access/refresh 쿠키를 굽는다.
+  // 응답: { success, user: { id: <Guest_xxx 닉네임>, isGuest: true } } 또는 { success: false, message }
+  guest: async () => {
+    return await apiClient('post', 'api/auth/guest', {});
+  },
+
+  // 게이트웨이가 at만료일때 리프레시
   refresh: async () => {
     return await apiClient('post', 'api/auth/refresh', {});
+  },
+
+  // 인증 검증 전용: JWT 만 검증, user-service 의존 없음.
+  // user-service 가 다운돼도 이 호출은 살아있다.
+  me: async () => {
+    return await apiClient('get', 'api/auth/me');
   },
 };

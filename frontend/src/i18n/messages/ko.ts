@@ -17,6 +17,13 @@ export const ko: Messages = {
     footerText: '계정이 없으신가요? ',
     footerLink: '회원가입',
   },
+  guest: {
+    entryText: '계정 없이 시작할까요? ',
+    entryLink: '게스트 모드로 시작',
+    blockedTitle: '게스트 모드 안내',
+    blockedBody: '이 기능은 게스트 모드에서는 사용할 수 없습니다. 회원가입 후 이용해 주세요.',
+    disabledTooltip: '게스트 모드에서는 사용할 수 없습니다',
+  },
   register: {
     title: '회원가입',
     subtitle: '시작하려면 계정을 만들어주세요',
@@ -157,6 +164,39 @@ HomePage: {
     SESSION_EXPIRED: "세션이 만료되었습니다. 다시 로그인해 주세요.",
     IMAGE_FORMAT_NOT_ALLOWED: "사용할 수 없는 이미지 형식입니다",
     TOO_BIG_FILE:"파일 크기가 너무 큽니다. (최대 5MB)",
+    USER_SERVICE_UNAVAILABLE: "이 기능은 현재 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+  },
+  errorPage: {
+    errorCode: "에러 코드",
+    retry: "다시 시도",
+    goHome: "홈으로",
+    reload: "새로고침",
+    variants: {
+      notFound: {
+        status: "Not Found",
+        title: "페이지를 찾을 수 없습니다",
+        body: "요청하신 주소가 잘못되었거나 페이지가 삭제되었을 수 있습니다.",
+        errorCode: "PAGE_NOT_FOUND",
+      },
+      serverError: {
+        status: "Internal Server Error",
+        title: "예상하지 못한 오류가 발생했습니다",
+        body: "잠시 후 다시 시도해 주세요. 문제가 계속되면 운영팀에 문의해 주세요.",
+        errorCode: "UNEXPECTED_ERROR",
+      },
+      serviceUnavailable: {
+        status: "Service Unavailable",
+        title: "서버에 연결할 수 없습니다",
+        body: "사용자 서비스가 응답하지 않습니다. 잠시 후 다시 시도해 주세요.",
+        errorCode: "USER_SERVICE_UNAVAILABLE",
+      },
+      network: {
+        status: "Offline",
+        title: "네트워크에 연결할 수 없습니다",
+        body: "인터넷 연결을 확인하고 다시 시도해 주세요.",
+        errorCode: "NETWORK_UNAVAILABLE",
+      },
+    },
   },
   result: {
     success: "성공",

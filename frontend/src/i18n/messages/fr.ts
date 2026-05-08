@@ -17,6 +17,13 @@ export const fr: Messages = {
     footerText: "Vous n'avez pas de compte? ",
     footerLink: "S'inscrire",
   },
+  guest: {
+    entryText: 'Envie de jouer sans compte ? ',
+    entryLink: 'Continuer en mode invité',
+    blockedTitle: 'Mode invité',
+    blockedBody: "Cette fonctionnalité n'est pas disponible en mode invité. Veuillez créer un compte pour continuer.",
+    disabledTooltip: 'Indisponible en mode invité',
+  },
 register: {
   title: "Inscription",
   subtitle: "Créez un compte pour commencer",
@@ -155,6 +162,39 @@ errors: {
     SESSION_EXPIRED: "Votre session a expiré. Veuillez vous reconnecter.",
     IMAGE_FORMAT_NOT_ALLOWED: "Le format n'est pas bon",
     TOO_BIG_FILE:"Ficher trop grand. (5MB max)",
+    USER_SERVICE_UNAVAILABLE: "Cette fonctionnalité est temporairement indisponible. Veuillez réessayer plus tard.",
+  },
+  errorPage: {
+    errorCode: "Code d'erreur",
+    retry: "Réessayer",
+    goHome: "Accueil",
+    reload: "Recharger",
+    variants: {
+      notFound: {
+        status: "Not Found",
+        title: "Page introuvable",
+        body: "L'adresse demandée est invalide ou la page a peut-être été supprimée.",
+        errorCode: "PAGE_NOT_FOUND",
+      },
+      serverError: {
+        status: "Internal Server Error",
+        title: "Une erreur inattendue est survenue",
+        body: "Veuillez réessayer dans un instant. Si le problème persiste, contactez l'équipe.",
+        errorCode: "UNEXPECTED_ERROR",
+      },
+      serviceUnavailable: {
+        status: "Service Unavailable",
+        title: "Impossible de joindre le serveur",
+        body: "Le service utilisateur ne répond pas. Veuillez réessayer dans un instant.",
+        errorCode: "USER_SERVICE_UNAVAILABLE",
+      },
+      network: {
+        status: "Offline",
+        title: "Réseau indisponible",
+        body: "Vérifiez votre connexion Internet et réessayez.",
+        errorCode: "NETWORK_UNAVAILABLE",
+      },
+    },
   },
   result: {
     success: "Succès",

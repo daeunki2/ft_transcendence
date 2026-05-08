@@ -14,8 +14,12 @@ export class UserService {
 
   ) {}
 
-  async createUserProfile(id: string, email: string, nickname: string, )
-  {
+  async createUserProfile(
+    id: string,
+    email: string | null,
+    nickname: string,
+    role: string = 'normal',
+  ) {
     try
     {
       if ( typeof nickname !== 'string' || nickname.trim() === '' || !isNicknameAllowed(nickname) )
@@ -33,17 +37,30 @@ export class UserService {
       userId: id, // 전달받은 UUID
       email: email,
       nickname: normalizedNickname,
-      userPhoto: "http://localhost:4001/uploads/default.jpg", 
-      role: "normal",
+      userPhoto: "http://localhost:4001/uploads/default.jpg",
+      role,
       });
 
-      console.log('유저 db생성');
+      console.log('유저 db생성', { id, role });
       return await this.userRepository.save(newUser);
     }
     catch (error)
     {
       if (error instanceof BadRequestException)
         {throw error;}
+
+      // PG unique violation(23505) — select 체크와 INSERT 사이의 race 에서 발생.
+      // auth-service 의 게스트 닉네임 retry 가 같은 메시지로 반응하도록 BadRequest 로 변환.
+      const pgCode = error.code ?? error.driverError?.code;
+      if (pgCode === '23505') {
+        const detail: string = error.driverError?.detail ?? error.detail ?? '';
+        if (detail.includes('email')) {
+          throw new BadRequestException('EMAIL_ALREADY_EXISTS');
+        }
+        // nickname 충돌이거나 detail 정보가 없는 경우(게스트는 email=NULL 이므로 nickname 일 확률이 압도적).
+        throw new BadRequestException('NICKNAME_ALREADY_EXISTS');
+      }
+
       console.error('프로필 생성 중 DB 에러:', error.message);
       throw new InternalServerErrorException('유저 프로필 생성 중 서버 에러가 발생했습니다.');
     }
@@ -110,6 +127,20 @@ export class UserService {
     // 3. 업데이트된 최신 유저 정보를 다시 가져와서 반환
     console.log('[updateProfile] update 성공', user.userPhoto);
     return await this.userRepository.findOne({ where: { userId: user.userId } });
+  }
+
+  // auth-service 의 게스트 cleanup cron 이 호출. 만료된 게스트 row 삭제.
+  // 일반 유저(role='normal') 는 이 경로로 들어와도 거부 — 안전망.
+  async deleteGuestUser(userId: string) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      return { success: true, message: 'USER_ALREADY_GONE' };
+    }
+    if (user.role !== 'guest') {
+      throw new BadRequestException('NOT_A_GUEST');
+    }
+    await this.userRepository.delete({ userId });
+    return { success: true, message: 'GUEST_DELETED' };
   }
 
   async handleFileUpload(userId: string, file: Express.Multer.File) {
