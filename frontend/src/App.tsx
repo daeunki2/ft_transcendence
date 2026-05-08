@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/07 09:45:29 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/08 10:40:13 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ function App() {
     const socket = io(PRESENCE_SOCKET_URL, {
       withCredentials: true,
       transports: ['websocket'], // 쿠키를 포함시킴
-    });// 서버가 보내줄 상태 업데이트 이벤트 구독
+    });// 비정상을 감지할 타이머 설정.
     const heartbeatTimer = window.setInterval(() => {
       socket.emit('presence.heartbeat');
     }, 5000); 
@@ -91,6 +91,7 @@ function App() {
         }),
       );
     });
+    // 세션만료, 로그아웃 등 이전 소켓/타이머가 남지 않게 치우는 코드
     presenceSocketRef.current = socket;
     return () => {
       window.clearInterval(heartbeatTimer);
