@@ -61,7 +61,7 @@ export class UserController {
       success: true,
       user: {
         userId: user.userId,
-        email: user.email,
+        loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
         role: user.role,
@@ -91,6 +91,7 @@ export class UserController {
       throw new UnauthorizedException('[getMe] 인증 정보가 없습니다.');
     }
 
+    console.log('[getme] 입장');
     const user = await this.userService.getMe(currentUserId);
 
     if (!user) {
@@ -101,7 +102,7 @@ export class UserController {
       success: true,
       user: {
         userId: user.userId,
-        email: user.email,
+        loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
         role: user.role,
@@ -131,7 +132,7 @@ export class UserController {
       success: true,
       user: {
         userId: updatedUser.userId,
-        email: updatedUser.email,
+        loginId: updatedUser.loginId,
         nickname: updatedUser.nickname,
         userPhoto: updatedUser.userPhoto,
         role: updatedUser.role,

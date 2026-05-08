@@ -131,7 +131,7 @@ export default function MySpacePage() {
             >
               <EditableNickname currentNickname={user?.nickname || ''} />
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: theme.colors.text }}>
-                {user?.id}
+                {user?.loginId}
               </span>
             </div>
           </div>

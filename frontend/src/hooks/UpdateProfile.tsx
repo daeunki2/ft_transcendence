@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   UpdateProfile.tsx                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/30 13:14:49 by chanypar          #+#    #+#             */
+/*   Updated: 2026/04/30 13:14:50 by chanypar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 import { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext.types';
 import { userService } from '../services/userService';

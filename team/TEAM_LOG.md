@@ -374,3 +374,56 @@ Commit: guest + guard
    - isguest 사용처는 가드, db role의 사용처는 db에서 게스트 데이터 값 지울 때 일반 유저와의 구별
 ### 앞으로 할것
    - 친구 페이지 새로고침 수정
+
+## [2026-05-08] chanypar
+
+Commit: chat-service
+
+### what
+- chat service 흐름도
+
+### chat history + 상대방 상태 불러오기(http)
+- loadHistory(체팅 내역 불러오기)
+- fetchInitialStatus(상대방 상태 불러오기)
+
+### 소캣 연결 (핸드셰이크 → 승인)
+useChat(frontend) → gateway → chat.gateway(chat service)
+useChat(프론트에서 소캣 핸드셰이크 후 연결)
+chat.gateway(handleConnection)
+- onModuleInit(presence redis 구독 설정)
+- handleconection(해더검사 → 소캣아이디 저장 → 소캣연결되어 있는 아이디 있을 시 redis 구독 시작 )
+
+### 메시지 발송 & 수신
+useChat → chat.gateway(’send_dm’)
+useChat(서버가 받는 데이터 형식으로 전송)
+chat.gateway(’send_dm’)
+- 들어온 데이터 확인 후, processMessage에서 저장
+- getUserSocketId에서 유저 실시간 조회
+- 실시간이면 바로 전송(’new_dm’), 아니면 유저가 접속할때 (loadHistory) 받음
+useChat(실시간 메시지 수신)
+- 현제 체팅창이 올바른 체팅창인지 확인 (senderId , TargetId)
+- 체팅창 리스트 끝에 추가
+
+### 소캣 종료
+chat.gateway
+- chat redis socketId삭제
+- 만약 소캣 연결한 사람이 아무도 없을시 presence redis 구독종료
+useChat(’disconnect’)
+- 이벤트 리스너 제거
+- 물리적으로 연결제거
+- 참조 NULL
+
+### 저장구조
+chat db
+- id : 프론트에선 임시 아이디(리액트 렌더링 용, 나중에 전송완료 시 진짜 아이디로 업데이트)
+- senderId
+- receiverId
+- content(DTO형식)
+    - to
+    - message
+- createdAt
+
+chat redis
+- id
+- socketId
+

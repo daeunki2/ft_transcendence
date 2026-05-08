@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   useUploadPhoto.tsx                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/30 13:14:42 by chanypar          #+#    #+#             */
+/*   Updated: 2026/04/30 13:14:43 by chanypar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUpdateProfile } from './UpdateProfile';

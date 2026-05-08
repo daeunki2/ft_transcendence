@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocialPage.tsx                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/03/21 20:14:57 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/08 10:35:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,24 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
+import { PRESENCE_UPDATED_EVENT } from '../App';
+
+type PresenceUpdatedPayload = {
+  userId: string;
+  internalStatus: 'OFFLINE' | 'ONLINE' | 'MATCHING' | 'IN_GAME';
+  publicStatus: 'OFFLINE' | 'ONLINE' | 'IN_GAME';
+  at: string;
+  version: 1;
+};
 
 function SocialPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
-  const [chatTarget, setChatTarget] = useState<string | null>(null);
+  const [chatTarget, setChatTarget] = useState<{
+  id: string;
+  nickname: string;
+  photo?: string;
+} | null>(null);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [friends, setFriends] = useState<FriendItem[]>([]);
@@ -75,6 +88,33 @@ function SocialPage() {
       }
     })();
   }, [refresh]);
+
+  // presence.updated 실시간 구독: 친구 목록의 상태 점을 즉시 갱신
+  useEffect(() => {
+    const handlePresenceUpdated = (evt: Event) => {
+      const event = (evt as CustomEvent<PresenceUpdatedPayload>).detail; // 누구의 상태가 무엇으로 바뀌었는지 
+      if (!event) return;
+      setFriends((prev) => // 친구목록에서 이벤트로 받은 아이디 찾아서 상태 변경
+        prev.map((friend) =>
+          friend.userId === event.userId
+            ? { ...friend, status: event.publicStatus }
+            : friend,
+        ),
+      );
+    };
+    // 상태변경 관련 이벤트 구독
+    window.addEventListener(
+      PRESENCE_UPDATED_EVENT,
+      handlePresenceUpdated as EventListener,
+    );
+    // 이벤트 받아서 상태 받은 뒤에는 다시 새로운 이벤트를 받을 준비. 
+    return () => {
+      window.removeEventListener(
+        PRESENCE_UPDATED_EVENT,
+        handlePresenceUpdated as EventListener,
+      );
+    };
+  }, []);
 
   // 친구 요청 보내기
   const handleSendRequest = async () => {
@@ -134,7 +174,7 @@ function SocialPage() {
       await refresh();
     }
   };
-
+  const targetFriend = friends.find(f => f.userId === chatTarget?.id);
   return (
     <PageContainer
       header={<Navbar />}
@@ -200,7 +240,7 @@ function SocialPage() {
                   <div style={{ position: 'relative', display: 'inline-block' }}>
                     <Avatar url={friend.userPhoto} />
                     <span
-                      title={friend.isOnline ? 'online' : 'offline'}
+                      title={friend.status === 'ONLINE' ? 'online' : friend.status === 'IN_GAME' ? 'in_game' : 'offline'}
                       style={{
                         position: 'absolute',
                         right: 0,
@@ -208,7 +248,12 @@ function SocialPage() {
                         width: '12px',
                         height: '12px',
                         borderRadius: '50%',
-                        background: friend.isOnline ? '#22c55e' : '#ef4444',
+                        background:
+                          friend.status === 'IN_GAME'
+                            ? '#f59e0b'
+                            : friend.status === 'ONLINE'
+                            ? '#22c55e'
+                            : '#ef4444',
                         border: `2px solid ${theme.colors.background}`,
                         boxSizing: 'border-box',
                       }}
@@ -218,7 +263,7 @@ function SocialPage() {
                     {friend.nickname}
                   </span>
                   <Button
-                    onClick={() => setChatTarget(friend.nickname)}
+                    onClick={() => setChatTarget({ id: friend.userId, nickname: friend.nickname, photo: friend.userPhoto })}
                     style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
                   >
                     {messages.social.sendMessage}
@@ -347,7 +392,11 @@ function SocialPage() {
       <ChatModal
         open={chatTarget !== null}
         onClose={() => setChatTarget(null)}
-        friendName={chatTarget ?? ''}
+        targetId={chatTarget?.id ?? ''}
+        friendName={chatTarget?.nickname ?? ''}
+        friendPhoto={chatTarget?.photo}
+        currentUserId={currentUserId}
+        targetStatus={targetFriend?.status ?? 'OFFLINE'}
       />
 
       <Alert
