@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 13:00:31 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/07 11:25:10 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 14:56:14 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,21 +65,20 @@ export class ChatController {
   
   /**
    * 1. 특정 유저의 실시간 접속 상태(Redis) 확인
-   * GET http://localhost:3000/debug/redis/:userId
+   * GET http://localhost:3002/debug/redis/:userId
    */
   @Get('debug/redis/:userId')
   async getRedisStatus(@Param('userId') userId: string) {
     const socketId = await this.chatService.getUserSocketId(userId);
     return {
       userId,
-      isOnline: !!socketId,
       socketId: socketId || 'OFFLINE',
     };
   }
 
   /**
    * 2. DB에 저장된 전체 대화 내역 확인 (테스트용)
-   * GET http://localhost:3000/debug/history/:user1/:user2
+   * GET http://localhost:2/debug/history/:user1/:user2
    */
   @Get('debug/history/:user1/:user2')
   async getHistoryForDebug(

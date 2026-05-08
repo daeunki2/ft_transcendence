@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 19:06:54 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/07 11:24:02 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 10:40:02 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,13 @@ import { PRESENCE_UPDATED_CHANNEL, PresenceUpdatedEvent } from 'src/types/presen
 import { SendDmDto, GetHistoryDto } from './dto/message.dto'; // DTO 임포트
 import { Redis } from 'ioredis';
 
-@WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
+@WebSocketGateway({ namespace: 'chat', cors: {origin: 'http://localhost:5173'} })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer() server: Server;
 
+  private activeUsersCount = 0;
+  private isSubscribed = false;
+  
   constructor(private readonly chatService: ChatService, @Inject('REDIS_SUB') private readonly redisSub: Redis,
   ) {}
 
@@ -52,22 +55,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
   }
   
   private setupPresenceSubscription() {
-    this.redisSub.subscribe(PRESENCE_UPDATED_CHANNEL);
     this.redisSub.on('message', (channel, message) => {
       if (channel === PRESENCE_UPDATED_CHANNEL) {
         try {
-          // 🛡️ JSON 파싱 시 에러 방지
           const event: PresenceUpdatedEvent = JSON.parse(message);
           
           if (!event || !event.userId) return;
 
-          // 📢 방송
           this.server.emit('user_presence_changed', {
             userId: event.userId,
             status: event.publicStatus, 
           });
           
-          console.log(`[Presence Update] User ${event.userId} is now ${event.publicStatus}`);
+          console.log(`Subscription [Presence Update] User ${event.userId} is now ${event.publicStatus}`);
         } catch (error) {
           console.error(`[Redis Sub Error] 메시지 파싱 실패: ${error.message}`);
         }
@@ -86,16 +86,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
 
       client.data.userId = userId;
       await this.chatService.saveSocketId(userId, client.id);
-      console.log(`[Chat] 유저 온라인: ${userId}`);
+      
+      this.activeUsersCount++;
+      console.log(`[Chat] 유저 온라인: ${userId} (현재 접속자: ${this.activeUsersCount})`);
+      
+      if (this.activeUsersCount === 1 && !this.isSubscribed) {
+        await this.redisSub.subscribe(PRESENCE_UPDATED_CHANNEL);
+        this.isSubscribed = true;
+        console.log('[Redis] 첫 채팅 유저 접속 - 구독 활성화');
+      }
+      
     } catch (error: any) {
       console.error(`[Chat] 연결 처리 중 예외 발생: ${error.message}`);
       client.disconnect();
     }
   }
   
-//   @UsePipes(new ValidationPipe())
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @SubscribeMessage('send_dm')
-  async handleDM(client: Socket, payload: any) { // DTO 적용
+  async handleDM(client: Socket, payload: SendDmDto) { // DTO 적용
     const from = client.data.userId;
     const { to, message } = payload;
 
@@ -127,7 +136,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     if (userId) {
       try {
         await this.chatService.removeSocketId(userId);
-        console.log(`[Disconnected] User: ${userId}`);
+        
+        this.activeUsersCount--;
+        console.log(`[Disconnected] User: ${userId} (남은 접속자: ${this.activeUsersCount})`);
+
+        if (this.activeUsersCount <= 0 && this.isSubscribed) {
+          await this.redisSub.unsubscribe(PRESENCE_UPDATED_CHANNEL);
+          this.isSubscribed = false;
+          this.activeUsersCount = 0; // 음수 방지 가드
+          console.log('[Redis] 접속 유저 없음 - 구독 해제');
+        }
       } catch (err: any) {
         console.error(`[Redis Error] 오프라인 상태 변경 실패: ${err.message}`);
       }

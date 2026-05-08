@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:59 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/07 10:22:57 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 10:35:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,11 @@ type PresenceUpdatedPayload = {
 function SocialPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
-  const [chatTarget, setChatTarget] = useState<string | null>(null);
+  const [chatTarget, setChatTarget] = useState<{
+  id: string;
+  nickname: string;
+  photo?: string;
+} | null>(null);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [friends, setFriends] = useState<FriendItem[]>([]);
@@ -170,7 +174,7 @@ function SocialPage() {
       await refresh();
     }
   };
-
+  const targetFriend = friends.find(f => f.userId === chatTarget?.id);
   return (
     <PageContainer
       header={<Navbar />}
@@ -392,6 +396,7 @@ function SocialPage() {
         friendName={chatTarget?.nickname ?? ''}
         friendPhoto={chatTarget?.photo}
         currentUserId={currentUserId}
+        targetStatus={targetFriend?.status ?? 'OFFLINE'}
       />
 
       <Alert

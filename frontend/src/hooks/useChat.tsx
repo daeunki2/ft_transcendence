@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 13:14:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/07 13:12:12 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 12:18:04 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,24 +59,26 @@ const fetchInitialStatus = useCallback(async () => {
 }, [targetId]);
 
   useEffect(() => {
-    if (!targetId || !currentUserId || currentUserId === 'undefined') {
+    if (!targetId || !currentUserId || currentUserId === 'undefined'|| currentUserId === 'null'){
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
+    setIsConnected(false)
     return;
   }
 
+    console.log('front chat start');
     // 마운트 시 히스토리 먼저 가져오기
     loadHistory();
     fetchInitialStatus();
 
-    // 2. 소켓 연결 설정 (게이트웨이 8000번 포트 경유)
+    // 소켓 연결 설정 (게이트웨이 8000번 포트 경유)
     const socket = io('http://localhost:8000/chat', {
       path: '/api/chat/socket.io', // 게이트웨이가 이 경로를 보고 chat-service로 전달함
       withCredentials: true,      // 브라우저가 자동으로 쿠키(accessToken)를 실어 보냄
       forceNew: true,
-      transports: ['websocket'],  // 게이트웨이 환경에서 안정적인 연결을 위해 권장
+      transports: ['polling','websocket'],  // 게이트웨이 환경에서 안정적인 연결을 위해 권장
       query: {
         userId: currentUserId 
     },
@@ -108,7 +110,7 @@ const fetchInitialStatus = useCallback(async () => {
       if (newMessage.senderId === targetId || newMessage.receiverId === targetId) {
         setMessages((prev) => {
           const currentMessages = Array.isArray(prev) ? prev : [];
-          // 🛡️ 중요: 이미 리스트에 같은 ID(진짜 ID)가 있다면 중복해서 넣지 않음
+          // 중요: 이미 리스트에 같은 ID(진짜 ID)가 있다면 중복해서 넣지 않음
           if (currentMessages.some(m => m.id === newMessage.id)) {
             return currentMessages;
           }
@@ -132,7 +134,7 @@ const fetchInitialStatus = useCallback(async () => {
       setIsConnected(false);
       console.log('[Socket] 연결 종료 사유:', reason);
       
-      // 🛡️ 5. 서버에 의해 강제로 끊긴 경우(io server disconnect) 자동 재연결 안 함
+      // 서버에 의해 강제로 끊긴 경우(io server disconnect) 자동 재연결 안 함
       if (reason === 'io server disconnect') {
         // socket.connect(); // 필요할 때만 수동으로 호출하도록 방치
       }
@@ -146,7 +148,7 @@ const fetchInitialStatus = useCallback(async () => {
         socketRef.current = null;
       }
     };
-  }, [targetId, currentUserId, loadHistory, fetchInitialStatus]);
+  }, [targetId]);
 
   // 3. 메시지 전송 함수
   const sendMessage = useCallback((content: string) => {
@@ -176,5 +178,5 @@ const fetchInitialStatus = useCallback(async () => {
    
   }, [targetId, currentUserId]);
 
-  return { messages, sendMessage, isConnected, targetStatus };
+  return { messages, sendMessage, isConnected};
 };

@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/01 10:55:27 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/07 11:07:53 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 10:38:52 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ import Input from './Input';
 import Avatar from './Avatar';
 import { useTheme } from '../../theme/useTheme';
 import { useI18n } from '../../i18n/useI18n';
-import { useChat } from '../../hooks/useChat'; // ✅ 만든 훅 임포트
+import { useChat } from '../../hooks/useChat'; // ✅ 만든 훅 임포
 
 type ChatModalProps = {
   open: boolean;
@@ -26,10 +26,11 @@ type ChatModalProps = {
   targetId: string;
   friendName: string;
   friendPhoto?: string;
-  currentUserId: string | null; // ✅ 내 ID 추가 전달 필요
+  currentUserId: string | null;
+  targetStatus: 'OFFLINE' | 'ONLINE' | 'IN_GAME';
 };
 
-export default function ChatModal({ open, onClose, targetId, friendName, friendPhoto, currentUserId }: ChatModalProps) {
+export default function ChatModal({ open, onClose, targetId, friendName, friendPhoto, currentUserId, targetStatus }: ChatModalProps) {
   const { theme } = useTheme();
   const { messages: i18n } = useI18n();
   const [inputText, setInputText] = useState('');
@@ -37,7 +38,7 @@ export default function ChatModal({ open, onClose, targetId, friendName, friendP
 
   // ✅ 실시간 채팅 훅 연결
   // 모달이 열려 있을 때만 friendName을 전달하여 소켓 연결을 시작합니다.
-  const { messages, sendMessage, isConnected, targetStatus } = useChat(
+  const { messages, sendMessage, isConnected} = useChat(
     open ? targetId : null,
     currentUserId
   );

@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/07 12:43:08 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/07 18:42:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ async function bootstrap() {
     }),
   );
 
-  // 4. Chat Service로 토스 (주소가 /api/chat으로 시작하면 3000번으로)
+  // 4. Chat Service로 토스 (주소가 /api/chat으로 시작하면 3002번으로)
   app.use(
     '/api/chat',
     verifyAccessToken,

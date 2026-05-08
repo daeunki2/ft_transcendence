@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 18:45:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/07 12:16:04 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/08 11:19:56 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,19 +20,17 @@ import axios from 'axios';
 
 @Injectable()
 export class ChatService {
-  private readonly presenceApiUrl = 'http://gateway:8000/presence';
+  private readonly presenceApiUrl = 'http://gateway:8000/internal/presence';
   constructor(
     //private readonly redis: Redis,
-	@Inject('REDIS_CLIENT') private readonly redis: Redis, // 이 부분!
+	@Inject('REDIS_CLIENT') private readonly redis: Redis,
     private readonly chatRepo: ChatRepository,
   ) {}
 
-  /**
-   * 메시지를 DB에 저장합니다. (수신자가 오프라인이어도 데이터 보존)
-   */
+
+  // 메시지를 DB에 저장합니다. (수신자가 오프라인이어도 데이터 보존)
   async processMessage(from: string, to: string, message: string) {
     try {
-      // 1. DB 저장 (Repository 호출)
       const chatLog = await this.chatRepo.saveMessage({
         senderId: from,
         receiverId: to,
@@ -48,9 +46,7 @@ export class ChatService {
     }
   }
 
-  /**
-   * 유저가 온라인일 때 소켓 ID를 Redis에 기록합니다.
-   */
+  // 유저가 온라인일 때 소켓 ID를 Redis에 기록
   async saveSocketId(userId: string, socketId: string) {
     try {
       // 키 형식: user:socket:{userId}, 값: {socketId}, 유효시간: 24시간
@@ -61,9 +57,7 @@ export class ChatService {
     }
   }
 
-  /**
-   * 유저 접속 종료 시 Redis에서 정보를 삭제합니다.
-   */
+  //유저 접속 종료 시 Redis에서 정보를 삭제
   async removeSocketId(userId: string) {
     try {
       await this.redis.del(`user:socket:${userId}`);
@@ -73,9 +67,8 @@ export class ChatService {
     }
   }
 
-  /**
-   * 수신자의 소켓 ID를 Redis에서 조회합니다.
-   */
+  
+   //수신자의 소켓 ID를 Redis에서 조회
   async getUserSocketId(userId: string): Promise<string | null> {
     try {
       const socketId = await this.redis.get(`user:socket:${userId}`);
@@ -86,9 +79,8 @@ export class ChatService {
     }
   }
 
-  /**
- * 나와 상대방 사이의 모든 대화 내역을 조회합니다.
- */
+  
+ // 나와 상대방 사이의 모든 대화 내역을 조회
   async getDmHistory(myId: string, targetId: string) {
     try {
       console.log(`[Service] History 조회 요청: ${myId} <-> ${targetId}`);
@@ -99,12 +91,11 @@ export class ChatService {
     }
   }
 
-    /**
- * 상대방의 로그인 상태를 확인합니다.
- */
+  
+ //상대방의 로그인 상태를 확인
   async getUserStatus(userId: string): Promise<string> {
     try {
-      // 팀원분이 만든 Presence 서비스의 Endpoint 호출
+      console.log('USER STATUS Called');
       const response = await axios.get(`${this.presenceApiUrl}/${userId}`);
       
       // PresenceController가 리턴하는 publicStatus 반환 ('ONLINE', 'OFFLINE', 'IN_GAME')
