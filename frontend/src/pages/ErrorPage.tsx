@@ -31,7 +31,7 @@ export default function ErrorPage({ variant = 'serviceUnavailable' }: ErrorPageP
   // 404는 홈으로, 500은 트리가 깨졌으니 풀리로드, 그 외(503/network)는 health 갱신으로 복구 시도
   const handleAction = () => {
     if (variant === 'notFound') {
-      navigate('/');
+      navigate('/home');
       return;
     }
     if (variant === 'serverError') {
