@@ -16,7 +16,10 @@ export class UserService {
 
   async createUserProfile(
     id: string,
-    email: string | null,
+    // 이유: 기존 email 파라미터 명은 로그인 아이디 전환 후 의미가 달라져 히스토리 보존용으로 주석 처리한다.
+    // email: string | null,
+    // 이유: auth-service /init payload와 명칭을 맞춰 loginId 기준으로 통일한다.
+    loginId: string | null,
     nickname: string,
     role: string = 'normal',
   ) {
@@ -35,7 +38,8 @@ export class UserService {
 
       const newUser = this.userRepository.create({
       userId: id, // 전달받은 UUID
-      loginId,
+      // 이유: line 38의 미정의 shorthand(loginId) 오류를 방지하기 위해 명시적으로 초기화한다.
+      loginId: loginId,
       nickname: normalizedNickname,
       userPhoto: "http://localhost:4001/uploads/default.jpg",
       role,
@@ -168,7 +172,7 @@ export class UserService {
   // 가드용 공통함수
   private async assertProfileEditable(userId: string): Promise<void> {
     const baseUrl =
-      process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+      process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://gateway:8000/internal/presence';
     const timeoutMs = 700;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);

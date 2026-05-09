@@ -19,10 +19,11 @@ import type { Request, Response, NextFunction } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const frontendOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173';
 
   // 1. CORS 설정 (프론트엔드 허용)
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: frontendOrigin,
     credentials: true,
   });
   app.use(cookieParser());

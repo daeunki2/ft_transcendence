@@ -1,3 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   presence.service.ts                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/08 11:55:07 by daeunki2          #+#    #+#             */
+/*   Updated: 2026/05/08 12:56:15 by daeunki2         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
+
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
@@ -44,6 +58,7 @@ export class PresenceService implements OnModuleDestroy {
     await this.redis.touchAlive(userId, this.heartbeatTtlSec);
   }
 
+  // 1. 이벤트 수신 
   async startRawEventConsumer(): Promise<void> {
     const sub = this.redis.getSubscriber();
     await sub.subscribe(PRESENCE_RAW_CHANNEL);
@@ -56,6 +71,7 @@ export class PresenceService implements OnModuleDestroy {
     console.log('[presence] subscribed channel:', PRESENCE_RAW_CHANNEL);
   }
 
+  // 6. heartbeat 관련
   startHeartbeatReconciler(): void {
     if (this.heartbeatSweepTimer) return;
     this.heartbeatSweepTimer = setInterval(() => {
@@ -76,8 +92,16 @@ export class PresenceService implements OnModuleDestroy {
     };
   }
 
+  async invalidateFriendCaches(userIds: string[]): Promise<void> {
+    const normalized = Array.from(
+      new Set(userIds.filter((id): id is string => typeof id === 'string' && id.length > 0)),
+    );
+    await this.redis.invalidateFriendIdsCache(normalized);
+  }
+
+  // 2. 검증처리 + 오케스트레이션
   private async handleRawEvent(event: PresenceRawEvent): Promise<void> {
-    // 흐름 제어: fallback/retry로 같은 이벤트가 들어오면 eventId 기준으로 1회만 처리
+    // eventId 기준으로 1회만 처리
     const firstSeen = await this.redis.markEventProcessed(event.eventId);
     if (!firstSeen) {
       return;
@@ -89,15 +113,16 @@ export class PresenceService implements OnModuleDestroy {
     }
 
     const prevStatus = await this.redis.getEffectiveState(event.userId);
-    await this.applyEventToStorage(event);
-    const nextStatus = await this.recomputeEffectiveStatus(event.userId);
+    await this.applyEventToStorage(event); // 3번함수
+    const nextStatus = await this.recomputeEffectiveStatus(event.userId); //4번 함수
     await Promise.all([
       this.redis.setLastSequence(event.userId, event.seq),
       this.redis.setLastEventAt(event.userId, event.at),
       // 실제 기록: 계산된 최종 상태를 Redis에 저장
       this.redis.setEffectiveState(event.userId, nextStatus),
     ]);
-    if (prevStatus === nextStatus) return;
+    if (prevStatus === nextStatus) return; // 상태 변화 없으면 스킵
+    // 업데이트 이벤트 생성
     const updatedEvent: PresenceUpdatedEvent = {
       userId: event.userId,
       internalStatus: nextStatus,
@@ -105,11 +130,14 @@ export class PresenceService implements OnModuleDestroy {
       at: new Date().toISOString(),
       version: 1,
     };
+    //5. 업데이트 이벤트 발행 발행
     await this.redis
       .getPublisher()
       .publish(PRESENCE_UPDATED_CHANNEL, JSON.stringify(updatedEvent));
   }
 
+
+  // 3. 이벤트 타입별 저장 
   private async applyEventToStorage(event: PresenceRawEvent): Promise<void> {
     const flags = await this.redis.getFlags(event.userId);
     switch (event.type) {
@@ -143,6 +171,7 @@ export class PresenceService implements OnModuleDestroy {
     }
   }
 
+  //4. 최종 상태 계산 
   private async recomputeEffectiveStatus(userId: string): Promise<PresenceState> {
     const connCount = await this.redis.getConnectionCount(userId);
     const flags = await this.redis.getFlags(userId);

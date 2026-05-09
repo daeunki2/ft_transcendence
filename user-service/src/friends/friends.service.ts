@@ -147,7 +147,9 @@ export class FriendsService {
       throw new BadRequestException('REQUEST_NOT_PENDING');
     }
     row.status = 'accepted';
-    return this.friendRepo.save(row);
+    const saved = await this.friendRepo.save(row);
+    await this.invalidatePresenceFriendCache([row.requesterId, row.addresseeId]);
+    return saved;
   }
 
   /**
@@ -163,6 +165,7 @@ export class FriendsService {
       throw new BadRequestException('REQUEST_NOT_PENDING');
     }
     await this.friendRepo.delete(row.id);
+    await this.invalidatePresenceFriendCache([row.requesterId, row.addresseeId]);
   }
 
   /**
@@ -181,6 +184,7 @@ export class FriendsService {
       throw new BadRequestException('NOT_ACCEPTED_FRIENDSHIP');
     }
     await this.friendRepo.delete(row.id);
+    await this.invalidatePresenceFriendCache([row.requesterId, row.addresseeId]);
   }
 
   // 내부용: 수락된 친구의 userId 목록 조회 (presence fan-out 대상 계산)
@@ -246,6 +250,34 @@ export class FriendsService {
       return 'OFFLINE';
     } catch {
       return 'OFFLINE';
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  private async invalidatePresenceFriendCache(userIds: string[]): Promise<void> {
+    const baseUrl =
+      process.env.PRESENCE_INTERNAL_BASE_URL ?? 'http://api-gateway:8000/internal/presence';
+    const endpoint = `${baseUrl}/friends-cache/invalidate`;
+
+    const normalized = Array.from(
+      new Set(userIds.filter((id): id is string => typeof id === 'string' && id.length > 0)),
+    );
+    if (normalized.length === 0) return;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 700);
+    try {
+      await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ userIds: normalized }),
+        signal: controller.signal,
+      });
+    } catch {
+      // cache invalidation 실패는 핵심 액션을 깨지 않도록 무시
     } finally {
       clearTimeout(timeoutId);
     }

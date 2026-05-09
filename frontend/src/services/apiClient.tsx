@@ -16,7 +16,7 @@ import {
   markServiceDown,
 } from './serviceHealthStore';
 
-const BASE_URL = 'http://localhost:8000/'; // gateway 주소
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}/`; // gateway 주소
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 const USER_SERVICE_PATH_PREFIX = 'api/users';
 const USER_SERVICE_UNAVAILABLE_CODE = 'USER_SERVICE_UNAVAILABLE';

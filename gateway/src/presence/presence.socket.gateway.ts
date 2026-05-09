@@ -13,7 +13,7 @@ import * as jwt from 'jsonwebtoken';
 @WebSocketGateway({
   namespace: '/presence',
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
     credentials: true,
   },
 })
@@ -33,6 +33,7 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
   async handleConnection(client: Socket) {
     const token = this.extractAccessToken(client);
     if (!token) {
+      console.warn('[PresenceWS] 연결 거부: accessToken 없음', { socketId: client.id });
       client.disconnect(true);
       return;
     }
@@ -40,6 +41,7 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
       const payload = jwt.verify(token, process.env.MY_SECRET_KEY ?? '') as { sub?: string };
       const userId = String(payload?.sub ?? '');
       if (!userId) {
+        console.warn('[PresenceWS] 연결 거부: 토큰 sub 없음', { socketId: client.id });
         client.disconnect(true);
         return;
       }
@@ -48,9 +50,14 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
       client.on('presence.heartbeat', async () => {
         await this.presenceService.markHeartbeat(userId);
       });
+      console.log('[PresenceWS] connected', {
+        userId,
+        socketId: client.id,
+      });
       // 이벤트 발생: 실제 WS 연결 생성 시 connected 발행
       await this.presenceService.publishGatewayConnectionEvent(userId, 'connected');
     } catch {
+      console.warn('[PresenceWS] 연결 거부: 토큰 검증 실패', { socketId: client.id });
       client.disconnect(true);
     }
   }
@@ -59,6 +66,10 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
     const userId = this.socketUserMap.get(client.id);
     if (!userId) return;
     this.socketUserMap.delete(client.id);
+    console.log('[PresenceWS] disconnected', {
+      userId,
+      socketId: client.id,
+    });
     // 이벤트 발생: 실제 WS 연결 해제 시 disconnected 발행
     await this.presenceService.publishGatewayConnectionEvent(userId, 'disconnected');
   }
@@ -103,16 +114,11 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
       return cached;
     }
 
-    const internalToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim() || 'dev-presence-token';
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 700);
     try {
       const response = await fetch(`http://user-service:4001/friends/internal/${userId}/ids`, {
         method: 'GET',
-        headers: {
-          'x-internal-token': internalToken,
-        },
         signal: controller.signal,
       });
       if (!response.ok) return [];

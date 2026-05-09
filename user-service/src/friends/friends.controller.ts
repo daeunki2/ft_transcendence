@@ -11,7 +11,6 @@ import {
   ParseIntPipe,
   UnauthorizedException,
   BadRequestException,
-  Headers,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { FriendsService } from './friends.service';
@@ -42,14 +41,7 @@ export class FriendsController {
 
   // 내부용: presence fan-out을 위한 친구 userId 목록
   @Get('internal/:userId/ids')
-  async getFriendIdsForPresence(
-    @Param('userId') userId: string,
-    @Headers('x-internal-token') internalToken: string | undefined,
-  ) {
-    const expectedToken = process.env.PRESENCE_INTERNAL_TOKEN?.trim() || 'dev-presence-token';
-    if (!expectedToken || internalToken !== expectedToken) {
-      throw new UnauthorizedException('INTERNAL_UNAUTHORIZED');
-    }
+  async getFriendIdsForPresence(@Param('userId') userId: string) {
     const friendIds = await this.friendsService.getAcceptedFriendUserIds(userId);
     return { success: true, friendIds };
   }
