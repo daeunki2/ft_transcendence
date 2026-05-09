@@ -24,7 +24,7 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
-import { PRESENCE_UPDATED_EVENT } from '../App';
+import { PRESENCE_UPDATED_EVENT } from '../types/presence';
 
 type PresenceUpdatedPayload = {
   userId: string;

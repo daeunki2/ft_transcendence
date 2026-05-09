@@ -49,11 +49,17 @@ export class UserController {
   @Post('init') // auth-service가 호출하는 경로
   async initializeUser(
     @Body()
-    data: { id: string; email: string | null; nickname: string; role?: string },
+    // 이유: 기존 email DTO는 로그인 아이디 전환 이전 형태라 히스토리 보존을 위해 주석으로 남긴다.
+    // data: { id: string; email: string | null; nickname: string; role?: string },
+    // 이유: auth-service /init payload와 필드명을 일치시켜 타입/런타임 불일치를 제거한다.
+    data: { id: string; loginId: string | null; nickname: string; role?: string },
   ) {
     const user = await this.userService.createUserProfile(
       data.id,
-      data.email,
+      // 주석 이유: 기존 email 전달 경로는 주석으로 남기고 loginId 전달로 전환한다.
+      // data.email,
+      // 추가 이유: 서비스 시그니처를 loginId 기준으로 맞춘 변경을 반영한다.
+      data.loginId,
       data.nickname,
       data.role ?? 'normal',
     );
@@ -61,6 +67,7 @@ export class UserController {
       success: true,
       user: {
         userId: user.userId,
+        // 이유: 엔티티 필드명을 loginId로 통일했으므로 응답도 동일 명칭을 유지한다.
         loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
@@ -102,6 +109,7 @@ export class UserController {
       success: true,
       user: {
         userId: user.userId,
+        // 이유: getMe 응답 스키마에서 loginId를 유지해 프론트 계약을 동일하게 맞춘다.
         loginId: user.loginId,
         nickname: user.nickname,
         userPhoto: user.userPhoto,
@@ -132,6 +140,7 @@ export class UserController {
       success: true,
       user: {
         userId: updatedUser.userId,
+        // 이유: updateProfile 응답도 loginId 필드명으로 통일해 일관성을 유지한다.
         loginId: updatedUser.loginId,
         nickname: updatedUser.nickname,
         userPhoto: updatedUser.userPhoto,
