@@ -53,6 +53,8 @@ HomePage: {
   aiGame: 'Jouer contre l’IA',
   gameRule: 'Règles du jeu',
   rule: 'Marquez plus de points que votre adversaire en renvoyant la balle sans la manquer.',
+  connectGameJoin: 'File d\'attente : En cours',
+  connectGameServer: 'Connexion au serveur...',
 },
   social: {
     title: 'Amis',

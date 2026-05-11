@@ -62,6 +62,8 @@ register: {
         aiGame: 'Play vs AI',
         gameRule: 'Game Rules',
         rule: 'Score more points than your opponent by hitting the ball without missing it.',
+        connectGameJoin: 'Entering the matchmaking queue...',
+        connectGameServer: 'Connecting to Game server',
     },
     //소셜
     social: {

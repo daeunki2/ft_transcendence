@@ -6,10 +6,9 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/09 22:39:54 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/11 12:23:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,21 +20,60 @@ import FooterLinks from '../components/common/FooterLinks';
 import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
+import { useAuth } from '../contexts/AuthContext';
+import { useGame } from '../hooks/useGame';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { messages } = useI18n();
   const { theme } = useTheme();
+  const { user } = useAuth();
+
   const [matchModalOpen, setMatchModalOpen] = useState(false);
+  const [isMatchStarted, setIsMatchStarted] = useState(false);
+
+  const { isConnected, joinQueue } = useGame(
+    isMatchStarted ? user?.userId ?? null : null
+  );
+
+  const handleStartMatch = () => {
+    if (!user?.userId) {
+      console.error('[Game] 유저 정보가 없어 매칭을 시작할 수 없습니다.');
+      return;
+    }
+
+    setIsMatchStarted(true);
+    setMatchModalOpen(true);
+  };
+
+  const handleCloseMatchModal = () => {
+    setMatchModalOpen(false);
+    setIsMatchStarted(false);
+  };
 
   useEffect(() => {
     if (!matchModalOpen) return;
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMatchModalOpen(false);
+      if (e.key === 'Escape') {
+        handleCloseMatchModal();
+      }
     };
+
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, [matchModalOpen]);
+
+  useEffect(() => {
+    if (!matchModalOpen) return;
+    if (!isMatchStarted) return;
+    if (!isConnected) return;
+
+    joinQueue();
+  }, [matchModalOpen, isMatchStarted, isConnected, joinQueue]);
 
   return (
     <PageContainer
@@ -78,7 +116,6 @@ export default function HomePage() {
           </p>
         </div>
 
-
         <Card style={{ minHeight: '200px' }}>
           <div
             style={{
@@ -109,7 +146,6 @@ export default function HomePage() {
           </div>
         </Card>
 
-
         <Card>
           <div
             style={{
@@ -120,7 +156,7 @@ export default function HomePage() {
             }}
           >
             <Button
-              onClick={() => setMatchModalOpen(true)}
+              onClick={handleStartMatch}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.match}
@@ -134,13 +170,11 @@ export default function HomePage() {
             </Button>
           </div>
         </Card>
-
-
       </div>
 
       <Modal
         open={matchModalOpen}
-        onClose={() => setMatchModalOpen(false)}
+        onClose={handleCloseMatchModal}
         closeOnOverlayClick={false}
       >
         <div
@@ -150,7 +184,11 @@ export default function HomePage() {
             textAlign: 'center',
           }}
         >
-          테스트, 클릭 제한, esc누르면 모달창에서 나옴
+          {isConnected
+            ? messages.HomePage.connectGameJoin
+            : messages.HomePage.connectGameServer}
+          <br />
+          ESC를 누르면 매칭을 취소하고 모달을 닫습니다.
         </div>
       </Modal>
     </PageContainer>

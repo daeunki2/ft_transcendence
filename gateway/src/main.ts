@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/07 18:42:23 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/11 11:37:22 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ async function bootstrap() {
     }),
   );
 
-  // 4. Chat Service로 토스 (주소가 /api/chat으로 시작하면 3002번으로)
+  // 4. Chat Service로 토스 
   app.use(
     '/api/chat',
     verifyAccessToken,
@@ -98,6 +98,18 @@ async function bootstrap() {
       changeOrigin: true,
       ws: true,
       pathRewrite: { '^/api/chat': '' },
+    }),
+  );
+
+  // 5. game Service로 토스 
+  app.use(
+    '/api/game',
+    verifyAccessToken,
+    createProxyMiddleware({
+      target: 'http://game-service:3003',
+      changeOrigin: true,
+      ws: true,
+      pathRewrite: { '^/api/game': '' },
     }),
   );
 
