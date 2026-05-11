@@ -486,4 +486,4 @@ Commit: Game-service_front
 - joinQueue 함수(대기열 추가 함수), movePaddle(패들 이동함수) 기본만 생성
 - HomPage에 버튼에 useGame 연결
 
-- 게임 버튼 눌렀을 시, 취소가능? 고려해야할 사항
+- 게임 버튼 눌렀을 시, 취소가능? 고려해야할 사항  
