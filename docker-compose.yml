@@ -43,6 +43,9 @@ services:
       - ./gateway/.env
     environment:
       - PRESENCE_INTERNAL_TOKEN=${PRESENCE_INTERNAL_TOKEN}
+    volumes:
+      - ./gateway:/app
+      - /app/node_modules
     depends_on:
       auth-service:
         condition: service_healthy
