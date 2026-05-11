@@ -55,6 +55,8 @@ HomePage: {
   aiGame: 'AI와 게임하기',
   gameRule: '게임 설명',
   rule: '공을 놓치지 않고 상대보다 더 많은 점수를 얻으면 승리합니다.',
+  connectGameJoin: '매칭 대기열에 등록 중입니다...',
+  connectGameServer: '게임 서버에 연결 중입니다...',
 },
   social: {
     title: '친구 목록',

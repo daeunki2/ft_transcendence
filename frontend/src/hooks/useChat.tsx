@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   useChat.tsx                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 13:14:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/09 12:04:48 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/11 11:30:41 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
       query: {
         userId: currentUserId 
     },
-      // 로그아웃 시 무한 재시도를 막기 위한 설정 추가
+
       reconnectionAttempts: 3,     // 최대 3번만 재시도
       reconnectionDelay: 5000,     // 실패 시 5초 대기 후 재시도 (초당 1회 방지)
       reconnectionDelayMax: 10000, // 최대 대기 시간 10초
@@ -100,7 +100,7 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
 
     socket.on('connect', () => {
       setIsConnected(true);
-      console.log('[Socket] 게이트웨이 인증 통과 및 연결 성공');
+      console.log('[Chat Socket] 게이트웨이 인증 통과 및 연결 성공');
     });
 
     // 주석 이유 : 상태의 단일 소스를 presence 소켓으로 통일하기 위해 chat 소켓 상태 이벤트는 비활성화
@@ -127,19 +127,19 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
     });
 
     socket.on('connect_error', (err) => {
-      console.error('[Socket] 연결 에러:', err.message);
+      console.error('[Chat Socket] 연결 에러:', err.message);
       setIsConnected(false);
       
-      // 🛡️ 4. 인증 에러(401, 403 등)가 명확할 경우 재연결 수동 중단
+      // 인증 에러(401, 403 등)가 명확할 경우 재연결 수동 중단
       if (err.message.includes('authentication') || err.message.includes('token')) {
-        console.warn('[Socket] 인증 문제로 재연결을 중단합니다.');
+        console.warn('[Chat Socket] 인증 문제로 재연결을 중단합니다.');
         socket.disconnect();
       }
     });
 
     socket.on('disconnect', (reason) => {
       setIsConnected(false);
-      console.log('[Socket] 연결 종료 사유:', reason);
+      console.log('[Chat Socket] 연결 종료 사유:', reason);
       
       // 서버에 의해 강제로 끊긴 경우(io server disconnect) 자동 재연결 안 함
       if (reason === 'io server disconnect') {

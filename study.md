@@ -114,6 +114,21 @@ backend
 5.AI 매칭
 
 맞춰야할 사항
-- 서버 -> 프론트 데이터 규격 (예: { bX, bY, p1Y, p2Y, s1, s2 })
+- 서버 -> 프론트 데이터 규격 (예: { ballX, ballY, p1Y, p2Y, score1, score2 })
 - 캔버스 사이즈 (예: 1000x800)
-- 이벤트 명 통일 
+- 이벤트 명 통일
+
+client -> server
+game:join_queue(게임 대기열에 등록)
+game:leave_queue(선택사항)
+game:ready(매칭 후 게임 화면 준비 완료)
+game:move_paddle (패들 움직임)
+
+server -> client
+game:match_found (매칭 성공, 게임룸 생성)
+game:state (interval 마다 공위치, 패들위치, 스코어 전송)
+game:over (게임 끝 최종 스코어 전송)
+
+server -> presence redis
+game:started(in game 변경)
+game:ended(online 변경)
