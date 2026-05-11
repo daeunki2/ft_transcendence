@@ -387,7 +387,7 @@ export class AuthService {
         await firstValueFrom(
           this.httpService.post('http://user-service:4001/init', {
             id: savedAuth.id,
-            email: null,
+            loginId: null,
             nickname,
             role: 'guest',
           }),
