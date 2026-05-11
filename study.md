@@ -91,13 +91,14 @@ backend
 - game redis생성
 	- 대기열: list(userId)
 	- 게임셰션:
+		유저 상태(대기, 메칭, 게임 중, 게임 끝)
 		유저(유저1, 유저2)
 		필드(패들위치, 공위치, 게임점수)
 		시간
 2. 메치메이킹
 - 1번쨰 유저가 게임 눌렀을 시, game redis 대기열 list 추가 로직
 - 2번째 유저가 게임 눌렀을 시, game redis 대기열 list 추가
-- 대기열에 2명 이상 있을 시 queue로 불러와서 gameId생성 후 게임 세션 생성, 방 생성
+- 대기열에 2명 이상 있을 시 queue로 불러와서 gameId생성 후 게임 세션 생성, 방 생성(대기열에서 소캣 연결 튕겼을 때 대처 로직 필요)
 - 이벤트로 프론트에 각각의 플레이어'match_found'위치 전송
 3.게임 실행 시
 - 패들 움직임 : 이벤트 발생('move paddle': up, down) 서버전송 -> 게임셰션 변수만 수정
@@ -107,13 +108,38 @@ backend
 4.종료
 - interval 멈춤
 - emit('game over') 프론트 알림
-- redis 값 game db 전송(필요한 값 user db 전송)
+- redis 값 game db 전송(메치히스토리)
 - game end 이벤트 발행
 - redis 정보 삭제
 
 5.AI 매칭
 
 맞춰야할 사항
-- 서버 -> 프론트 데이터 규격 (예: { bX, bY, p1Y, p2Y, s1, s2 })
-- 캔버스 사이즈 (예: 1000x800)
-- 이벤트 명 통일 
+- 서버 <-> 프론트 데이터 규격 (예: { ballX, ballY, p1Y, p2Y, score1, score2 })
+- 캔버스 사이즈 (1000x800)
+- 이벤트 명 통일
+
+client -> server
+game:join_queue(게임 대기열에 등록)
+game:ready(매칭 후 게임 화면 준비 완료)
+game:move_paddle (패들 움직임)
+
+server -> client
+game:match_found (매칭 성공, 게임룸 생성)
+game:state (interval 마다 공위치, 패들위치, 스코어 전송)
+game:over (게임 끝 최종 스코어 전송)
+
+server -> presence redis
+game:started(in game 변경)
+game:ended(online 변경)
+
+생각해야할 것
+- 대기열에 너무 오래 대기 시, 나가게. 혹은 대기 취소 기능 추가
+- 대기열에서 소캣 튕겼을 때 로직 필요
+
+presence redis : connect, disconnet, maching, in game
+
+분할 :
+- 백 게임 메칭: 유저 메칭부터 게임 방 생성 + presence redis connected -> maching (소캣 연결, redis, game db) - 승빈님
+- 백 게임 로직: 게임 시작 부터 끝난 후 데이터 전송까지 + presence redis maching -> in game -> connected (공 위치 알고리즘 game state 전송) - 다은님
+- 프론트(게임 관련 + 유저 히스토리(상대방 아이디, 점수(나, 상대): 최신 5개 정도) http -> game controller) - 찬영님
