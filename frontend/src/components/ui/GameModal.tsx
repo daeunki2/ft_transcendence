@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 20:59:15 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/11 21:17:47 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 11:17:17 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ export default function GameMatchModal({ open, isConnected, onClose }: GameMatch
         }} />
 		
         <h2 style={{ margin: 0 }}>
-          {isConnected ? messages.HomePage.connectGameJoin : messages.HomePage.connectGameServer}
+          {isConnected ? messages.game.connectGameJoin : messages.game.connectGameServer}
         </h2>
 
         {/* <div style={{ marginTop: '10px' }}>
