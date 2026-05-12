@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   App.tsx                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/09 12:02:57 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/12 09:40:44 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SocialPage from './pages/SocialPage';
 import MySpacePage from './pages/MySpacePage';
+import GamePage from './pages/GamePage';
 import ServiceGuard from './components/common/ServiceGuard';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import ErrorPage from './pages/ErrorPage';
@@ -165,6 +166,23 @@ function App() {
                 </ServiceGuard>
               }
             />
+            <Route
+              path="/game"
+              element={
+        //         <ServiceGuard requires="game"> 
+        //           <ProtectedRoute
+        //             isAuthReady={isAuthReady}
+        //             isAuthenticated={Boolean(user)}
+        //             isGuest={isGuest}
+        //             allowGuest={true}
+        //             onUnauthenticated={handleUnauthenticated}
+        //             revalidateAuth={fetchMe}
+        // >
+          <GamePage />
+        // </ProtectedRoute>
+      // </ServiceGuard>
+    }
+  />
             <Route path="*" element={<ErrorPage variant="notFound" />} />
           </Routes>
         )}
