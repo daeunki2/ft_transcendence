@@ -6,27 +6,13 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:20:43 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 11:54:38 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-interface GameState {
-  ballX: number;	// 공 좌표
-  ballY: number;
-  p1Y: number;		// 플레이어 1, 2 좌표(위 아래여서 Y자표로 충분)
-  p2Y: number;
-  score1: number;	//스코어
-  score2: number;
-}
-
-interface GameResult {
-  winnerId: string;
-  score1: number;
-  score2: number;
-}
+import type { GameState, GameResult } from '../types/game';
 
 export const useGame = (currentUserId: string | null) => {
   const socketRef = useRef<Socket | null>(null);

@@ -6,20 +6,12 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 09:49:50 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:26:46 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 11:54:58 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import React, { useEffect, useRef } from 'react';
-
-interface GameState {
-  ballX: number;
-  ballY: number;
-  p1Y: number;
-  p2Y: number;
-  score1: number;
-  score2: number;
-}
+import type { GameState } from '../types/game';
 
 const GAME_WIDTH = 1000;
 const GAME_HEIGHT = 600;
