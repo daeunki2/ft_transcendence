@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/04/24 22:01:00 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 11:52:14 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
 import Alert from '../components/ui/Alert';
 import React from 'react';
-// import { useUpdateProfile } from '../hooks/UpdateProfile';
 import EditableNickname from '../components/profile/EditableNickname';
 import { useUploadPhoto } from '../hooks/useUploadPhoto';
+import { useGameHistory } from '../hooks/useGameHistory';
 
 export default function MySpacePage() {
   const { theme } = useTheme();
@@ -31,6 +31,7 @@ export default function MySpacePage() {
   const { user } = useAuth();
   // const { updateProfile } = useUpdateProfile();
   const { uploadPhoto, isProcessing, errorMsg, setErrorMsg } = useUploadPhoto();
+  const { history, isLoading } = useGameHistory(user?.userId || null);
 
   // const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -139,13 +140,42 @@ export default function MySpacePage() {
 
         {/* 게임 히스토리 카드 */}
         <Card>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '20px', color: theme.colors.text }}>
-            {messages.mySpace.gameHistory}
-          </h2>
+        <h2 style={{ margin: '0 0 16px 0', fontSize: '20px', color: theme.colors.text }}>
+          {messages.mySpace.gameHistory}
+        </h2>
+        
+        {isLoading ? (
+          <p style={{ textAlign: 'center', color: theme.colors.textMuted }}>Loading...</p>
+        ) : history.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {Array.isArray(history) && history.map((game) => (
+              <div key={game.id} style={{
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: theme.colors.backgroundVariant, // 테마에 맞는 배경색
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                border: `1px solid ${theme.colors.border}`
+              }}>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <span style={{ fontWeight: 'bold' }}>{game.winnerNickname}</span>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold' }}>
+                  {game.winnerScore} : {game.loserScore}
+                </div>
+                <div style={{ flex: 1, textAlign: 'right' }}>
+                  <span>{game.loserNickname}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
           <p style={{ margin: 0, color: theme.colors.textMuted, textAlign: 'center' }}>
             {messages.mySpace.noGames}
           </p>
-        </Card>
+        )}
+      </Card>
       </div>
 
     </PageContainer>

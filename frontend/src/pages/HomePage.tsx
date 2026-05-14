@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/11 12:23:39 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/11 21:17:14 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useGame } from '../hooks/useGame';
+import GameMatchModal from '../components/ui/GameModal';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -51,21 +52,21 @@ export default function HomePage() {
     setIsMatchStarted(false);
   };
 
-  useEffect(() => {
-    if (!matchModalOpen) return;
+  // useEffect(() => {
+  //   if (!matchModalOpen) return;
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleCloseMatchModal();
-      }
-    };
+  //   const onKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === 'Escape') {
+  //       handleCloseMatchModal();
+  //     }
+  //   };
 
-    window.addEventListener('keydown', onKeyDown);
+  //   window.addEventListener('keydown', onKeyDown);
 
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [matchModalOpen]);
+  //   return () => {
+  //     window.removeEventListener('keydown', onKeyDown);
+  //   };
+  // }, [matchModalOpen]);
 
   useEffect(() => {
     if (!matchModalOpen) return;
@@ -172,25 +173,11 @@ export default function HomePage() {
         </Card>
       </div>
 
-      <Modal
+      <GameMatchModal 
         open={matchModalOpen}
+        isConnected={isConnected}
         onClose={handleCloseMatchModal}
-        closeOnOverlayClick={false}
-      >
-        <div
-          style={{
-            padding: '32px',
-            color: theme.colors.text,
-            textAlign: 'center',
-          }}
-        >
-          {isConnected
-            ? messages.HomePage.connectGameJoin
-            : messages.HomePage.connectGameServer}
-          <br />
-          ESC를 누르면 매칭을 취소하고 모달을 닫습니다.
-        </div>
-      </Modal>
+      />
     </PageContainer>
   );
 }

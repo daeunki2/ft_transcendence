@@ -6,26 +6,19 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/11 12:28:15 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 11:54:38 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-interface GameState {
-  ballX: number;	// 공 좌표
-  ballY: number;
-  p1Y: number;		// 플레이어 1, 2 좌표(위 아래여서 Y자표로 충분)
-  p2Y: number;
-  score1: number;	//스코어
-  score2: number;
-}
+import type { GameState, GameResult } from '../types/game';
 
 export const useGame = (currentUserId: string | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [gameResult, setGameResult] = useState<GameResult | null>(null);
 
   // 대기열 추가
   const joinQueue = useCallback(() => {
@@ -101,6 +94,15 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
 	socket.on('game_state', (state: GameState) => {
       setGameState(state); // 데이터가 들어올 때마다 리액트 상태 업데이트
     });
+
+	// Game Over 리스너
+    socket.on('game_over', (result: GameResult) => {
+      console.log('[Game Socket] 게임 종료 수신:', result);
+      setGameResult(result);
+      
+      // 게임이 종료되었으니 불필요한 game_state 수신은 끊어줍니다.
+      socket.off('game_state');
+    });
 	
     // 클린업 (언마운트 시 소켓 종료)
     return () => {
@@ -113,5 +115,5 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
     };
   }, [currentUserId]);
 
-  return { isConnected, movePaddle, joinQueue, gameState};
+  return { isConnected, movePaddle, joinQueue, gameState, gameResult};
 };
