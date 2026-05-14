@@ -67,6 +67,8 @@ export type Messages = {
     rule : string;
     connectGameJoin: string;
     connectGameServer: string;
+    matchFound: string;
+    escCancel: string;
   };
   social: {
     title: string;
@@ -164,6 +166,9 @@ errors: {
     IMAGE_FORMAT_NOT_ALLOWED: string;
     TOO_BIG_FILE: string;
     USER_SERVICE_UNAVAILABLE: string;
+    UNAUTHENTICATED: string;
+    ALREADY_IN_GAME: string;
+    KICKED_BY_NEW_TAB: string;
   };
   errorPage: {
     errorCode: string;

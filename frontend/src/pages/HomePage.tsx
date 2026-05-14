@@ -16,6 +16,7 @@ import PageContainer from '../components/ui/PageContainer';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import Alert from '../components/ui/Alert';
 import FooterLinks from '../components/common/FooterLinks';
 import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
@@ -31,8 +32,11 @@ export default function HomePage() {
 
   const [matchModalOpen, setMatchModalOpen] = useState(false);
   const [isMatchStarted, setIsMatchStarted] = useState(false);
+  // 이유: queue_error 거절 사유를 i18n 룩업한 문구로 띄우기 위해 별도 상태로 보관.
+  // useGame 훅이 state 를 초기화하기 전에 한 번 받아서 보여줘야 하므로 페이지 레벨로 끌어올림.
+  const [errorAlert, setErrorAlert] = useState<string | null>(null);
 
-  const { isConnected, joinQueue } = useGame(
+  const { isConnected, joinQueue, matchInfo, queueError, clearQueueError } = useGame(
     isMatchStarted ? user?.userId ?? null : null
   );
 
@@ -74,6 +78,21 @@ export default function HomePage() {
 
     joinQueue();
   }, [matchModalOpen, isMatchStarted, isConnected, joinQueue]);
+
+  // 이유: 서버에서 queue_error 가 도착하면 매칭 모달을 닫고 i18n 룩업한 문구로 알림을 띄운다.
+  // code 기준 룩업 → 미정의 시 서버 fallback message → 그것도 없으면 SERVER_ERROR.
+  // 알림을 띄운 직후 훅 상태는 비워 다음 요청에 영향이 없게 한다.
+  useEffect(() => {
+    if (!queueError) return;
+    const translated =
+      (messages.errors as Record<string, string | undefined>)[queueError.code]
+      ?? queueError.message
+      ?? messages.errors.SERVER_ERROR;
+    setErrorAlert(translated);
+    setMatchModalOpen(false);
+    setIsMatchStarted(false);
+    clearQueueError();
+  }, [queueError, messages.errors, clearQueueError]);
 
   return (
     <PageContainer
@@ -184,13 +203,23 @@ export default function HomePage() {
             textAlign: 'center',
           }}
         >
-          {isConnected
-            ? messages.HomePage.connectGameJoin
-            : messages.HomePage.connectGameServer}
+          {matchInfo
+            ? messages.HomePage.matchFound
+            : isConnected
+              ? messages.HomePage.connectGameJoin
+              : messages.HomePage.connectGameServer}
           <br />
-          ESC를 누르면 매칭을 취소하고 모달을 닫습니다.
+          {messages.HomePage.escCancel}
         </div>
       </Modal>
+
+      <Alert
+        open={errorAlert !== null}
+        title={messages.social.alertTitle}
+        message={errorAlert ?? ''}
+        confirmText={messages.result.false}
+        onClose={() => setErrorAlert(null)}
+      />
     </PageContainer>
   );
 }

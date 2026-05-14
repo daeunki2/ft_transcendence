@@ -64,6 +64,8 @@ register: {
         rule: 'Score more points than your opponent by hitting the ball without missing it.',
         connectGameJoin: 'Entering the matchmaking queue...',
         connectGameServer: 'Connecting to Game server',
+        matchFound: 'Match found, joining game...',
+        escCancel: 'Press ESC to cancel matchmaking',
     },
     //소셜
     social: {
@@ -177,6 +179,9 @@ register: {
     IMAGE_FORMAT_NOT_ALLOWED: "This image format is not allowed",
     TOO_BIG_FILE:"Too big file. (5MB max)",
     USER_SERVICE_UNAVAILABLE: "This feature is temporarily unavailable. Please try again later.",
+    UNAUTHENTICATED: "Authentication required. Please log in again.",
+    ALREADY_IN_GAME: "You are already in an ongoing game.",
+    KICKED_BY_NEW_TAB: "Connection closed because a new session started in another tab.",
   },
   errorPage: {
     errorCode: "Error code",

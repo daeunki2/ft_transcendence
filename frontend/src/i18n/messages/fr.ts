@@ -166,6 +166,9 @@ errors: {
     IMAGE_FORMAT_NOT_ALLOWED: "Le format n'est pas bon",
     TOO_BIG_FILE:"Ficher trop grand. (5MB max)",
     USER_SERVICE_UNAVAILABLE: "Cette fonctionnalité est temporairement indisponible. Veuillez réessayer plus tard.",
+    UNAUTHENTICATED: "Authentification requise. Veuillez vous reconnecter.",
+    ALREADY_IN_GAME: "Vous êtes déjà dans une partie en cours.",
+    KICKED_BY_NEW_TAB: "Connexion fermée car une nouvelle session a démarré dans un autre onglet.",
   },
   errorPage: {
     errorCode: "Code d'erreur",

@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HealthModule } from './health/health.module';
 import { GameGateway } from './game.gateway';
+import { RedisModule } from './redis/redis.module';
+import { MatchmakingModule } from './matchmaking/matchmaking.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { GameGateway } from './game.gateway';
       synchronize: true,
     }),
     HealthModule,
+    RedisModule,
+    MatchmakingModule,
   ],
   providers: [GameGateway],
 })
