@@ -68,6 +68,7 @@ export const en: Messages = {
   connectGameJoin: 'Entering the matchmaking queue...',
   connectGameServer: 'Connecting to Game server',
   preparingAiMatch: 'Preparing an AI opponent...',
+  matchingError: 'Matching Error',
   movePaddle: 'Press W / S to move the paddle.',
   },
     //소셜

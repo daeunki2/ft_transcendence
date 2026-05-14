@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 20:09:01 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:28:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ export type Messages = {
     connectGameJoin: string;
     connectGameServer: string;
     preparingAiMatch: string;
+    matchingError: string;
     movePaddle: string;
   }
   

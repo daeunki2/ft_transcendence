@@ -61,6 +61,7 @@ game: {
   connectGameJoin: '매칭 대기열에 등록 중입니다...',
   connectGameServer: '게임 서버에 연결 중입니다...',
   preparingAiMatch: 'AI 대전 상대를 준비하고 있습니다...',
+  matchingError: '매칭 에러',
   movePaddle: 'W / S 키로 패들을 조작하세요.',
 },
   social: {
