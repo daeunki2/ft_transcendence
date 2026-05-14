@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 20:20:42 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 21:19:49 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ export default function HomePage() {
   const [isMatchStarted, setIsMatchStarted] = useState(false);
   const [gameType, setGameType] = useState<'match' | 'ai' | null>(null);
 
-  const { isConnected, joinQueue, joinAiQueue, queueError } = useGame(
+  const { isConnected, joinQueue, joinAiQueue, queueError, matchData } = useGame(
     isMatchStarted ? user?.userId ?? null : null
   );
 
@@ -78,6 +78,14 @@ export default function HomePage() {
       handleCloseMatchModal();
     }
   }, [queueError]);
+
+  useEffect(() => {
+    if (matchData) {
+      // 게임 페이지로 이동하면서 필요한 정보를 state로 넘겨줄 수 있습니다.
+      // navigate('/game', { state: { opponent: matchData.opponent, type: gameType } });
+      console.log('[Game] 매칭 성공, 게임 시작:', matchData.opponent);
+    }
+  }, [matchData, navigate, gameType]);
 
   useEffect(() => {
     if (!matchModalOpen || !isMatchStarted || !isConnected)

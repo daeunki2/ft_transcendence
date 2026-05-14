@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 09:49:50 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 16:54:12 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 21:12:51 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,21 @@ const GAME_HEIGHT = 600;
 const PADDLE_WIDTH = 15;
 const PADDLE_HEIGHT = 100;
 
-export default function GameBoard({ data }: { data: GameState | null }) {
+interface GameBoardProps {
+  data: GameState | null;
+  meName?: string;
+  opponentName?: string;
+}
+
+export default function GameBoard({ data, meName = 'Me', opponentName = 'Opponent' }: GameBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const requestRef = useRef<number>(0); // 애니메이션 ID 저장용
+  const requestRef = useRef<number>(0);
   const stateRef = useRef<GameState | null>(null);
 
- useEffect(() => {
+  useEffect(() => {
     stateRef.current = data;
   }, [data]);
 
-  // 렌더링 루프
   const render = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -36,11 +41,9 @@ export default function GameBoard({ data }: { data: GameState | null }) {
 
     const s = stateRef.current;
 
-    // 배경 칠하기
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // 데이터가 아직 안 들어왔다면 여기서 멈추거나 대기 화면을 그림
     if (!s) {
       requestRef.current = requestAnimationFrame(render);
       return;
@@ -54,35 +57,67 @@ export default function GameBoard({ data }: { data: GameState | null }) {
     ctx.lineTo(GAME_WIDTH / 2, GAME_HEIGHT);
     ctx.stroke();
 
-    // 패들 & 공 그리기 (하얀색)
+    // 패들 & 공 그리기
     ctx.setLineDash([]);
     ctx.fillStyle = '#fff';
     
     // 왼쪽 패들
     ctx.fillRect(20, s.p1Y, PADDLE_WIDTH, PADDLE_HEIGHT); 
     // 오른쪽 패들
-    ctx.fillRect(GAME_WIDTH - 35, s.p2Y, PADDLE_WIDTH, PADDLE_HEIGHT); // 시작점 기준(20 + 패들 너비)
+    ctx.fillRect(GAME_WIDTH - 35, s.p2Y, PADDLE_WIDTH, PADDLE_HEIGHT); 
     // 공
     ctx.beginPath();
     ctx.arc(s.ballX, s.ballY, 10, 0, Math.PI * 2);
     ctx.fill();
 
-    // 다음 프레임 요청
     requestRef.current = requestAnimationFrame(render);
   };
 
   useEffect(() => {
-    // 루프 시작
     requestRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(requestRef.current);
-  }, []); // 컴포넌트 마운트 시 딱 한 번 루프 실행
+  }, []);
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      width={GAME_WIDTH} 
-      height={GAME_HEIGHT} 
-      style={{ border: '4px solid #fff', display: 'block' }}
-    />
+    <div style={{ position: 'relative', width: GAME_WIDTH, margin: '0 auto' }}>
+      {/* 플레이어 이름 및 점수 UI 레이어 */}
+      <div style={{
+        position: 'absolute',
+        top: '30px',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '0 100px',
+        color: '#fff',
+        fontSize: '40px', // 점수 가독성을 위해 키움
+        fontWeight: 'bold',
+        fontFamily: '"Press Start 2P", monospace', // 게임 느낌 폰트 (없으면 monospace)
+        pointerEvents: 'none',
+        boxSizing: 'border-box'
+      }}>
+        {/* 왼쪽: Player 1 (Me) */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '14px', opacity: 0.6, marginBottom: '8px', textTransform: 'uppercase' }}>
+            {meName}
+          </div>
+          <div>{data?.score1 ?? 0}</div>
+        </div>
+
+        {/* 오른쪽: Player 2 (Opponent) */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '14px', opacity: 0.6, marginBottom: '8px', textTransform: 'uppercase' }}>
+            {opponentName}
+          </div>
+          <div>{data?.score2 ?? 0}</div>
+        </div>
+      </div>
+
+      <canvas 
+        ref={canvasRef} 
+        width={GAME_WIDTH} 
+        height={GAME_HEIGHT} 
+        style={{ border: '4px solid #fff', display: 'block' }}
+      />
+    </div>
   );
 }

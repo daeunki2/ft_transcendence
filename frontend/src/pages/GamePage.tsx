@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:30:52 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 21:23:01 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ export default function GamePage() {
 
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { isConnected, gameState, movePaddle } = useGame(user?.userId ?? null);
+	const { isConnected, gameState, movePaddle, matchData, gameResult } = useGame(user?.userId ?? null);
 	const { messages } = useI18n();
 
 	useEffect(() => {
@@ -45,16 +45,35 @@ export default function GamePage() {
       color: '#fff',
       paddingTop: '40px'
     }}>
-      <h1 style={{ marginBottom: '20px' }}>PONG MATCH</h1>
+      <h1 style={{ marginBottom: '20px', letterSpacing: '4px' }}>PONG MATCH</h1>
       
       {isConnected ? (
-        <GameBoard data={gameState} />
+        <>
+          <GameBoard 
+            data={gameState} 
+            meName={user?.nickname || 'ME'} 
+            opponentName={matchData?.opponent || 'OPPONENT'} 
+          />
+          
+          {gameResult && (
+            <div style={{
+              marginTop: '20px',
+              padding: '20px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              fontSize: '24px',
+              fontWeight: 'bold'
+            }}>
+              {gameResult.winner === user?.userId ? '🏆 YOU WIN!' : '💀 YOU LOSE'}
+            </div>
+          )}
+        </>
       ) : (
         <p>{messages.HomePage.connectGameServer}</p>
       )}
       
       <p style={{ marginTop: '20px', color: '#888' }}>
-        {messages.game.movePaddle}
+        {messages.game.movePaddle} (W / S)
       </p>
     </div>
   );
