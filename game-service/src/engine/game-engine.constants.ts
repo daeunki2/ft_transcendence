@@ -1,3 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   game-engine.constants.ts                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/13 21:16:11 by daeunki2          #+#    #+#             */
+/*   Updated: 2026/05/14 12:59:46 by daeunki2         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+// ===== 소켓 이벤트명 (회의 합의안 고정) =====
+export const GAME_JOIN_QUEUE_EVENT = 'join_queue';
+export const GAME_READY_EVENT = 'ready';
+export const GAME_MOVE_PADDLE_EVENT = 'move_paddle';
+export const GAME_MATCH_FOUND_EVENT = 'match_found';
+export const GAME_STATE_EVENT = 'game_state';
+export const GAME_OVER_EVENT = 'game_over';
 
 // 프론트 캔버스와 서버 좌표 계산이 공유하는 게임판 크기
 export const BOARD_WIDTH = 1000;
@@ -24,7 +43,6 @@ export const INITIAL_BALL_SPEED_Y = 4;
 
 // 이 점수에 먼저 도달한 플레이어가 승리
 export const WIN_SCORE = 5;
-
 
 /*
 왼쪽 벽 x = 0
