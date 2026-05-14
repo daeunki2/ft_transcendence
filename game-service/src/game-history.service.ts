@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 20:53:44 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 20:53:45 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/14 21:35:07 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ export class GameHistoryService {
   ) {}
 
   async getHistoryByUserId(userId: string): Promise<GameRecordResponse[]> {
-    // daeunki2수정 : 수정이유
     // 프론트 유저 히스토리 화면에서 winner/loser 형태를 바로 쓰도록
     // DB 레코드를 응답 DTO(GameRecord) 형식으로 가공한다.
     const records = await this.gameRecordRepository.find({

@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/13 21:16:16 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 14:00:07 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/14 21:56:03 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,10 @@ export class GameEngineService {
   // - 점수는 0:0
   // - 공 속도는 상수값으로 초기화
   createInitialState(): EngineState {
+    // daeunki2수정 : 수정이유
+    // 매 게임 시작 시 초기 X/Y 방향을 랜덤 부호로 설정한다.
+    const startDirX = Math.random() < 0.5 ? -1 : 1;
+    const startDirY = Math.random() < 0.5 ? -1 : 1;
     return {
 		ballX: BOARD_WIDTH / 2,
 		ballY: BOARD_HEIGHT / 2,
@@ -39,18 +43,18 @@ export class GameEngineService {
 		p2Y: (BOARD_HEIGHT - PADDLE_HEIGHT) / 2,
 		score1: 0,
 		score2: 0,
-		ballVx: INITIAL_BALL_SPEED_X,
-		ballVy: INITIAL_BALL_SPEED_Y,
+		ballVx: INITIAL_BALL_SPEED_X * startDirX,
+		ballVy: INITIAL_BALL_SPEED_Y * startDirY,
     };
   }
 
   // 패들 입력(위/아래)을 받아 해당 플레이어 패들의 Y만 변경한다.
   // 실제 이동 제한(화면 밖 방지)은 clampPaddleY에서 처리한다.
   movePaddle(state: EngineState, player: PlayerSlot, direction: PaddleDirection): EngineState {
-    const delta = direction === 'up' ? -PADDLE_SPEED : PADDLE_SPEED;
-    const next = { ...state };
+    const delta = direction === 'up' ? -PADDLE_SPEED : PADDLE_SPEED; // 캔버스 좌표계라서 아래로 가야 y값이 증가함.  
+    const next = { ...state }; // 다음의 상태
     if (player === 'p1') {
-		next.p1Y = this.clampPaddleY(next.p1Y + delta);
+		next.p1Y = this.clampPaddleY(next.p1Y + delta); // 범위를 넘지 않도록 잡아줌
     } else {
 		next.p2Y = this.clampPaddleY(next.p2Y + delta);
     }
@@ -69,7 +73,7 @@ export class GameEngineService {
     next.ballY += next.ballVy;
 
     // 위/아래 벽 충돌:
-    // 공 중심 + 반지름 기준으로 경계 초과를 검사하고 Y속도를 반전한다.
+    // 공 중심 + 반지름 기준으로 경계 초과를 검사하고 Y속도를 반전한다. >> 충돌각과 반사각이 같다.
     // 반전 뒤에는 경계 안쪽으로 위치를 보정해 떨림을 줄인다.
     if (next.ballY - BALL_RADIUS <= 0 || next.ballY + BALL_RADIUS >= BOARD_HEIGHT) {
       next.ballVy *= -1;
@@ -143,17 +147,16 @@ export class GameEngineService {
     return Math.max(0, Math.min(BOARD_HEIGHT - PADDLE_HEIGHT, y));
   }
 
-  // 득점 후 공 리셋:
-  // - 공 위치는 중앙
-  // - X속도는 toward 방향으로 재시작
-  // - Y속도 부호는 직전 흐름을 유지해 움직임이 끊기지 않게 한다.
+  // 득점 후 재시작 때 X/Y 방향을 모두 랜덤화
   private resetBall(state: EngineState, toward: 1 | -1): EngineState {
+    const nextDirX = Math.random() < 0.5 ? -1 : 1;
+    const nextDirY = Math.random() < 0.5 ? -1 : 1;
     return {
 		...state,
 		ballX: BOARD_WIDTH / 2,
 		ballY: BOARD_HEIGHT / 2,
-		ballVx: Math.abs(INITIAL_BALL_SPEED_X) * toward,
-		ballVy: state.ballVy >= 0 ? INITIAL_BALL_SPEED_Y : -INITIAL_BALL_SPEED_Y,
+		ballVx: Math.abs(INITIAL_BALL_SPEED_X) * nextDirX,
+		ballVy: INITIAL_BALL_SPEED_Y * nextDirY,
     };
 	}
 }

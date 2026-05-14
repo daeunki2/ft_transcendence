@@ -99,7 +99,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(GAME_JOIN_QUEUE_EVENT)
   onJoinQueue(client: Socket) {
     const userId = client.data.userId;
-    console.log(`[Game] ${GAME_JOIN_QUEUE_EVENT} 수신 (stub): userId=${userId}`);
+  //  console.log(`[Game] ${GAME_JOIN_QUEUE_EVENT} 수신 (stub): userId=${userId}`);
     // ===== daeunki2 2명 모이면 세션 생성 + 루프 시작 =====
     this.handleJoinQueueRuntime(client);
   }
@@ -107,7 +107,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(GAME_MOVE_PADDLE_EVENT)
   onMovePaddle(client: Socket, payload: MovePaddlePayload) {
     const userId = client.data.userId;
-    console.log(`[Game] ${GAME_MOVE_PADDLE_EVENT} 수신 (stub): userId=${userId}`, payload);
+//    console.log(`[Game] ${GAME_MOVE_PADDLE_EVENT} 수신 (stub): userId=${userId}`, payload);
     // ===== daeunki2 p1/p2 판별 후 엔진 이동 반영 =====
     this.handleMovePaddleRuntime(client, payload);
   }
