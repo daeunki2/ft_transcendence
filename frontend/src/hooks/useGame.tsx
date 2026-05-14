@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/14 20:01:13 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:17:47 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ export const useGame = (currentUserId: string | null) => {
   const [isConnected, setIsConnected] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [matchData, setMatchData] = useState<{ opponent: string } | null>(null);
+  const [queueError, setQueueError] = useState<string | null>(null);
 
  // 대기열 추가
 const joinQueue = useCallback(() => {
@@ -98,6 +99,11 @@ const sendReady = useCallback(() => {
         socket.disconnect();
       }
     });
+
+    socket.on('queue_error', (data: { message: string }) => {
+      console.error('[Game Socket] 큐 에러 수신:', data.message);
+      setQueueError(data.message);
+    });
 	
 	  socket.on('disconnect', (reason) => {
       setIsConnected(false);
@@ -142,5 +148,5 @@ const sendReady = useCallback(() => {
     };
   }, [currentUserId]);
 
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, gameResult, sendReady, matchData};
+  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, gameResult, sendReady, matchData, queueError};
 };

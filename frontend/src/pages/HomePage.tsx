@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 20:03:09 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:20:42 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ export default function HomePage() {
   const [isMatchStarted, setIsMatchStarted] = useState(false);
   const [gameType, setGameType] = useState<'match' | 'ai' | null>(null);
 
-  const { isConnected, joinQueue, joinAiQueue } = useGame(
+  const { isConnected, joinQueue, joinAiQueue, queueError } = useGame(
     isMatchStarted ? user?.userId ?? null : null
   );
 
@@ -70,6 +70,14 @@ export default function HomePage() {
   //     window.removeEventListener('keydown', onKeyDown);
   //   };
   // }, [matchModalOpen]);
+
+  useEffect(() => {
+    if (queueError) {
+      // 에러 메시지를 알림으로 보여주고 모달을 닫습니다.
+      alert(`매칭 에러: ${queueError}`); 
+      handleCloseMatchModal();
+    }
+  }, [queueError]);
 
   useEffect(() => {
     if (!matchModalOpen || !isMatchStarted || !isConnected)
@@ -162,14 +170,14 @@ export default function HomePage() {
             }}
           >
             <Button
-              onClick={handleStartMatch('match')}
+              onClick={() => handleStartMatch('match')}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.match}
             </Button>
 
             <Button
-              onClick={handleStartMatch('ai')}
+              onClick={() => handleStartMatch('ai')}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.aiGame}
