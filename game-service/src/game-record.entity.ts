@@ -14,6 +14,15 @@ export class GameRecordEntity {
   @Column({ type: 'varchar', length: 64 })
   winnerId: string;
 
+  @Column({ type: 'varchar', length: 64 })
+  loserId: string;
+
+  @Column({ type: 'varchar', length: 64 })
+  winnerNickname: string;
+
+  @Column({ type: 'varchar', length: 64 })
+  loserNickname: string;
+
   @Column({ type: 'int' })
   player1Score: number;
 

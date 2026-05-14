@@ -25,6 +25,8 @@ type RuntimeGameSession = {
   p2SocketId: string;
   p1UserId: string;
   p2UserId: string;
+  p1Nickname: string;
+  p2Nickname: string;
   state: EngineState;
   timer: NodeJS.Timeout;
 };
@@ -60,6 +62,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return null;
   }
 
+  private extractNickname(client: Socket): string {
+    const queryNickname = client.handshake.query.nickname;
+    if (typeof queryNickname === 'string' && queryNickname.trim() !== '') {
+      return queryNickname.trim();
+    }
+    // daeunki2수정 : 수정이유
+    // 닉네임 전달이 누락돼도 기록 저장이 깨지지 않도록 userId를 fallback으로 사용한다.
+    return String(client.data.userId ?? '');
+  }
+
   handleConnection(client: Socket) {
     const userId = this.extractUserId(client);
     if (!userId) {
@@ -68,6 +80,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     client.data.userId = userId;
+    client.data.nickname = this.extractNickname(client);
     console.log(`[Game] 연결 성공: userId=${userId}, socketId=${client.id}`);
   }
 
@@ -165,6 +178,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 주입된 server 자체가 Namespace다. 소켓은 Namespace.sockets(Map)에서 직접 조회한다.
     const waitingClient = this.server.sockets.get(this.waitingSocketId);
     const waitingUserId = waitingClient?.data?.userId;
+    const waitingNickname = waitingClient?.data?.nickname;
+    const currentNickname = client.data.nickname;
 
     // 대기자 소켓이 유효하지 않으면(이미 끊김 등)
     // 현재 유저를 새 대기자로 설정하고 다음 유저를 기다린다.
@@ -188,6 +203,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       p2SocketId: client.id,
       p1UserId: String(waitingUserId),
       p2UserId: String(userId),
+      p1Nickname: String(waitingNickname ?? waitingUserId),
+      p2Nickname: String(currentNickname ?? userId),
       state,
     };
 
@@ -324,11 +341,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     winnerId: string,
     endedReason: 'normal' | 'forfeit',
   ): Promise<void> {
+    const winnerIsP1 = winnerId === session.p1UserId;
+    const loserId = winnerIsP1 ? session.p2UserId : session.p1UserId;
+    const winnerNickname = winnerIsP1 ? session.p1Nickname : session.p2Nickname;
+    const loserNickname = winnerIsP1 ? session.p2Nickname : session.p1Nickname;
     try {
       await this.gameRecordRepository.save({
         player1Id: session.p1UserId,
         player2Id: session.p2UserId,
         winnerId,
+        loserId,
+        winnerNickname,
+        loserNickname,
         player1Score: session.state.score1,
         player2Score: session.state.score2,
         endedReason,

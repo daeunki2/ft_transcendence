@@ -20,7 +20,10 @@ export default function GamePage() {
 
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { isConnected, gameState, movePaddle, joinQueue } = useGame(user?.userId ?? null);
+	const { isConnected, gameState, movePaddle, joinQueue } = useGame(
+		user?.userId ?? null,
+		user?.nickname ?? null,
+	);
 	const { messages } = useI18n();
 	const inputStateRef = useRef({ up: false, down: false });
 
