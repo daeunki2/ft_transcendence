@@ -67,6 +67,7 @@ export const en: Messages = {
   game: {
   connectGameJoin: 'Entering the matchmaking queue...',
   connectGameServer: 'Connecting to Game server',
+  preparingAiMatch: 'Preparing an AI opponent...',
   movePaddle: 'Press W / S to move the paddle.',
   },
     //소셜

@@ -58,6 +58,7 @@ HomePage: {
 game: {
   connectGameJoin: 'File d\'attente : En cours',
   connectGameServer: 'Connexion au serveur...',
+  preparingAiMatch: 'Préparation d’une IA adversaire...',
   movePaddle: 'Déplacez le paddle avec W / S.',
 },
 

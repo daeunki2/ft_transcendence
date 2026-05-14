@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:54:38 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:01:13 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,23 @@ export const useGame = (currentUserId: string | null) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const [matchData, setMatchData] = useState<{ opponent: string } | null>(null);
 
-  // 대기열 추가
-  const joinQueue = useCallback(() => {
+ // 대기열 추가
+const joinQueue = useCallback(() => {
+ if (socketRef.current && isConnected) {
+   console.log('[Game Socket] 대기열 등록 시도:', currentUserId);
+   socketRef.current.emit('join_queue');
+ } else {
+   console.error('[Game Socket] 소켓이 연결되지 않았습니다.');
+ }
+}, [isConnected, currentUserId]);
+
+const joinAiQueue = useCallback(() => {
   if (socketRef.current && isConnected) {
-    console.log('[Game Socket] 대기열 등록 시도:', currentUserId);
-    socketRef.current.emit('join_queue');
-  } else {
-    console.error('[Game Socket] 소켓이 연결되지 않았습니다.');
+    console.log('[Game Socket] AI 게임 시작 요청');
+    // 서버와 약속한 AI 전용 이벤트 송신
+    socketRef.current.emit('join_ai_queue'); 
   }
 }, [isConnected, currentUserId]);
 
@@ -34,6 +43,15 @@ export const useGame = (currentUserId: string | null) => {
 const movePaddle = useCallback((direction: 'up' | 'down') => {
   if (socketRef.current && isConnected) {
     socketRef.current.emit('move_paddle', { direction });
+  }
+}, [isConnected]);
+
+const sendReady = useCallback(() => {
+  if (socketRef.current && isConnected) {
+    console.log('[Game Socket] 게임 준비 완료(ready) 송신');
+    socketRef.current.emit('ready');
+  } else {
+    console.warn('[Game Socket] 소켓이 연결되지 않아 ready를 보낼 수 없습니다.');
   }
 }, [isConnected]);
 
@@ -81,7 +99,7 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
       }
     });
 	
-	socket.on('disconnect', (reason) => {
+	  socket.on('disconnect', (reason) => {
       setIsConnected(false);
       console.log('[Game Socket] 연결 종료 사유:', reason);
       
@@ -91,11 +109,20 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
       }
     });
 
-	socket.on('game_state', (state: GameState) => {
+	  socket.on('game_state', (state: GameState) => {
       setGameState(state); // 데이터가 들어올 때마다 리액트 상태 업데이트
     });
 
-	// Game Over 리스너
+    socket.on('match_found', (data: { opponent: string }) => {
+      console.log('[Game Socket] 매칭 성공! 상대방:', data.opponent);
+  
+      setMatchData(data);
+      socket.emit('ready'); 
+        
+      console.log('[Game Socket] 서버에 ready 이벤트를 보냈습니다.');
+    });
+
+	  // Game Over 리스너
     socket.on('game_over', (result: GameResult) => {
       console.log('[Game Socket] 게임 종료 수신:', result);
       setGameResult(result);
@@ -115,5 +142,5 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
     };
   }, [currentUserId]);
 
-  return { isConnected, movePaddle, joinQueue, gameState, gameResult};
+  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, gameResult, sendReady, matchData};
 };

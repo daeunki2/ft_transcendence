@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/11 21:17:14 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:03:09 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,17 +32,19 @@ export default function HomePage() {
 
   const [matchModalOpen, setMatchModalOpen] = useState(false);
   const [isMatchStarted, setIsMatchStarted] = useState(false);
+  const [gameType, setGameType] = useState<'match' | 'ai' | null>(null);
 
-  const { isConnected, joinQueue } = useGame(
+  const { isConnected, joinQueue, joinAiQueue } = useGame(
     isMatchStarted ? user?.userId ?? null : null
   );
 
-  const handleStartMatch = () => {
+  const handleStartMatch = (type: 'match' | 'ai') => {
     if (!user?.userId) {
       console.error('[Game] 유저 정보가 없어 매칭을 시작할 수 없습니다.');
       return;
     }
-
+    
+    setGameType(type);
     setIsMatchStarted(true);
     setMatchModalOpen(true);
   };
@@ -50,6 +52,7 @@ export default function HomePage() {
   const handleCloseMatchModal = () => {
     setMatchModalOpen(false);
     setIsMatchStarted(false);
+    setGameType(null);
   };
 
   // useEffect(() => {
@@ -69,12 +72,14 @@ export default function HomePage() {
   // }, [matchModalOpen]);
 
   useEffect(() => {
-    if (!matchModalOpen) return;
-    if (!isMatchStarted) return;
-    if (!isConnected) return;
-
-    joinQueue();
-  }, [matchModalOpen, isMatchStarted, isConnected, joinQueue]);
+    if (!matchModalOpen || !isMatchStarted || !isConnected)
+      return;
+    if (gameType === 'ai') {
+      joinAiQueue(); // AI 전용 대기열
+    } else {
+      joinQueue();   // 일반 매칭 대기열 이벤트
+    }
+  }, [matchModalOpen, isMatchStarted, isConnected, joinQueue, joinAiQueue, gameType]);
 
   return (
     <PageContainer
@@ -157,14 +162,14 @@ export default function HomePage() {
             }}
           >
             <Button
-              onClick={handleStartMatch}
+              onClick={handleStartMatch('match')}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.match}
             </Button>
 
             <Button
-              onClick={() => navigate('/ai-game')}
+              onClick={handleStartMatch('ai')}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.aiGame}

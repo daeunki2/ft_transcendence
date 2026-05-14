@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 09:49:50 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:54:58 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 16:54:12 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ export default function GameBoard({ data }: { data: GameState | null }) {
     // 왼쪽 패들
     ctx.fillRect(20, s.p1Y, PADDLE_WIDTH, PADDLE_HEIGHT); 
     // 오른쪽 패들
-    ctx.fillRect(GAME_WIDTH - 35, s.p2Y, PADDLE_WIDTH, PADDLE_HEIGHT); 
+    ctx.fillRect(GAME_WIDTH - 35, s.p2Y, PADDLE_WIDTH, PADDLE_HEIGHT); // 시작점 기준(20 + 패들 너비)
     // 공
     ctx.beginPath();
     ctx.arc(s.ballX, s.ballY, 10, 0, Math.PI * 2);

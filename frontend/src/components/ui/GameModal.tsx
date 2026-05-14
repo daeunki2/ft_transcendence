@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 20:59:15 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:17:17 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:11:56 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,10 @@ interface GameMatchModalProps {
   open: boolean;
   isConnected: boolean;
 //   onClose: () => void;
+  gameType?: 'match' | 'ai' | null;
 }
 
-export default function GameMatchModal({ open, isConnected, onClose }: GameMatchModalProps) {
+export default function GameMatchModal({ open, isConnected, gameType, onClose }: GameMatchModalProps) {
   const { theme } = useTheme();
   const { messages } = useI18n();
 
@@ -34,6 +35,15 @@ export default function GameMatchModal({ open, isConnected, onClose }: GameMatch
       100% { transform: rotate(360deg); }
     }
   `;
+  const getStatusMessage = () => {
+    if (!isConnected) {
+      return messages.game.connectGameServer;
+    }
+    if (gameType === 'ai') {
+      return messages.game.preparingAiMatch; 
+    }
+    return messages.game.connectGameJoin;
+  };
 
   return (
     <Modal open={open} onClose={handleDoNothing} closeOnOverlayClick={false}>
@@ -59,7 +69,7 @@ export default function GameMatchModal({ open, isConnected, onClose }: GameMatch
         }} />
 		
         <h2 style={{ margin: 0 }}>
-          {isConnected ? messages.game.connectGameJoin : messages.game.connectGameServer}
+          {getStatusMessage()}
         </h2>
 
         {/* <div style={{ marginTop: '10px' }}>
