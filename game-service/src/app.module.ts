@@ -5,6 +5,8 @@ import { HealthModule } from './health/health.module';
 import { GameGateway } from './game.gateway';
 import { GameEngineService } from './engine/game-engine.service'; // daeunki2 추가 : 게임 로직 추가
 import { GameRecordEntity } from './game-record.entity';
+import { GameHistoryService } from './game-history.service';
+import { GameHistoryController } from './game-history.controller';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { GameRecordEntity } from './game-record.entity';
     TypeOrmModule.forFeature([GameRecordEntity]), // daeunki2수정 : 수정이유 - Gateway에서 결과 저장용 Repository 주입
     HealthModule,
   ],
-  providers: [GameGateway, GameEngineService], // daeunki2 추가 : 게임 로직 추가
+  controllers: [GameHistoryController], // daeunki2수정 : 수정이유 - 게임 히스토리 조회 API 노출
+  providers: [GameGateway, GameEngineService, GameHistoryService], // daeunki2 추가 : 게임 로직 추가
 })
 export class AppModule {}

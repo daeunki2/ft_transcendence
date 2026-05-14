@@ -6,15 +6,13 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/13 21:16:11 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 16:03:49 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/14 19:50:03 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 // ===== 소켓 이벤트명 (회의 합의안 고정) =====
 export const GAME_JOIN_QUEUE_EVENT = 'join_queue';
-export const GAME_READY_EVENT = 'ready';
 export const GAME_MOVE_PADDLE_EVENT = 'move_paddle';
-export const GAME_MATCH_FOUND_EVENT = 'match_found';
 export const GAME_STATE_EVENT = 'game_state';
 export const GAME_OVER_EVENT = 'game_over';
 
@@ -23,8 +21,8 @@ export const BOARD_WIDTH = 1000;
 export const BOARD_HEIGHT = 600;
 
 // 패들 크기
-//패들 상단은 y1, y2
-//패들 하단은 y1-패들크기 y2-패들크기
+// 패들 상단 좌표는 p1Y, p2Y
+// 패들 하단 좌표는 (p1Y + PADDLE_HEIGHT), (p2Y + PADDLE_HEIGHT)
 export const PADDLE_WIDTH = 15;
 export const PADDLE_HEIGHT = 100;
 
