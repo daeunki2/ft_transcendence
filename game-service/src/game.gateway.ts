@@ -126,12 +126,4 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.matchmaking.enqueue(userId, client.id, isGuest, this.server);
   }
 
-  @SubscribeMessage('leave_queue')
-  async onLeaveQueue(client: Socket) {
-    const userId: string | undefined = client.data.userId;
-    const isGuest: boolean = Boolean(client.data.isGuest);
-    if (!userId) return;
-    console.log(`[Game] leave_queue: userId=${userId} isGuest=${isGuest}`);
-    await this.matchmaking.dequeue(userId, isGuest);
-  }
 }
