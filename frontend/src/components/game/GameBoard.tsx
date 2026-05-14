@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   gameBoard.tsx                                      :+:      :+:    :+:   */
+/*   GameBoard.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 09:49:50 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:54:58 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 15:56:10 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import React, { useEffect, useRef } from 'react';
-import type { GameState } from '../types/game';
+import type { GameState } from '../../types/game';
 
 const GAME_WIDTH = 1000;
 const GAME_HEIGHT = 600;

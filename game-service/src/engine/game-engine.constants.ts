@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/13 21:16:11 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 12:59:46 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/14 16:03:49 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ export const GAME_OVER_EVENT = 'game_over';
 
 // 프론트 캔버스와 서버 좌표 계산이 공유하는 게임판 크기
 export const BOARD_WIDTH = 1000;
-export const BOARD_HEIGHT = 800;
+export const BOARD_HEIGHT = 600;
 
 // 패들 크기
 //패들 상단은 y1, y2

@@ -33,8 +33,9 @@ export default function HomePage() {
   const [matchModalOpen, setMatchModalOpen] = useState(false);
   const [isMatchStarted, setIsMatchStarted] = useState(false);
 
-  const { isConnected, joinQueue } = useGame(
-    isMatchStarted ? user?.userId ?? null : null
+  const { isConnected, joinQueue, gameState } = useGame(
+    isMatchStarted ? user?.userId ?? null : null,
+    user?.nickname ?? null,
   );
 
   const handleStartMatch = () => {
@@ -75,6 +76,16 @@ export default function HomePage() {
 
     joinQueue();
   }, [matchModalOpen, isMatchStarted, isConnected, joinQueue]);
+
+  useEffect(() => {
+    // daeunki2수정 : 수정이유
+    // 백엔드 매칭 성립 후 game_state를 받으면 실제 게임이 시작된 상태다.
+    // 기존엔 이 시점에 /game 이동 로직이 없어 모달에서 무한 대기처럼 보였다.
+    if (!matchModalOpen) return;
+    if (!isMatchStarted) return;
+    if (!gameState) return;
+    navigate('/game');
+  }, [matchModalOpen, isMatchStarted, gameState, navigate]);
 
   return (
     <PageContainer

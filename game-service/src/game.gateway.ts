@@ -5,7 +5,10 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { randomUUID } from 'crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Namespace, Socket } from 'socket.io';
 import {
   GAME_OVER_EVENT,
   GAME_JOIN_QUEUE_EVENT,
@@ -14,6 +17,7 @@ import {
 } from './engine/game-engine.constants';
 import type { EngineState, MovePaddlePayload, PlayerSlot } from './engine/game-engine.types';
 import { GameEngineService } from './engine/game-engine.service';
+import { GameRecordEntity } from './game-record.entity';
 
 type RuntimeGameSession = {
   gameId: string;
@@ -35,8 +39,14 @@ type RuntimeGameSession = {
 }) // 게임 소켓
 
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;
-  constructor(private readonly engine: GameEngineService) {}
+  @WebSocketServer() server: Namespace;
+  constructor(
+    private readonly engine: GameEngineService,
+    @InjectRepository(GameRecordEntity)
+    private readonly gameRecordRepository: Repository<GameRecordEntity>,
+  ) {}
+  private readonly presenceEventsUrl =
+    process.env.PRESENCE_EVENTS_URL ?? 'http://gateway:8000/internal/presence/events';
 
   private extractUserId(client: Socket): string | null {
     const headerId = client.handshake.headers['x-user-id'];
@@ -122,6 +132,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         score1: session.state.score1,
         score2: session.state.score2,
       };
+      // daeunki2수정 : 수정이유
+      // 비정상 종료(연결 끊김)는 끊긴 사람이 패배라는 정책을 DB에도 동일하게 반영한다.
+      void this.saveGameRecord(session, winnerId, 'forfeit');
       // 현재 남아있는 상대뿐 아니라(있다면) 양쪽 모두에 동일 결과를 전송
       this.server.to(session.p1SocketId).emit(GAME_OVER_EVENT, result);
       this.server.to(session.p2SocketId).emit(GAME_OVER_EVENT, result);
@@ -148,7 +161,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // 기존 대기자 소켓 조회
-    const waitingClient = this.server.sockets.sockets.get(this.waitingSocketId);
+    // daeunki2수정 : 수정이유 - 이 Gateway는 namespace('game')로 동작하므로
+    // 주입된 server 자체가 Namespace다. 소켓은 Namespace.sockets(Map)에서 직접 조회한다.
+    const waitingClient = this.server.sockets.get(this.waitingSocketId);
     const waitingUserId = waitingClient?.data?.userId;
 
     // 대기자 소켓이 유효하지 않으면(이미 끊김 등)
@@ -183,6 +198,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 대기열 비움 (2인 매칭이 성립했으므로)
     this.waitingSocketId = null;
 
+    // daeunki2수정 : 수정이유
+    // 실게임 매칭이 성립한 시점이므로 두 유저를 IN_GAME 상태로 전환한다.
+    void this.publishPresenceEvent(sessionBase.p1UserId, 'game_started', { gameId });
+    void this.publishPresenceEvent(sessionBase.p2UserId, 'game_started', { gameId });
+
     // 60fps 게임 루프
     // tick마다 수행:
     // 1) 엔진 업데이트(공 이동/충돌/득점)
@@ -191,7 +211,21 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const timer = setInterval(() => {
       const session = this.sessions.get(gameId);
       if (!session) return;
+      const prevScore1 = session.state.score1;
+      const prevScore2 = session.state.score2;
       session.state = this.engine.updateTick(session.state);
+
+      // daeunki2수정 : 수정이유
+      // 점수 미반영 이슈를 빠르게 진단하기 위해 점수가 실제로 변경되는 순간만 로그를 남긴다.
+      if (
+        session.state.score1 !== prevScore1 ||
+        session.state.score2 !== prevScore2
+      ) {
+        console.log(
+          `[Game] score changed: gameId=${gameId} ${prevScore1}:${prevScore2} -> ${session.state.score1}:${session.state.score2}`,
+        );
+      }
+
       this.server.to(session.p1SocketId).emit(GAME_STATE_EVENT, session.state);
       this.server.to(session.p2SocketId).emit(GAME_STATE_EVENT, session.state);
       const result = this.engine.getGameResultIfOver(
@@ -204,6 +238,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // 두 플레이어에게 동일 결과를 전송해 UI 불일치 방지
       this.server.to(session.p1SocketId).emit(GAME_OVER_EVENT, result);
       this.server.to(session.p2SocketId).emit(GAME_OVER_EVENT, result);
+      // daeunki2수정 : 수정이유
+      // 정상 종료 시 최종 점수/승자를 game-db에 저장해 기록을 남긴다.
+      void this.saveGameRecord(session, result.winnerId, 'normal');
       this.endSession(gameId);
     }, 1000 / 60);
 
@@ -231,9 +268,76 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private endSession(gameId: string): void {
     const session = this.sessions.get(gameId);
     if (!session) return;
+
+    // daeunki2수정 : 수정이유
+    // 세션 종료(정상 종료/기권 종료 공통) 시 두 유저의 inGame 플래그를 해제한다.
+    void this.publishPresenceEvent(session.p1UserId, 'game_ended', { gameId });
+    void this.publishPresenceEvent(session.p2UserId, 'game_ended', { gameId });
+
     clearInterval(session.timer);
     this.socketToGameId.delete(session.p1SocketId);
     this.socketToGameId.delete(session.p2SocketId);
     this.sessions.delete(gameId);
+  }
+
+  // daeunki2수정 : 수정이유
+  // 게임 서비스에서 시작/종료 상태를 백엔드 기준으로 강제 동기화한다.
+  // 실패해도 게임 루프를 막지 않도록 fire-and-forget + 에러 로그만 남긴다.
+  private async publishPresenceEvent(
+    userId: string,
+    type: 'game_started' | 'game_ended',
+    meta?: Record<string, unknown>,
+  ): Promise<void> {
+    const payload = {
+      eventId: randomUUID(),
+      userId,
+      type,
+      source: 'game-service',
+      seq: Date.now(),
+      at: new Date().toISOString(),
+      version: 1 as const,
+      meta,
+    };
+    try {
+      const response = await fetch(this.presenceEventsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        console.warn(
+          `[Game] presence event publish failed: status=${response.status}, userId=${userId}, type=${type}`,
+        );
+      }
+    } catch (error) {
+      console.warn(
+        `[Game] presence event publish error: userId=${userId}, type=${type}`,
+        error,
+      );
+    }
+  }
+
+  // daeunki2수정 : 수정이유
+  // 게임 종료 결과를 game-db에 영속 저장한다.
+  private async saveGameRecord(
+    session: RuntimeGameSession,
+    winnerId: string,
+    endedReason: 'normal' | 'forfeit',
+  ): Promise<void> {
+    try {
+      await this.gameRecordRepository.save({
+        player1Id: session.p1UserId,
+        player2Id: session.p2UserId,
+        winnerId,
+        player1Score: session.state.score1,
+        player2Score: session.state.score2,
+        endedReason,
+      });
+    } catch (error) {
+      console.warn(
+        `[Game] game record save failed: gameId=${session.gameId}, reason=${endedReason}`,
+        error,
+      );
+    }
   }
 }

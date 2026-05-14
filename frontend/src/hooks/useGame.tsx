@@ -14,7 +14,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { GameState, GameResult } from '../types/game';
 
-export const useGame = (currentUserId: string | null) => {
+export const useGame = (currentUserId: string | null, currentNickname?: string | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -53,8 +53,11 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
 	  withCredentials: true,
       transports: ['polling','websocket'], 
       query: {
-        userId: currentUserId 
-    },
+        userId: currentUserId,
+        // daeunki2수정 : 수정이유
+        // 게임 종료 기록에 winner/loser nickname을 저장하기 위해 소켓 연결 시 함께 전달한다.
+        nickname: currentNickname ?? '',
+      },
 
      reconnection: true,            // 재연결 활성화
      reconnectionAttempts: 10,      // 재시도 횟수
@@ -113,7 +116,7 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
         socketRef.current = null;
       }
     };
-  }, [currentUserId]);
+  }, [currentUserId, currentNickname]);
 
   return { isConnected, movePaddle, joinQueue, gameState, gameResult};
 };

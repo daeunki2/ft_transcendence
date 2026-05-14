@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GameModal.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 20:59:15 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:17:17 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 18:20:47 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,9 @@ import { useI18n } from '../../i18n/useI18n';
 interface GameMatchModalProps {
   open: boolean;
   isConnected: boolean;
-//   onClose: () => void;
+  // daeunki2수정 : 수정이유
+  // 부모(HomePage)에서 onClose를 전달하고 있으므로 props 타입에도 명시해 타입 불일치(암묵 any/속성 누락)를 방지
+  onClose: () => void;
 }
 
 export default function GameMatchModal({ open, isConnected, onClose }: GameMatchModalProps) {

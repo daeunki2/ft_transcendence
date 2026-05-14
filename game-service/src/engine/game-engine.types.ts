@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/13 21:07:38 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/13 21:08:10 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/14 18:24:10 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 // 유저 히스토리용 (DB 저장/조회 응답)
 export interface GameRecord {
   id: number;
-  winnerNickname: string;
+  winnerNickname: string;//닉네임 변경이 가능하니까 id로 변경해야 될거 같음. 
   loserNickname: string;
   winnerScore: number;
   loserScore: number;

@@ -3,65 +3,65 @@
 /*                                                        :::      ::::::::   */
 /*   UpdateProfile.tsx                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/12 12:04:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 12:04:38 by chanypar         ###   ########.fr       */
+/*   Created: 2026/04/30 13:14:49 by chanypar          #+#    #+#             */
+/*   Updated: 2026/05/14 17:51:44 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { useState, useEffect, useCallback } from 'react';
-import { gameService } from '../services/gameService';
+import { useContext, useState } from 'react';
+import { AuthContext } from '../contexts/AuthContext.types';
+import { userService } from '../services/userService';
 import { useI18n } from '../i18n/useI18n';
-import type { GameRecord } from '../types/game';
 
-export const useGameHistory = (userId: string | null) => {
-  const [history, setHistory] = useState<GameRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+// 변경할 수 있는 필드들을 정의 (Partial을 써서 선택적으로 받음)
+interface UpdateFields {
+  userPhoto?: string;
+  nickname?: string;
+}
+
+export const useUpdateProfile = () => {
+  const context = useContext(AuthContext);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
   const { messages } = useI18n();
 
-  const fetchHistory = useCallback(async () => {
-    if (!userId) return;
+  if (!context) throw new Error('AuthProvider를 확인해주세요.');
+  const { setUser } = context;
 
-    setIsLoading(true);
-    setAlertMsg(null); // 새로운 요청 시 이전 에러 초기화
-
+  const updateProfile = async (fields: UpdateFields) => {
+    setIsUpdating(true);
     try {
-      // 1. 서비스 호출 (아까 만든 gameService 사용)
-      const data = await gameService.fetchHistory(userId);
+      // 1. 서버에 수정된 필드들만 전송
+      const response = await userService.updateProfile(fields);
 
-      // 2. 성공 시 데이터 저장
-      // 데이터가 없을 경우를 대비해 Array.isArray 체크를 넣어주면 더 안전합니다.
-      if (Array.isArray(data)) {
-        setHistory(data);
-      } else {
-        setHistory([]);
+      if (response?.success) {
+        // 2. 서버 성공 시 Context 상태 업데이트
+        // 기존 유저 데이터(prev) 위에 새로운 필드(fields)를 덮어씌움
+        setUser((prev) => (prev ? { ...prev, ...fields } : null));
+        return true;
       }
-    } catch (error: any) {
-      console.error("전적 로딩 에러:", error);
+      else {
+        const translated = (messages.errors as any)[response.message] || messages.errors.SERVER_ERROR;
+        
+        setAlertMsg(translated);
+        console.log("프로필 수정 실패 사유:", response.message);
+      }
+    } catch (error) {
+      console.error("프로필 수정 에러:", error);
       
-      // 3. 에러 발생 시 번역된 메시지 세팅 (기본 서버 에러 사용)
-      const errorKey = error?.response?.data?.message;
-      const translated = (messages.errors as any)[errorKey] || messages.errors?.SERVER_ERROR || "Server Error";
-      
-      setAlertMsg(translated);
-      setHistory([]); // 에러 시 빈 배열로 초기화하여 map 에러 방지
+      setAlertMsg(messages.errors?.SERVER_ERROR);
     } finally {
-      setIsLoading(false);
+      setIsUpdating(false);
     }
-  }, [userId, messages.errors]);
-
-  // 마운트 시 혹은 userId 변경 시 실행
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+    return false;
+  };
 
   return { 
-    history, 
-    isLoading, 
+    updateProfile, 
+    isUpdating, 
     alertMsg, 
-    setAlertMsg,
-    refetch: fetchHistory // 필요 시 수동으로 새로고침 할 수 있도록 반환
+    setAlertMsg 
   };
 };
