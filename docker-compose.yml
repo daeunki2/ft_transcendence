@@ -163,7 +163,7 @@ services:
     image: redis:7
     container_name: token-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     stdin_open: true
@@ -196,7 +196,7 @@ services:
     image: redis:7
     container_name: chat-redis
     ports:
-      - "6380:6379"  # 호스트에서 6380으로 접속하면 컨테이너 6379로 연결
+      - "6381:6379"  # 호스트에서 6380으로 접속하면 컨테이너 6379로 연결
     volumes:
       - chat_redis_data:/data
 
