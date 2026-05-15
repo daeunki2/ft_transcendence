@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/11 12:23:39 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/11 21:17:14 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,10 @@ export default function HomePage() {
   // useGame 훅이 state 를 초기화하기 전에 한 번 받아서 보여줘야 하므로 페이지 레벨로 끌어올림.
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
 
+  // merge수정 : main의 matchInfo/queueError 흐름을 유지하고 daeunki2의 기록 저장용 nickname 전달만 추가함.
   const { isConnected, joinQueue, matchInfo, queueError, clearQueueError } = useGame(
-    isMatchStarted ? user?.userId ?? null : null
+    isMatchStarted ? user?.userId ?? null : null,
+    user?.nickname ?? null,
   );
 
   const handleStartMatch = () => {
@@ -55,21 +57,21 @@ export default function HomePage() {
     setIsMatchStarted(false);
   };
 
-  useEffect(() => {
-    if (!matchModalOpen) return;
+  // useEffect(() => {
+  //   if (!matchModalOpen) return;
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleCloseMatchModal();
-      }
-    };
+  //   const onKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === 'Escape') {
+  //       handleCloseMatchModal();
+  //     }
+  //   };
 
-    window.addEventListener('keydown', onKeyDown);
+  //   window.addEventListener('keydown', onKeyDown);
 
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [matchModalOpen]);
+  //   return () => {
+  //     window.removeEventListener('keydown', onKeyDown);
+  //   };
+  // }, [matchModalOpen]);
 
   useEffect(() => {
     if (!matchModalOpen) return;
@@ -78,6 +80,14 @@ export default function HomePage() {
 
     joinQueue();
   }, [matchModalOpen, isMatchStarted, isConnected, joinQueue]);
+
+  // merge수정 : daeunki2의 /game 이동은 gameState가 아니라 main 매칭 로직의 match_found 결과(matchInfo)를 기준으로 처리함.
+  useEffect(() => {
+    if (!matchModalOpen) return;
+    if (!isMatchStarted) return;
+    if (!matchInfo) return;
+    navigate('/game');
+  }, [matchModalOpen, isMatchStarted, matchInfo, navigate]);
 
   // 이유: 서버에서 queue_error 가 도착하면 매칭 모달을 닫고 i18n 룩업한 문구로 알림을 띄운다.
   // code 기준 룩업 → 미정의 시 서버 fallback message → 그것도 없으면 SERVER_ERROR.
@@ -191,6 +201,7 @@ export default function HomePage() {
         </Card>
       </div>
 
+      {/* merge수정 : daeunki2의 GameMatchModal 대신 main의 Modal을 유지해 matchFound/ESC 안내와 queue_error Alert 흐름을 보존함. */}
       <Modal
         open={matchModalOpen}
         onClose={handleCloseMatchModal}

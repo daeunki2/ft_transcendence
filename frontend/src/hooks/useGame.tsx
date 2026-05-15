@@ -6,21 +6,14 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/11 12:28:15 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 11:54:38 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-interface GameState {
-  ballX: number;	// 공 좌표
-  ballY: number;
-  p1Y: number;		// 플레이어 1, 2 좌표(위 아래여서 Y자표로 충분)
-  p2Y: number;
-  score1: number;	//스코어
-  score2: number;
-}
+// merge수정 : main의 인라인 GameState 대신 daeunki2의 공통 게임 타입을 사용해 GamePage/GameBoard와 타입을 맞춤.
+import type { GameState, GameResult } from '../types/game';
 
 // 이유: 서버 match_found 페이로드. 다음 게임 페이지가 그대로 사용 (gameId=방 식별, side=내 패들, opponent=상대 표시).
 // navigate는 다음 페이지 담당자가 처리할 영역이라 이 훅에선 상태만 노출.
@@ -38,12 +31,15 @@ export interface QueueError {
   gameId?: string;
 }
 
-export const useGame = (currentUserId: string | null) => {
+// merge수정 : main의 userId 기반 소켓 연결에 daeunki2의 기록 저장용 nickname 전달 인자를 추가함.
+export const useGame = (currentUserId: string | null, currentNickname?: string | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [queueError, setQueueError] = useState<QueueError | null>(null);
+  // merge수정 : daeunki2의 game_over 결과 상태를 main의 매칭 상태들과 함께 유지함.
+  const [gameResult, setGameResult] = useState<GameResult | null>(null);
 
   // 대기열 추가
   const joinQueue = useCallback(() => {
@@ -72,6 +68,8 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
   	setGameState(null);
 	setMatchInfo(null);
 	setQueueError(null);
+	// merge수정 : 소켓이 닫히는 경우 게임 결과 상태도 함께 초기화함.
+	setGameResult(null);
     return;
   }
    
@@ -80,8 +78,12 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
 	  withCredentials: true,
       transports: ['polling','websocket'], 
       query: {
-        userId: currentUserId 
-    },
+        userId: currentUserId,
+        // merge수정 : main의 userId query는 유지하고 daeunki2의 nickname query를 추가함.
+        // daeunki2수정 : 수정이유
+        // 게임 종료 기록에 winner/loser nickname을 저장하기 위해 소켓 연결 시 함께 전달한다.
+        nickname: currentNickname ?? '',
+      },
 
      reconnection: true,            // 재연결 활성화
      reconnectionAttempts: 10,      // 재시도 횟수
@@ -136,6 +138,16 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
       setQueueError(err);
     });
 
+    // merge수정 : main의 match_found/queue_error 리스너를 유지하면서 daeunki2의 game_over 리스너를 추가함.
+	// Game Over 리스너
+    socket.on('game_over', (result: GameResult) => {
+      console.log('[Game Socket] 게임 종료 수신:', result);
+      setGameResult(result);
+      
+      // 게임이 종료되었으니 불필요한 game_state 수신은 끊어줍니다.
+      socket.off('game_state');
+    });
+	
     // 클린업 (언마운트 시 소켓 종료)
     return () => {
       if (socketRef.current) {
@@ -145,10 +157,19 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
         socketRef.current = null;
       }
     };
-  }, [currentUserId]);
+  }, [currentUserId, currentNickname]);
 
   // queueError 는 호출 컴포넌트가 읽어 모달 닫기/알림 표시 후 setQueueError(null) 로 초기화한다.
   const clearQueueError = useCallback(() => setQueueError(null), []);
 
-  return { isConnected, movePaddle, joinQueue, gameState, matchInfo, queueError, clearQueueError };
+  // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
+  return { isConnected, movePaddle, joinQueue, gameState, matchInfo, queueError, clearQueueError, gameResult };
 };
+
+
+/*
+충돌 
+suna는 소켓을 매칭용으로
+daeunki2는 게임용으로 사용하려 함 
+그래서 2 다 남기는 방향으로 merge합
+*/
