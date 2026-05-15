@@ -149,9 +149,16 @@ function createAccessTokenMiddleware(
       req.headers['x-user-id'] = userId;
 
       console.log('[게이트웨이] 액세스 토큰 검증 성공', { sub: payload.sub });
-      
+
       if (payload.id) {
         req.headers['x-user-login-id'] = payload.id as string;
+      }
+      // 이유: game-service 등 하위 서비스에서 게스트/회원 구분 매칭 등에 사용.
+      // JWT 클레임 isGuest 가 true 일 때만 'true' 문자열을 박는다.
+      if (payload.isGuest === true) {
+        req.headers['x-is-guest'] = 'true';
+      } else {
+        delete req.headers['x-is-guest'];
       }
       return next();
     }

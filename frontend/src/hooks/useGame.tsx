@@ -22,10 +22,28 @@ interface GameState {
   score2: number;
 }
 
+// 이유: 서버 match_found 페이로드. 다음 게임 페이지가 그대로 사용 (gameId=방 식별, side=내 패들, opponent=상대 표시).
+// navigate는 다음 페이지 담당자가 처리할 영역이라 이 훅에선 상태만 노출.
+export interface MatchInfo {
+  gameId: string;
+  side: 'p1' | 'p2';
+  opponent: string;
+}
+
+// 이유: 서버 queue_error 페이로드. join_queue 거절 사유를 프론트가 분기 처리하기 위함.
+// code 는 백엔드 game.gateway.ts 의 queue_error emit 시 사용하는 값과 1:1로 맞춰야 한다.
+export interface QueueError {
+  code: 'UNAUTHENTICATED' | 'ALREADY_IN_GAME' | string;
+  message: string;
+  gameId?: string;
+}
+
 export const useGame = (currentUserId: string | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+  const [queueError, setQueueError] = useState<QueueError | null>(null);
 
   // 대기열 추가
   const joinQueue = useCallback(() => {
@@ -52,6 +70,8 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
     }
 	setIsConnected(false);
   	setGameState(null);
+	setMatchInfo(null);
+	setQueueError(null);
     return;
   }
    
@@ -101,7 +121,21 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
 	socket.on('game_state', (state: GameState) => {
       setGameState(state); // 데이터가 들어올 때마다 리액트 상태 업데이트
     });
-	
+
+    // 이유: 매칭 성공 시 서버가 각 클라이언트에게 자기 side를 박아 보낸다. 페이로드 그대로 보관.
+    // 다음 페이지 전환(예: /game/{gameId}) 은 이 훅을 사용하는 컴포넌트가 matchInfo 변화를 감지해 처리.
+    socket.on('match_found', (info: MatchInfo) => {
+      console.log('[Game Socket] match_found 수신:', info);
+      setMatchInfo(info);
+    });
+
+    // 이유: join_queue 거절 사유(UNAUTHENTICATED / ALREADY_IN_GAME 등)를 상태로 보관해
+    // 호출 컴포넌트가 모달을 닫거나 알림을 띄우는 분기 처리에 사용한다.
+    socket.on('queue_error', (err: QueueError) => {
+      console.warn('[Game Socket] queue_error 수신:', err);
+      setQueueError(err);
+    });
+
     // 클린업 (언마운트 시 소켓 종료)
     return () => {
       if (socketRef.current) {
@@ -113,5 +147,8 @@ const movePaddle = useCallback((direction: 'up' | 'down') => {
     };
   }, [currentUserId]);
 
-  return { isConnected, movePaddle, joinQueue, gameState};
+  // queueError 는 호출 컴포넌트가 읽어 모달 닫기/알림 표시 후 setQueueError(null) 로 초기화한다.
+  const clearQueueError = useCallback(() => setQueueError(null), []);
+
+  return { isConnected, movePaddle, joinQueue, gameState, matchInfo, queueError, clearQueueError };
 };
