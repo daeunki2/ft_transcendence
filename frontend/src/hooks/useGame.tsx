@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 19:09:51 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 19:37:24 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ const sendReady = useCallback(() => {
     const socket = io('http://localhost:8000/game', {
 	  path: '/api/game/socket.io',
 	  withCredentials: true,
-      transports: ['polling','websocket'], 
+      transports: ['websocket', 'polling'], 
       query: {
         userId: currentUserId,
         // merge수정 : main의 userId query는 유지하고 daeunki2의 nickname query를 추가함.
