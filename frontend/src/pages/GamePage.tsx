@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 14:46:59 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 20:17:19 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ export default function GamePage() {
 
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { gameState, movePaddle, matchData, gameResult, isConnected } = useGameContext();
+	const { gameState, movePaddle, matchData, gameResult, isConnected, joinQueue } = useGameContext();
 	const { messages } = useI18n();
 	const inputStateRef = useRef({ up: false, down: false });
 

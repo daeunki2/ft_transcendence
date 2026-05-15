@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 19:37:24 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 20:15:43 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,11 @@ export const useGame = (currentUserId: string | null, shouldConnect: boolean,  c
   const [queueError, setQueueError] = useState<QueueError | null>(null);
   // merge수정 : daeunki2의 game_over 결과 상태를 main의 매칭 상태들과 함께 유지함.
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
-  const [matchData, setMatchData] = useState<{ opponent: string } | null>(null);
  
 
 //Context 리셋함수
 const resetGameState = useCallback(() => {
-setMatchData(null);
+setMatchInfo(null);
   setGameState(null);
   setGameResult(null);
   setQueueError(null);
@@ -87,17 +86,17 @@ const sendReady = useCallback(() => {
 }, [isConnected]);
 
   useEffect(() => {
-	if (!currentUserId || currentUserId === 'undefined'|| currentUserId === 'null' || !shouldConnect){
+	if (!shouldConnect || !currentUserId || currentUserId === 'undefined'|| currentUserId === 'null'){
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
 	  setIsConnected(false);
   	setGameState(null);
-	setMatchInfo(null);
-	setQueueError(null);
-	// merge수정 : 소켓이 닫히는 경우 게임 결과 상태도 함께 초기화함.
-	setGameResult(null);
+	  setMatchInfo(null);
+	  setQueueError(null);
+	  // merge수정 : 소켓이 닫히는 경우 게임 결과 상태도 함께 초기화함.
+	  setGameResult(null);
     return;
   	}
 
@@ -109,7 +108,7 @@ const sendReady = useCallback(() => {
     const socket = io('http://localhost:8000/game', {
 	  path: '/api/game/socket.io',
 	  withCredentials: true,
-      transports: ['websocket', 'polling'], 
+      transports: ['polling', 'websocket'], 
       query: {
         userId: currentUserId,
         // merge수정 : main의 userId query는 유지하고 daeunki2의 nickname query를 추가함.
@@ -118,8 +117,8 @@ const sendReady = useCallback(() => {
         nickname: currentNickname ?? '',
       },
 
-     reconnection: true,            // 재연결 활성화
-     reconnectionAttempts: 10,      // 재시도 횟수
+    //  reconnection: true,            // 재연결 활성화
+    //  reconnectionAttempts: 10,      // 재시도 횟수
      reconnectionDelay: 1000,       // 실패 시 1초(길수도 있음)
      reconnectionDelayMax: 5000,    // 대기시간 최대 5초까지만 늘어나게 설정
      timeout: 10000,                // 타임아웃 10초
@@ -206,7 +205,7 @@ const sendReady = useCallback(() => {
   const clearQueueError = useCallback(() => setQueueError(null), []);
 
   // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, matchData, resetGameState};
+  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
 };
 
 

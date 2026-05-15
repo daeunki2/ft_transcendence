@@ -40,7 +40,7 @@ export default function HomePage() {
     joinQueue, 
     joinAiQueue, 
     queueError, 
-    matchData, 
+    matchInfo, 
     activateGameSocket,
     deactivateGameSocket,
     resetGameState 
@@ -80,13 +80,13 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [matchModalOpen]);
 
-  // 매칭 성공 시 페이지 이동 (matchInfo -> matchData로 수정)
+  // 매칭 성공 시 페이지 이동 (matchInfo -> matchInfo로 수정)
   useEffect(() => {
-    if (matchData) {
-      console.log('[Game] 매칭 성공, 게임 시작:', matchData.opponent);
+    if (matchInfo) {
+      console.log('[Game] 매칭 성공, 게임 시작:', matchInfo.opponent);
       navigate('/game');
     }
-  }, [matchData, navigate]);
+  }, [matchInfo, navigate]);
 
   // 에러 처리 로직 정리
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function HomePage() {
         isConnected={isConnected}
         onClose={handleCloseMatchModal}
         // 만약 모달 내부에서 "매칭 완료!" 문구를 띄우고 싶다면 아래 props도 추가하세요
-        // matchData={matchData} 
+        // matchInfo={matchInfo} 
       />
 
       <Alert

@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 14:52:48 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 19:39:52 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 20:10:25 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   // 소켓 연결 스위치 (기본값은 false)
   const [shouldConnect, setShouldConnect] = useState(false);
 
+  const canConnect = useMemo(() => {
+    return !!user && shouldConnect;
+  }, [user, shouldConnect]);
+
   // useGame에 userId와 연결 스위치를 함께 전달
-  const game = useGame(user?.userId ?? null, shouldConnect,user?.nickname);
+  const game = useGame(user?.userId ?? null, canConnect,user?.nickname);
 
   // 1. 로그아웃 및 게임 종료 감지 로직
   useEffect(() => {
@@ -46,7 +50,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, game.gameResult]); // gameResult를 의존성에 추가!
 
-  // 🚩 2. 수동 종료 함수 (매칭 취소 시 사용)
+  //  수동 종료 함수 (매칭 취소 시 사용)
   const deactivateGameSocket = useCallback(() => {
     setShouldConnect(false);
     game.resetGameState();
