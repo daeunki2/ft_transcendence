@@ -19,12 +19,14 @@ import { useI18n } from '../../i18n/useI18n';
 interface GameMatchModalProps {
   open: boolean;
   isConnected: boolean;
+//   onClose: () => void;
+  gameType?: 'match' | 'ai' | null;
   // daeunki2수정 : 수정이유
   // 부모(HomePage)에서 onClose를 전달하고 있으므로 props 타입에도 명시해 타입 불일치(암묵 any/속성 누락)를 방지
   onClose: () => void;
 }
 
-export default function GameMatchModal({ open, isConnected, onClose }: GameMatchModalProps) {
+export default function GameMatchModal({ open, isConnected, gameType, onClose }: GameMatchModalProps) {
   const { theme } = useTheme();
   const { messages } = useI18n();
 
@@ -36,6 +38,15 @@ export default function GameMatchModal({ open, isConnected, onClose }: GameMatch
       100% { transform: rotate(360deg); }
     }
   `;
+  const getStatusMessage = () => {
+    if (!isConnected) {
+      return messages.game.connectGameServer;
+    }
+    if (gameType === 'ai') {
+      return messages.game.preparingAiMatch; 
+    }
+    return messages.game.connectGameJoin;
+  };
 
   return (
     <Modal open={open} onClose={handleDoNothing} closeOnOverlayClick={false}>
@@ -61,7 +72,7 @@ export default function GameMatchModal({ open, isConnected, onClose }: GameMatch
         }} />
 		
         <h2 style={{ margin: 0 }}>
-          {isConnected ? messages.game.connectGameJoin : messages.game.connectGameServer}
+          {getStatusMessage()}
         </h2>
 
         {/* <div style={{ marginTop: '10px' }}>

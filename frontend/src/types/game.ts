@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 11:46:32 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:56:13 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/12 15:22:08 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ export interface GameRecord {
   winnerScore: number;
   loserScore: number;
   playedAt: string; // ISO Date String
-  gameMode: string;
 }
 
 // 게임 중, 프론트 <-> 서버 소통 규격

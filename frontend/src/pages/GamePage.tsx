@@ -6,12 +6,12 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 11:30:52 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 14:46:59 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import GameBoard from '../components/game/GameBoard';
-import { useGame } from '../hooks/useGame';
+import { useGameContext } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../i18n/useI18n';
 import React, { useEffect, useRef } from 'react';
@@ -20,10 +20,7 @@ export default function GamePage() {
 
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { isConnected, gameState, movePaddle, joinQueue } = useGame(
-		user?.userId ?? null,
-		user?.nickname ?? null,
-	);
+	const { gameState, movePaddle, matchData, gameResult, isConnected } = useGameContext();
 	const { messages } = useI18n();
 	const inputStateRef = useRef({ up: false, down: false });
 
@@ -82,17 +79,36 @@ export default function GamePage() {
       color: '#fff',
       paddingTop: '40px'
     }}>
-      <h1 style={{ marginBottom: '20px' }}>PONG MATCH</h1>
+      <h1 style={{ marginBottom: '20px', letterSpacing: '4px' }}>PONG MATCH</h1>
       
       {isConnected ? (
-        <GameBoard data={gameState} />
+        <>
+          <GameBoard 
+            data={gameState} 
+            meName={user?.nickname || 'ME'} 
+            opponentName={matchData?.opponent || 'OPPONENT'} 
+          />
+          
+          {gameResult && (
+            <div style={{
+              marginTop: '20px',
+              padding: '20px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              fontSize: '24px',
+              fontWeight: 'bold'
+            }}>
+              {gameResult.winner === user?.userId ? '🏆 YOU WIN!' : '💀 YOU LOSE'}
+            </div>
+          )}
+        </>
       ) : (
         // daeunki2 수정 : connectGameServer는 i18n 타입에서 game 섹션으로 분리되어 있어 경로를 맞춤.
         <p>{messages.game.connectGameServer}</p>
       )}
       
       <p style={{ marginTop: '20px', color: '#888' }}>
-        {messages.game.movePaddle}
+        {messages.game.movePaddle} (W / S)
       </p>
     </div>
   );

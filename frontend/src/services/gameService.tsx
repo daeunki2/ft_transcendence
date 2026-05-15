@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 11:57:02 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/12 12:00:33 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/14 20:55:45 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@ import apiClient from './apiClient';
 import type { GameRecord } from '../types/game';
 
 export const gameService = {
-	
   fetchHistory: async (userId: string): Promise<GameRecord[]> => {
     return await apiClient('get', `api/game/games/history/${userId}`);
   },

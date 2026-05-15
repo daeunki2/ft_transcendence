@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/11 21:17:14 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:01:54 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
-import { useGame } from '../hooks/useGame';
+import { useGameContext } from '../contexts/GameContext';
+import GameMatchModal from '../components/ui/GameModal';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -32,22 +33,28 @@ export default function HomePage() {
 
   const [matchModalOpen, setMatchModalOpen] = useState(false);
   const [isMatchStarted, setIsMatchStarted] = useState(false);
+  const [gameType, setGameType] = useState<'match' | 'ai' | null>(null);
+
+  const { isConnected, joinQueue, joinAiQueue, queueError, matchData, activateGameSocket } = useGameContext();
   // 이유: queue_error 거절 사유를 i18n 룩업한 문구로 띄우기 위해 별도 상태로 보관.
   // useGame 훅이 state 를 초기화하기 전에 한 번 받아서 보여줘야 하므로 페이지 레벨로 끌어올림.
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
 
-  // merge수정 : main의 matchInfo/queueError 흐름을 유지하고 daeunki2의 기록 저장용 nickname 전달만 추가함.
+  /*// merge수정 : main의 matchInfo/queueError 흐름을 유지하고 daeunki2의 기록 저장용 nickname 전달만 추가함.
   const { isConnected, joinQueue, matchInfo, queueError, clearQueueError } = useGame(
     isMatchStarted ? user?.userId ?? null : null,
     user?.nickname ?? null,
-  );
+  );*/
 
-  const handleStartMatch = () => {
+  const handleStartMatch = (type: 'match' | 'ai') => {
     if (!user?.userId) {
       console.error('[Game] 유저 정보가 없어 매칭을 시작할 수 없습니다.');
       return;
     }
-
+    
+	activateGameSocket();
+	
+    setGameType(type);
     setIsMatchStarted(true);
     setMatchModalOpen(true);
   };
@@ -55,6 +62,7 @@ export default function HomePage() {
   const handleCloseMatchModal = () => {
     setMatchModalOpen(false);
     setIsMatchStarted(false);
+    setGameType(null);
   };
 
   // useEffect(() => {
@@ -74,12 +82,31 @@ export default function HomePage() {
   // }, [matchModalOpen]);
 
   useEffect(() => {
-    if (!matchModalOpen) return;
-    if (!isMatchStarted) return;
-    if (!isConnected) return;
+    if (queueError) {
+      // 에러 메시지를 알림으로 보여주고 모달을 닫습니다.
+      alert(`매칭 에러: ${queueError}`); 
+      handleCloseMatchModal();
+    }
+  }, [queueError]);
 
-    joinQueue();
-  }, [matchModalOpen, isMatchStarted, isConnected, joinQueue]);
+  useEffect(() => {
+    if (matchData) {
+      // 게임 페이지로 이동하면서 필요한 정보를 state로 넘겨줄 수 있습니다.
+       navigate('/game');
+      console.log('[Game] 매칭 성공, 게임 시작:', matchData.opponent);
+    }
+  }, [matchData, navigate, gameType]);
+
+  useEffect(() => {
+    if (!matchModalOpen || !isMatchStarted)
+      return;
+	if (!isConnected) return;
+    if (gameType === 'ai') {
+      joinAiQueue(); // AI 전용 대기열
+    } else {
+      joinQueue();   // 일반 매칭 대기열 이벤트
+    }
+  }, [matchModalOpen, isMatchStarted, isConnected, joinQueue, joinAiQueue, gameType]);
 
   // merge수정 : daeunki2의 /game 이동은 gameState가 아니라 main 매칭 로직의 match_found 결과(matchInfo)를 기준으로 처리함.
   useEffect(() => {
@@ -185,14 +212,14 @@ export default function HomePage() {
             }}
           >
             <Button
-              onClick={handleStartMatch}
+              onClick={() => handleStartMatch('match')}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.match}
             </Button>
 
             <Button
-              onClick={() => navigate('/ai-game')}
+              onClick={() => handleStartMatch('ai')}
               style={{ width: '100%', maxWidth: '320px' }}
             >
               {messages.HomePage.aiGame}
