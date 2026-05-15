@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 14:58:23 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 18:43:53 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,12 +66,12 @@ const sendReady = useCallback(() => {
 }, [isConnected]);
 
   useEffect(() => {
-	if (!currentUserId || currentUserId === 'undefined'|| currentUserId === 'null'){
+	if (!currentUserId || currentUserId === 'undefined'|| currentUserId === 'null' || !shouldConnect){
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
-	setIsConnected(false);
+	  setIsConnected(false);
   	setGameState(null);
     return;
   	}
@@ -149,6 +149,11 @@ const sendReady = useCallback(() => {
       
       // 게임이 종료되었으니 불필요한 game_state 수신은 끊어줍니다.
       socket.off('game_state');
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      setIsConnected(false);
     });
 	
     // 클린업 (언마운트 시 소켓 종료)
@@ -156,7 +161,7 @@ const sendReady = useCallback(() => {
       if (socketRef.current) {
         console.log('[Game Socket] 소켓 연결 종료');
         socketRef.current.removeAllListeners(); // 모든 리스너
-        //socketRef.current.disconnect();
+        socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
