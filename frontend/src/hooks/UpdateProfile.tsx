@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   UpdateProfile.tsx                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 12:04:37 by chanypar          #+#    #+#             */
 /*   Updated: 2026/05/15 14:13:05 by chanypar         ###   ########.fr       */

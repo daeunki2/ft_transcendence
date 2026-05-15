@@ -15,6 +15,6 @@ import type { GameRecord } from '../types/game';
 
 export const gameService = {
   fetchHistory: async (userId: string): Promise<GameRecord[]> => {
-    return await apiClient('get', `api/game/history/${userId}`);
+    return await apiClient('get', `api/game/games/history/${userId}`);
   },
 };

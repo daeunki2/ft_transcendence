@@ -30,7 +30,9 @@ type LoginResult =
       refreshToken: string;
       accessTokenMaxAgeMs: number;
       refreshTokenMaxAgeMs: number;
-      user: { id: string; isGuest?: boolean };
+      // 이유: 프론트는 userId(시스템 UUID = auth row PK)를 매칭/소켓 인증에 쓰고
+      // id(로그인 ID 또는 게스트 닉네임)는 화면 표시에 쓴다. 두 필드 모두 필요하다.
+      user: { userId: string; id: string; isGuest?: boolean };
     }
   | {
       success: false;
@@ -187,6 +189,7 @@ export class AuthService {
         accessTokenMaxAgeMs,
         refreshTokenMaxAgeMs,
         user: {
+          userId: user.id,
           id: user.loginId,
         },
       };
@@ -290,6 +293,7 @@ export class AuthService {
       accessTokenMaxAgeMs,
       refreshTokenMaxAgeMs,
       user: {
+        userId: user.id,
         id: displayId,
         ...(isGuest && { isGuest: true }),
       },
@@ -387,7 +391,7 @@ export class AuthService {
         await firstValueFrom(
           this.httpService.post('http://user-service:4001/init', {
             id: savedAuth.id,
-            email: null,
+            loginId: null,
             nickname,
             role: 'guest',
           }),
@@ -453,7 +457,7 @@ export class AuthService {
       refreshToken,
       accessTokenMaxAgeMs,
       refreshTokenMaxAgeMs,
-      user: { id: nickname, isGuest: true },
+      user: { userId: savedAuth.id, id: nickname, isGuest: true },
     };
   }
 

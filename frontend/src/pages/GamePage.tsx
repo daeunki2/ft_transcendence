@@ -14,7 +14,7 @@ import GameBoard from '../components/game/GameBoard';
 import { useGameContext } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../i18n/useI18n';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export default function GamePage() {
 
@@ -22,17 +22,51 @@ export default function GamePage() {
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
 	const { gameState, movePaddle, matchData, gameResult, isConnected } = useGameContext();
 	const { messages } = useI18n();
+	const inputStateRef = useRef({ up: false, down: false });
 
 	useEffect(() => {
-  	const handleKeyDown = (e: KeyboardEvent) => {
-    	if (e.key.toLowerCase() === 'w') movePaddle('up');
-    	if (e.key.toLowerCase() === 's') movePaddle('down');
-  	};
+		// daeunki2수정 : 수정이유
+		// HomePage에서 /game 이동 시 기존 소켓이 정리되고, GamePage에서 새 소켓이 열린다.
+		// 따라서 연결 직후 이 페이지에서 큐 재등록을 1회 수행해야 game_state를 다시 수신할 수 있다.
+		if (!isConnected) return;
+		joinQueue();
+	}, [isConnected, joinQueue]);
 
-  	if (isConnected) {
-    window.addEventListener('keydown', handleKeyDown);
-  	}
-  	return () => window.removeEventListener('keydown', handleKeyDown);
+	useEffect(() => {
+		// daeunki2수정 : 수정이유
+		// keydown 1회당 1번 전송 방식은 패들이 끊겨 보인다.
+		// 키 상태를 유지(up/down)하고 짧은 주기로 연속 전송해 부드럽게 움직이게 한다.
+		const handleKeyDown = (e: KeyboardEvent) => {
+			const key = e.key.toLowerCase();
+			if (key === 'w') inputStateRef.current.up = true;
+			if (key === 's') inputStateRef.current.down = true;
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			const key = e.key.toLowerCase();
+			if (key === 'w') inputStateRef.current.up = false;
+			if (key === 's') inputStateRef.current.down = false;
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('keyup', handleKeyUp);
+
+		const interval = setInterval(() => {
+			if (!isConnected) return;
+			if (inputStateRef.current.up && !inputStateRef.current.down) {
+				movePaddle('up');
+			} else if (inputStateRef.current.down && !inputStateRef.current.up) {
+				movePaddle('down');
+			}
+		}, 1000 / 60);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
+			clearInterval(interval);
+			inputStateRef.current.up = false;
+			inputStateRef.current.down = false;
+		};
 	}, [isConnected, movePaddle]);
 
   return (
@@ -69,7 +103,8 @@ export default function GamePage() {
           )}
         </>
       ) : (
-        <p>{messages.HomePage.connectGameServer}</p>
+        // daeunki2 수정 : connectGameServer는 i18n 타입에서 game 섹션으로 분리되어 있어 경로를 맞춤.
+        <p>{messages.game.connectGameServer}</p>
       )}
       
       <p style={{ marginTop: '20px', color: '#888' }}>

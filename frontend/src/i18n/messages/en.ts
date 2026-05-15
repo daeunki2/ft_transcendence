@@ -54,7 +54,7 @@ export const en: Messages = {
   mySpace: 'My Space',
   logout: 'Logout',
   },
-    //홈
+  //홈
   HomePage: {
   pong: 'Play Pong',
   summary: 'Play Pong online with other players or against AI.',
@@ -62,6 +62,8 @@ export const en: Messages = {
   aiGame: 'Play vs AI',
   gameRule: 'Game Rules',
   rule: 'Score more points than your opponent by hitting the ball without missing it.',
+  matchFound: 'Match found, joining game...',
+  escCancel: 'Press ESC to cancel matchmaking',
   },
 
   game: {
@@ -159,7 +161,6 @@ export const en: Messages = {
   section7Body:
     'These Terms may be changed within the scope of applicable law. Material changes will be announced in the service. Continued use after changes constitutes acceptance.',
   },
-
 	errors: {
 	USER_NOT_FOUND: "Invalid ID or password.",
 	INVALID_PASSWORD: "Invalid ID or password.",
@@ -187,6 +188,9 @@ export const en: Messages = {
   IMAGE_FORMAT_NOT_ALLOWED: "This image format is not allowed",
   TOO_BIG_FILE:"Too big file. (5MB max)",
   USER_SERVICE_UNAVAILABLE: "This feature is temporarily unavailable. Please try again later.",
+  UNAUTHENTICATED: "Authentication required. Please log in again.",
+  ALREADY_IN_GAME: "You are already in an ongoing game.",
+  KICKED_BY_NEW_TAB: "Connection closed because a new session started in another tab.",
   },
 
   errorPage: {

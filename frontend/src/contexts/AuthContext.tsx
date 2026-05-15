@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
     setUser({
-      userId: '',
+      userId: result.user.userId,
       id: result.user.id,
       nickname: result.user.id,
       userPhoto: '',

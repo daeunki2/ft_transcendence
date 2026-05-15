@@ -55,6 +55,8 @@ HomePage: {
   aiGame: 'AI와 게임하기',
   gameRule: '게임 설명',
   rule: '공을 놓치지 않고 상대보다 더 많은 점수를 얻으면 승리합니다.',
+  matchFound: '게임을 찾았습니다, 게임 참가 중...',
+  escCancel: 'ESC를 누르면 매칭을 취소합니다.',
 },
 
 game: {
@@ -174,6 +176,9 @@ game: {
     IMAGE_FORMAT_NOT_ALLOWED: "사용할 수 없는 이미지 형식입니다",
     TOO_BIG_FILE:"파일 크기가 너무 큽니다. (최대 5MB)",
     USER_SERVICE_UNAVAILABLE: "이 기능은 현재 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+    UNAUTHENTICATED: "인증 정보가 필요합니다. 다시 로그인해 주세요.",
+    ALREADY_IN_GAME: "이미 진행 중인 게임이 있습니다.",
+    KICKED_BY_NEW_TAB: "다른 탭/창에서 새 세션이 시작되어 이 연결은 종료되었습니다.",
   },
   errorPage: {
     errorCode: "에러 코드",

@@ -12,12 +12,34 @@
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+// merge수정 : main의 인라인 GameState 대신 daeunki2의 공통 게임 타입을 사용해 GamePage/GameBoard와 타입을 맞춤.
 import type { GameState, GameResult } from '../types/game';
 
 export const useGame = (currentUserId: string | null, shouldConnect: boolean) => {
+// 이유: 서버 match_found 페이로드. 다음 게임 페이지가 그대로 사용 (gameId=방 식별, side=내 패들, opponent=상대 표시).
+// navigate는 다음 페이지 담당자가 처리할 영역이라 이 훅에선 상태만 노출.
+export interface MatchInfo {
+  gameId: string;
+  side: 'p1' | 'p2';
+  opponent: string;
+}
+
+// 이유: 서버 queue_error 페이로드. join_queue 거절 사유를 프론트가 분기 처리하기 위함.
+// code 는 백엔드 game.gateway.ts 의 queue_error emit 시 사용하는 값과 1:1로 맞춰야 한다.
+export interface QueueError {
+  code: 'UNAUTHENTICATED' | 'ALREADY_IN_GAME' | string;
+  message: string;
+  gameId?: string;
+}
+
+// merge수정 : main의 userId 기반 소켓 연결에 daeunki2의 기록 저장용 nickname 전달 인자를 추가함.
+export const useGame = (currentUserId: string | null, currentNickname?: string | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+  const [queueError, setQueueError] = useState<QueueError | null>(null);
+  // merge수정 : daeunki2의 game_over 결과 상태를 main의 매칭 상태들과 함께 유지함.
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [matchData, setMatchData] = useState<{ opponent: string } | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
@@ -73,6 +95,10 @@ const sendReady = useCallback(() => {
     }
 	  setIsConnected(false);
   	setGameState(null);
+	setMatchInfo(null);
+	setQueueError(null);
+	// merge수정 : 소켓이 닫히는 경우 게임 결과 상태도 함께 초기화함.
+	setGameResult(null);
     return;
   	}
 
@@ -86,8 +112,12 @@ const sendReady = useCallback(() => {
 	  withCredentials: true,
       transports: ['polling','websocket'], 
       query: {
-        userId: currentUserId 
-    },
+        userId: currentUserId,
+        // merge수정 : main의 userId query는 유지하고 daeunki2의 nickname query를 추가함.
+        // daeunki2수정 : 수정이유
+        // 게임 종료 기록에 winner/loser nickname을 저장하기 위해 소켓 연결 시 함께 전달한다.
+        nickname: currentNickname ?? '',
+      },
 
      reconnection: true,            // 재연결 활성화
      reconnectionAttempts: 10,      // 재시도 횟수
@@ -133,16 +163,22 @@ const sendReady = useCallback(() => {
       setGameState(state); // 데이터가 들어올 때마다 리액트 상태 업데이트
     });
 
-    socket.on('match_found', (data: { opponent: string }) => {
-      console.log('[Game Socket] 매칭 성공! 상대방:', data.opponent);
-  
-      setMatchData(data);
-    //  socket.emit('ready'); 
-        
-      console.log('[Game Socket] 서버에 ready 이벤트를 보냈습니다.');
+    // 이유: 매칭 성공 시 서버가 각 클라이언트에게 자기 side를 박아 보낸다. 페이로드 그대로 보관.
+    // 다음 페이지 전환(예: /game/{gameId}) 은 이 훅을 사용하는 컴포넌트가 matchInfo 변화를 감지해 처리.
+    socket.on('match_found', (info: MatchInfo) => {
+      console.log('[Game Socket] match_found 수신:', info);
+      setMatchInfo(info);
     });
 
-	  // Game Over 리스너
+    // 이유: join_queue 거절 사유(UNAUTHENTICATED / ALREADY_IN_GAME 등)를 상태로 보관해
+    // 호출 컴포넌트가 모달을 닫거나 알림을 띄우는 분기 처리에 사용한다.
+    socket.on('queue_error', (err: QueueError) => {
+      console.warn('[Game Socket] queue_error 수신:', err);
+      setQueueError(err);
+    });
+
+    // merge수정 : main의 match_found/queue_error 리스너를 유지하면서 daeunki2의 game_over 리스너를 추가함.
+	// Game Over 리스너
     socket.on('game_over', (result: GameResult) => {
       console.log('[Game Socket] 게임 종료 수신:', result);
       setGameResult(result);
@@ -165,7 +201,19 @@ const sendReady = useCallback(() => {
         socketRef.current = null;
       }
     };
-  }, [currentUserId, shouldConnect]);
+  }, [currentUserId, currentNickname, shouldConnect]);
 
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, gameResult, sendReady, matchData, queueError, resetGameState};
+  // queueError 는 호출 컴포넌트가 읽어 모달 닫기/알림 표시 후 setQueueError(null) 로 초기화한다.
+  const clearQueueError = useCallback(() => setQueueError(null), []);
+
+  // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
+  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, matchData, resetGameState};
 };
+
+
+/*
+충돌 
+suna는 소켓을 매칭용으로
+daeunki2는 게임용으로 사용하려 함 
+그래서 2 다 남기는 방향으로 merge합
+*/

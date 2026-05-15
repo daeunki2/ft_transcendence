@@ -65,6 +65,8 @@ export type Messages = {
     aiGame : string;
     gameRule : string;
     rule : string;
+    matchFound: string;
+    escCancel: string;
   };
   game: {
     connectGameJoin: string;
@@ -72,8 +74,7 @@ export type Messages = {
     preparingAiMatch: string;
     matchingError: string;
     movePaddle: string;
-  }
-  
+  };
   social: {
     title: string;
     addPlaceholder: string;
@@ -170,6 +171,9 @@ errors: {
     IMAGE_FORMAT_NOT_ALLOWED: string;
     TOO_BIG_FILE: string;
     USER_SERVICE_UNAVAILABLE: string;
+    UNAUTHENTICATED: string;
+    ALREADY_IN_GAME: string;
+    KICKED_BY_NEW_TAB: string;
   };
   errorPage: {
     errorCode: string;

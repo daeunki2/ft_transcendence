@@ -38,8 +38,7 @@ export class UserService {
 
       const newUser = this.userRepository.create({
       userId: id, // 전달받은 UUID
-      // 이유: line 38의 미정의 shorthand(loginId) 오류를 방지하기 위해 명시적으로 초기화한다.
-      loginId: loginId,
+      loginId,
       nickname: normalizedNickname,
       userPhoto: "http://localhost:4001/uploads/default.jpg",
       role,
@@ -58,10 +57,10 @@ export class UserService {
       const pgCode = error.code ?? error.driverError?.code;
       if (pgCode === '23505') {
         const detail: string = error.driverError?.detail ?? error.detail ?? '';
-        if (detail.includes('email')) {
-          throw new BadRequestException('EMAIL_ALREADY_EXISTS');
+        if (detail.includes('loginId')) {
+          throw new BadRequestException('LOGIN_ID_ALREADY_EXISTS');
         }
-        // nickname 충돌이거나 detail 정보가 없는 경우(게스트는 email=NULL 이므로 nickname 일 확률이 압도적).
+        // nickname 충돌이거나 detail 정보가 없는 경우(게스트는 loginId=NULL 이므로 nickname 일 확률이 압도적).
         throw new BadRequestException('NICKNAME_ALREADY_EXISTS');
       }
 
