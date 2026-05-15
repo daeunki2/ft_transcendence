@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:46:40 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/15 14:18:54 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:01:54 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ import Navbar from '../components/common/Navbar';
 import { useTheme } from '../theme/useTheme';
 import { useI18n } from '../i18n/useI18n';
 import { useAuth } from '../contexts/AuthContext';
-import { useGame } from '../hooks/useGame';
+import { useGameContext } from '../contexts/GameContext';
 import GameMatchModal from '../components/ui/GameModal';
 
 export default function HomePage() {
@@ -34,9 +34,7 @@ export default function HomePage() {
   const [isMatchStarted, setIsMatchStarted] = useState(false);
   const [gameType, setGameType] = useState<'match' | 'ai' | null>(null);
 
-  const { isConnected, joinQueue, joinAiQueue, queueError, matchData } = useGame(
-    isMatchStarted ? user?.userId ?? null : null
-  );
+  const { isConnected, joinQueue, joinAiQueue, queueError, matchData, activateGameSocket } = useGameContext();
 
   const handleStartMatch = (type: 'match' | 'ai') => {
     if (!user?.userId) {
@@ -44,6 +42,8 @@ export default function HomePage() {
       return;
     }
     
+	activateGameSocket();
+	
     setGameType(type);
     setIsMatchStarted(true);
     setMatchModalOpen(true);
@@ -82,14 +82,15 @@ export default function HomePage() {
   useEffect(() => {
     if (matchData) {
       // 게임 페이지로 이동하면서 필요한 정보를 state로 넘겨줄 수 있습니다.
-       navigate('/game', { state: { opponent: matchData.opponent, type: gameType } });
+       navigate('/game');
       console.log('[Game] 매칭 성공, 게임 시작:', matchData.opponent);
     }
   }, [matchData, navigate, gameType]);
 
   useEffect(() => {
-    if (!matchModalOpen || !isMatchStarted || !isConnected)
+    if (!matchModalOpen || !isMatchStarted)
       return;
+	if (!isConnected) return;
     if (gameType === 'ai') {
       joinAiQueue(); // AI 전용 대기열
     } else {

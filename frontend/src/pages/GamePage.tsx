@@ -6,12 +6,12 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/14 21:23:01 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 14:46:59 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import GameBoard from '../components/game/GameBoard';
-import { useGame } from '../hooks/useGame';
+import { useGameContext } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../i18n/useI18n';
 import React, { useEffect } from 'react';
@@ -20,7 +20,7 @@ export default function GamePage() {
 
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { isConnected, gameState, movePaddle, matchData, gameResult } = useGame(user?.userId ?? null);
+	const { gameState, movePaddle, matchData, gameResult, isConnected } = useGameContext();
 	const { messages } = useI18n();
 
 	useEffect(() => {

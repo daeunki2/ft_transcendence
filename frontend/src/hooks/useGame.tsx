@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/14 20:17:47 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 14:58:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { GameState, GameResult } from '../types/game';
 
-export const useGame = (currentUserId: string | null) => {
+export const useGame = (currentUserId: string | null, shouldConnect: boolean) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,6 +22,15 @@ export const useGame = (currentUserId: string | null) => {
   const [matchData, setMatchData] = useState<{ opponent: string } | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
 
+//Context 리셋함수
+const resetGameState = useCallback(() => {
+setMatchData(null);
+  setGameState(null);
+  setGameResult(null);
+  setQueueError(null);
+  console.log('[Game Hook] 모든 게임 데이터가 초기화되었습니다.');
+}, []);
+  
  // 대기열 추가
 const joinQueue = useCallback(() => {
  if (socketRef.current && isConnected) {
@@ -65,7 +74,12 @@ const sendReady = useCallback(() => {
 	setIsConnected(false);
   	setGameState(null);
     return;
-  }
+  	}
+
+	if (socketRef.current?.connected) {
+    console.log('[Game Socket] 이미 연결된 소켓 유지');
+    return;
+  	}
    
     const socket = io('http://localhost:8000/game', {
 	  path: '/api/game/socket.io',
@@ -123,7 +137,7 @@ const sendReady = useCallback(() => {
       console.log('[Game Socket] 매칭 성공! 상대방:', data.opponent);
   
       setMatchData(data);
-      socket.emit('ready'); 
+    //  socket.emit('ready'); 
         
       console.log('[Game Socket] 서버에 ready 이벤트를 보냈습니다.');
     });
@@ -142,11 +156,11 @@ const sendReady = useCallback(() => {
       if (socketRef.current) {
         console.log('[Game Socket] 소켓 연결 종료');
         socketRef.current.removeAllListeners(); // 모든 리스너
-        socketRef.current.disconnect();
+        //socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, [currentUserId]);
+  }, [currentUserId, shouldConnect]);
 
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, gameResult, sendReady, matchData, queueError};
+  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, gameResult, sendReady, matchData, queueError, resetGameState};
 };
