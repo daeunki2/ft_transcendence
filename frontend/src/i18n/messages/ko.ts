@@ -65,6 +65,9 @@ game: {
   preparingAiMatch: 'AI 대전 상대를 준비하고 있습니다...',
   matchingError: '매칭 에러',
   movePaddle: 'W / S 키로 패들을 조작하세요.',
+  winner: '🏆 승리!',
+  loser: '💀 패배',
+  backHome: '뒤로가기',
 },
   social: {
     title: '친구 목록',

@@ -53,6 +53,8 @@ HomePage: {
   aiGame: 'Jouer contre l’IA',
   gameRule: 'Règles du jeu',
   rule: 'Marquez plus de points que votre adversaire en renvoyant la balle sans la manquer.',
+  matchFound: 'Match trouvé, commencer le jeu...',
+  escCancel: 'Appuyez ESC pour annuler le match',
 },
 
 game: {
@@ -61,6 +63,9 @@ game: {
   preparingAiMatch: 'Préparation d’une IA adversaire...',
   matchingError: 'Erreur de matchmaking',
   movePaddle: 'Déplacez le paddle avec W / S.',
+  winner: '🏆 GAGNE!',
+  loser: '💀 PERDU',
+  backHome: 'Retour',
 },
 
   social: {

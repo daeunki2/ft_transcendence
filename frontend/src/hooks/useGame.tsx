@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 20:15:43 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 20:29:08 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ const sendReady = useCallback(() => {
 	  setMatchInfo(null);
 	  setQueueError(null);
 	  // merge수정 : 소켓이 닫히는 경우 게임 결과 상태도 함께 초기화함.
-	  setGameResult(null);
+	  // setGameResult(null);
     return;
   	}
 

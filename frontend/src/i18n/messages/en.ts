@@ -72,6 +72,9 @@ export const en: Messages = {
   preparingAiMatch: 'Preparing an AI opponent...',
   matchingError: 'Matching Error',
   movePaddle: 'Press W / S to move the paddle.',
+  winner: '🏆 YOU WIN!',
+  loser: '💀 YOU LOSE',
+  backHome: 'Go Back Home',
   },
     //소셜
   social: {
