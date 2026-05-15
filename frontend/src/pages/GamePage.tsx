@@ -87,7 +87,8 @@ export default function GamePage() {
       {isConnected ? (
         <GameBoard data={gameState} />
       ) : (
-        <p>{messages.HomePage.connectGameServer}</p>
+        // daeunki2 수정 : connectGameServer는 i18n 타입에서 game 섹션으로 분리되어 있어 경로를 맞춤.
+        <p>{messages.game.connectGameServer}</p>
       )}
       
       <p style={{ marginTop: '20px', color: '#888' }}>

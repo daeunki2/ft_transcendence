@@ -207,8 +207,6 @@ services:
   redis:
     image: redis:7
     container_name: token-redis
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     stdin_open: true

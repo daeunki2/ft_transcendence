@@ -217,8 +217,9 @@ export default function HomePage() {
           {matchInfo
             ? messages.HomePage.matchFound
             : isConnected
-              ? messages.HomePage.connectGameJoin
-              : messages.HomePage.connectGameServer}
+              // daeunki2 수정 : connectGameJoin/connectGameServer는 i18n 타입에서 game 섹션으로 분리되어 있어 경로를 맞춤.
+              ? messages.game.connectGameJoin
+              : messages.game.connectGameServer}
           <br />
           {messages.HomePage.escCancel}
         </div>

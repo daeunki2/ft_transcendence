@@ -8,6 +8,12 @@ import {
 import { Namespace, Socket } from 'socket.io';
 import { MatchmakingService } from './matchmaking/matchmaking.service';
 import { GameRedis } from './redis/game.redis';
+import { GameRuntimeService } from './engine/game-runtime.service'; // daeunki2 추가
+import {
+  GAME_JOIN_QUEUE_EVENT,
+  GAME_MOVE_PADDLE_EVENT,
+} from './engine/game-engine.constants';
+import type { MovePaddlePayload } from './engine/game-engine.types'; //daeunki2추가
 
 @WebSocketGateway({
   namespace: 'game',
@@ -16,6 +22,9 @@ import { GameRedis } from './redis/game.redis';
     credentials: true,
   },
 })
+
+
+
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 이유: @WebSocketGateway({ namespace: 'game' }) 사용 시 런타임에 주입되는 인스턴스는
   // 사실 Namespace 다. Server 로 두면 .sockets 가 default Namespace 로 추론돼
@@ -25,7 +34,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly matchmaking: MatchmakingService,
     private readonly gameRedis: GameRedis,
+    private readonly gameRuntime: GameRuntimeService, // daeunki2 추가 : 게임 실행 로직
   ) {}
+
+  // daeunki2 추가 : 패들 움직임
+  @SubscribeMessage(GAME_MOVE_PADDLE_EVENT)
+  onMovePaddle(client: Socket, payload: MovePaddlePayload) {
+    this.gameRuntime.movePaddle(client, payload);
+  }
 
   private extractUserId(client: Socket): string | null {
     const headerId = client.handshake.headers['x-user-id'];
@@ -48,6 +64,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return false;
   }
 
+  // daeunki2 수정 : 게임 결과 DB 저장 시 winner/loser nickname이 필요해서 소켓 query에서 nickname을 꺼낸다.
+  private extractNickname(client: Socket): string {
+    const queryNickname = client.handshake.query.nickname;
+    if (typeof queryNickname === 'string' && queryNickname.trim() !== '') {
+      return queryNickname.trim();
+    }
+    // daeunki2 수정 : 닉네임이 없는 예외 상황에서는 기록 저장이 깨지지 않도록 userId를 fallback으로 사용한다.
+    return String(client.data.userId ?? '');
+  }
+
   handleConnection(client: Socket) {
     const userId = this.extractUserId(client);
     if (!userId) {
@@ -65,6 +91,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const isGuest = this.extractIsGuest(client);
     client.data.userId = userId;
     client.data.isGuest = isGuest;
+    // daeunki2 수정 : Runtime 서비스가 게임 기록 저장에 사용할 nickname을 socket data에 보관한다.
+    client.data.nickname = this.extractNickname(client);
     console.log(
       `[Game] 연결 성공: userId=${userId}, isGuest=${isGuest}, socketId=${client.id}`,
     );
@@ -99,9 +127,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.matchmaking.dequeue(userId, isGuest);
 
     // 이유: 매칭된 게임 진행 중 끊긴 경우는 다은님 영역(로직 서비스)에서 game_ended 처리.
+    // daeunki2 수정 : 실제 게임 중 disconnect는 Runtime 서비스가 기권 처리, game_over, 기록 저장, Redis 정리를 담당한다.
+    await this.gameRuntime.handleDisconnect(client, this.server);
   }
 
-  @SubscribeMessage('join_queue')
+  // @SubscribeMessage('join_queue')
+  // daeunki2 주석처리 : 이벤트명을 직접 문자열로 쓰면 상수와 불일치할 수 있어 아래 GAME_JOIN_QUEUE_EVENT를 사용한다.
+  @SubscribeMessage(GAME_JOIN_QUEUE_EVENT)
   async onJoinQueue(client: Socket) {
     const userId: string | undefined = client.data.userId;
     const isGuest: boolean = Boolean(client.data.isGuest);
@@ -123,7 +155,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     console.log(`[Game] join_queue: userId=${userId} isGuest=${isGuest}`);
-    await this.matchmaking.enqueue(userId, client.id, isGuest, this.server);
+    // await this.matchmaking.enqueue(userId, client.id, isGuest, this.server); >> 매창까지만 하는 로직
+    const match = await this.matchmaking.enqueue(userId, client.id, isGuest, this.server);
+    if (match) {
+        await this.gameRuntime.startMatch(match, this.server);
+    } // daeunki2 :  매칭이 존재하면 게임 시작하게 수정
   }
 
 }
