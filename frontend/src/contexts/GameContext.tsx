@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 14:52:48 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 18:40:35 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 19:08:59 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [shouldConnect, setShouldConnect] = useState(false);
 
   // useGame에 userId와 연결 스위치를 함께 전달
-  const game = useGame(user?.userId ?? null, shouldConnect);
+  const game = useGame(user?.userId ?? null, shouldConnect,user?.userNickname);
 
   // 1. 로그아웃 및 게임 종료 감지 로직
   useEffect(() => {

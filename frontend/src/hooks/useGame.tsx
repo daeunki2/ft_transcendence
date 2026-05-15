@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 18:43:53 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 19:09:51 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@ import { io, Socket } from 'socket.io-client';
 // merge수정 : main의 인라인 GameState 대신 daeunki2의 공통 게임 타입을 사용해 GamePage/GameBoard와 타입을 맞춤.
 import type { GameState, GameResult } from '../types/game';
 
-export const useGame = (currentUserId: string | null, shouldConnect: boolean) => {
 // 이유: 서버 match_found 페이로드. 다음 게임 페이지가 그대로 사용 (gameId=방 식별, side=내 패들, opponent=상대 표시).
 // navigate는 다음 페이지 담당자가 처리할 영역이라 이 훅에선 상태만 노출.
 export interface MatchInfo {
@@ -33,7 +32,7 @@ export interface QueueError {
 }
 
 // merge수정 : main의 userId 기반 소켓 연결에 daeunki2의 기록 저장용 nickname 전달 인자를 추가함.
-export const useGame = (currentUserId: string | null, currentNickname?: string | null) => {
+export const useGame = (currentUserId: string | null, shouldConnect: boolean,  currentNickname?: string | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -42,7 +41,7 @@ export const useGame = (currentUserId: string | null, currentNickname?: string |
   // merge수정 : daeunki2의 game_over 결과 상태를 main의 매칭 상태들과 함께 유지함.
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [matchData, setMatchData] = useState<{ opponent: string } | null>(null);
-  const [queueError, setQueueError] = useState<string | null>(null);
+ 
 
 //Context 리셋함수
 const resetGameState = useCallback(() => {
@@ -50,7 +49,7 @@ setMatchData(null);
   setGameState(null);
   setGameResult(null);
   setQueueError(null);
-  console.log('[Game Hook] 모든 게임 데이터가 초기화되었습니다.');
+  // console.log('[Game Hook] 모든 게임 데이터가 초기화되었습니다.');
 }, []);
   
  // 대기열 추가
