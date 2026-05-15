@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 14:46:59 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 21:14:20 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ export default function GamePage() {
 
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { gameState, movePaddle, matchData, gameResult, isConnected } = useGameContext();
+	const { gameState, movePaddle, matchInfo, gameResult, isConnected, joinQueue } = useGameContext();
 	const { messages } = useI18n();
 	const inputStateRef = useRef({ up: false, down: false });
 
@@ -81,35 +81,40 @@ export default function GamePage() {
     }}>
       <h1 style={{ marginBottom: '20px', letterSpacing: '4px' }}>PONG MATCH</h1>
       
-      {isConnected ? (
-        <>
-          <GameBoard 
-            data={gameState} 
-            meName={user?.nickname || 'ME'} 
-            opponentName={matchData?.opponent || 'OPPONENT'} 
-          />
-          
-          {gameResult && (
-            <div style={{
-              marginTop: '20px',
-              padding: '20px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              fontSize: '24px',
-              fontWeight: 'bold'
-            }}>
-              {gameResult.winner === user?.userId ? '🏆 YOU WIN!' : '💀 YOU LOSE'}
-            </div>
-          )}
-        </>
+      <div style={{ position: 'relative' }}> {/* 🚩 결과창의 기준점 */}
+      {isConnected || gameResult ? (
+        <GameBoard 
+          data={gameState} 
+          meName={user?.nickname || 'ME'} 
+          opponentName={matchInfo?.opponent || 'OPPONENT'} 
+        />
       ) : (
-        // daeunki2 수정 : connectGameServer는 i18n 타입에서 game 섹션으로 분리되어 있어 경로를 맞춤.
         <p>{messages.game.connectGameServer}</p>
       )}
-      
+
+      {/* 🚩 결과가 나오면 보드 정중앙에 띄움 */}
+      {gameResult && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)', // 정중앙 정렬
+          padding: '40px', borderRadius: '12px',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)', // 보드가 비치게 약간 투명하게
+          border: '3px solid gold', fontSize: '32px',
+          fontWeight: 'bold', textAlign: 'center', minWidth: '300px'
+        }}>
+          {gameResult.winnerId === user?.userId ? messages.game.winner: messages.game.loser}
+          <button onClick={() => window.location.href = '/home'} style={{ /* 버튼 스타일 */ }}>
+            {messages.game.backHome}
+          </button>
+        </div>
+      )}
+    </div>
+
+    {!gameResult && (
       <p style={{ marginTop: '20px', color: '#888' }}>
         {messages.game.movePaddle} (W / S)
       </p>
-    </div>
-  );
+    )}
+  </div>
+);
 }

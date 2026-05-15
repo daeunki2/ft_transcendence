@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/14 20:28:23 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 20:38:29 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,9 @@ export type Messages = {
     preparingAiMatch: string;
     matchingError: string;
     movePaddle: string;
+    winner: string;
+    loser: string;
+    backHome: string;
   };
   social: {
     title: string;

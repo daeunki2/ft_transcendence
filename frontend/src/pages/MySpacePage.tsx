@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 20:11:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/12 11:52:14 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/15 20:50:02 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ export default function MySpacePage() {
   const { history, isLoading } = useGameHistory(user?.userId || null);
 
   // const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
