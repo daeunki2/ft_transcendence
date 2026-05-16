@@ -75,6 +75,9 @@ export const en: Messages = {
   winner: '🏆 YOU WIN!',
   loser: '💀 YOU LOSE',
   backHome: 'Go Back Home',
+  matchFoundReady: 'Opponent found! Press Start when you are ready.',
+  startGameButton: 'Start Game',
+  waitingOpponentReady: 'Waiting for the opponent to get ready...',
   },
     //소셜
   social: {

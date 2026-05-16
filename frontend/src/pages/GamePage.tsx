@@ -24,13 +24,16 @@ export default function GamePage() {
 	const { messages } = useI18n();
 	const inputStateRef = useRef({ up: false, down: false });
 
-	useEffect(() => {
-		// daeunki2수정 : 수정이유
-		// HomePage에서 /game 이동 시 기존 소켓이 정리되고, GamePage에서 새 소켓이 열린다.
-		// 따라서 연결 직후 이 페이지에서 큐 재등록을 1회 수행해야 game_state를 다시 수신할 수 있다.
-		if (!isConnected) return;
-		joinQueue();
-	}, [isConnected, joinQueue]);
+	// suna : 매칭/ready 핸드셰이크가 HomePage 모달에서 끝난 뒤 첫 gameState 가 도착해야 /game 으로 오게 바뀜.
+	// 즉 도착 시점에 이미 서버 game loop 가 돌고 있어서 별도 join_queue 가 필요 없음.
+	// 기존 흐름 보존을 위해 호출만 주석 처리.
+	// useEffect(() => {
+	// 	// daeunki2수정 : 수정이유
+	// 	// HomePage에서 /game 이동 시 기존 소켓이 정리되고, GamePage에서 새 소켓이 열린다.
+	// 	// 따라서 연결 직후 이 페이지에서 큐 재등록을 1회 수행해야 game_state를 다시 수신할 수 있다.
+	// 	if (!isConnected) return;
+	// 	joinQueue();
+	// }, [isConnected, joinQueue]);
 
 	useEffect(() => {
 		// daeunki2수정 : 수정이유

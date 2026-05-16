@@ -35,18 +35,22 @@ export default function HomePage() {
   const [isMatchStarted, setIsMatchStarted] = useState(false);
   const [gameType, setGameType] = useState<'match' | 'ai' | null>(null);
 
-  const { 
-    isConnected, 
-    joinQueue, 
-    joinAiQueue, 
-    queueError, 
-    matchInfo, 
+  const {
+    isConnected,
+    joinQueue,
+    joinAiQueue,
+    queueError,
+    matchInfo,
+    gameState,
+    sendReady,
     activateGameSocket,
     deactivateGameSocket,
-    resetGameState 
+    resetGameState
   } = useGameContext();
 
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
+  // suna : 내가 "게임 시작" 버튼을 눌러 ready 를 보냈는지. 매치가 새로 바뀌면 (gameId 변경) 자동으로 리셋.
+  const [readySent, setReadySent] = useState(false);
 
   const handleStartMatch = (type: 'match' | 'ai') => {
     if (!user?.userId) {
@@ -66,6 +70,7 @@ export default function HomePage() {
     setMatchModalOpen(false);
     setIsMatchStarted(false);
     setGameType(null);
+    setReadySent(false);
     deactivateGameSocket();
     resetGameState(); // 상태 초기화
   };
@@ -80,13 +85,24 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [matchModalOpen]);
 
-  // 매칭 성공 시 페이지 이동 (matchInfo -> matchInfo로 수정)
+  // suna : 새 매치(상대 ESC 후 재매칭 포함)가 잡히면 readySent 를 리셋해 다시 버튼이 보이게 한다.
   useEffect(() => {
-    if (matchInfo) {
-      console.log('[Game] 매칭 성공, 게임 시작:', matchInfo.opponent);
+    setReadySent(false);
+  }, [matchInfo?.gameId]);
+
+  // suna : 양쪽 ready 가 모이면 서버가 game loop 를 돌리고 첫 gameState 가 도착.
+  // 그 시점에 비로소 /game 으로 이동한다(이전엔 matchInfo 만으로 이동했지만 그 사이에 ready 핸드셰이크가 끼임).
+  useEffect(() => {
+    if (gameState) {
       navigate('/game');
     }
-  }, [matchInfo, navigate]);
+  }, [gameState, navigate]);
+
+  // suna : "게임 시작" 버튼 클릭 -> 서버에 ready 신호 송신.
+  const handleReady = () => {
+    sendReady();
+    setReadySent(true);
+  };
 
   // 에러 처리 로직 정리
   useEffect(() => {
@@ -146,12 +162,15 @@ export default function HomePage() {
           </div>
         </Card>
       </div>
-      <GameMatchModal 
+      <GameMatchModal
         open={matchModalOpen}
         isConnected={isConnected}
         onClose={handleCloseMatchModal}
-        // 만약 모달 내부에서 "매칭 완료!" 문구를 띄우고 싶다면 아래 props도 추가하세요
-        // matchInfo={matchInfo} 
+        gameType={gameType}
+        // suna : matchInfo 가 채워지면 모달이 "게임 시작" 단계로 전환.
+        matched={Boolean(matchInfo)}
+        readySent={readySent}
+        onReady={handleReady}
       />
 
       <Alert

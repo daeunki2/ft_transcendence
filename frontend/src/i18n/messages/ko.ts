@@ -68,6 +68,9 @@ game: {
   winner: '🏆 승리!',
   loser: '💀 패배',
   backHome: '뒤로가기',
+  matchFoundReady: '상대를 찾았습니다! 준비되면 시작 버튼을 눌러주세요.',
+  startGameButton: '게임 시작',
+  waitingOpponentReady: '상대방이 준비될 때까지 기다리는 중...',
 },
   social: {
     title: '친구 목록',

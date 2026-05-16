@@ -66,6 +66,9 @@ game: {
   winner: '🏆 GAGNE!',
   loser: '💀 PERDU',
   backHome: 'Retour',
+  matchFoundReady: 'Adversaire trouvé ! Appuyez sur Démarrer quand vous êtes prêt.',
+  startGameButton: 'Démarrer la partie',
+  waitingOpponentReady: 'En attente que l\'adversaire soit prêt...',
 },
 
   social: {

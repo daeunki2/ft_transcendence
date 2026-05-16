@@ -121,11 +121,11 @@ export class MatchmakingService {
       });
 
       // 이유: presence는 matching → in_game으로 전이. gateway가 flags.matching=false, flags.inGame=true로 처리.
+      // suna : game_started 는 ready 핸드셰이크 후 실제 게임 루프 시작 시점(GameRuntimeService.startMatch)으로 옮김.
+      // 여기서는 매칭 큐에서 빠졌다는 사실만 알린다.
       await Promise.all([
         this.gameRedis.publishPresence(userA, 'matching_ended'),
         this.gameRedis.publishPresence(userB, 'matching_ended'),
-        this.gameRedis.publishPresence(userA, 'game_started'),
-        this.gameRedis.publishPresence(userB, 'game_started'),
       ]);
 
       this.logger.log(

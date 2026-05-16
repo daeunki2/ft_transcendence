@@ -77,6 +77,10 @@ export type Messages = {
     winner: string;
     loser: string;
     backHome: string;
+    // suna : match_found 후 게임 시작 버튼 / ready 핸드셰이크용 문구.
+    matchFoundReady: string;
+    startGameButton: string;
+    waitingOpponentReady: string;
   };
   social: {
     title: string;

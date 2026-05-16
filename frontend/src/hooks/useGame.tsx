@@ -168,6 +168,13 @@ const sendReady = useCallback(() => {
       setMatchInfo(info);
     });
 
+    // suna : 상대가 ready 전에 ESC/disconnect 했을 때 서버가 보내는 신호.
+    // matchInfo 를 비워 모달이 "찾는 중" 상태로 되돌아가게 하고, 서버는 알아서 다시 큐에 넣는다.
+    socket.on('match_canceled', () => {
+      console.log('[Game Socket] match_canceled 수신: 상대 이탈, 재매칭 대기');
+      setMatchInfo(null);
+    });
+
     // 이유: join_queue 거절 사유(UNAUTHENTICATED / ALREADY_IN_GAME 등)를 상태로 보관해
     // 호출 컴포넌트가 모달을 닫거나 알림을 띄우는 분기 처리에 사용한다.
     socket.on('queue_error', (err: QueueError) => {

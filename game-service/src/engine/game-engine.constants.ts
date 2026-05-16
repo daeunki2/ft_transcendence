@@ -15,6 +15,10 @@ export const GAME_JOIN_QUEUE_EVENT = 'join_queue';
 export const GAME_MOVE_PADDLE_EVENT = 'move_paddle';
 export const GAME_STATE_EVENT = 'game_state';
 export const GAME_OVER_EVENT = 'game_over';
+// suna : match_found 후 "게임 시작" 버튼을 양쪽이 눌러야 실제 루프가 도는 ready-handshake용 이벤트.
+export const GAME_READY_EVENT = 'ready';
+// suna : 한쪽이 ready 전에 ESC/disconnect 로 빠지면, 살아남은 쪽에 발행. 프론트는 matchInfo 를 비워 모달을 "찾는 중" 상태로 되돌린다.
+export const GAME_MATCH_CANCELED_EVENT = 'match_canceled';
 
 // 프론트 캔버스와 서버 좌표 계산이 공유하는 게임판 크기
 export const BOARD_WIDTH = 1000;

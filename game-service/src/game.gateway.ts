@@ -11,7 +11,9 @@ import { GameRedis } from './redis/game.redis';
 import { GameRuntimeService } from './engine/game-runtime.service'; // daeunki2 추가
 import {
   GAME_JOIN_QUEUE_EVENT,
+  GAME_MATCH_CANCELED_EVENT,
   GAME_MOVE_PADDLE_EVENT,
+  GAME_READY_EVENT,
 } from './engine/game-engine.constants';
 import type { MovePaddlePayload } from './engine/game-engine.types'; //daeunki2추가
 
@@ -41,6 +43,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(GAME_MOVE_PADDLE_EVENT)
   onMovePaddle(client: Socket, payload: MovePaddlePayload) {
     this.gameRuntime.movePaddle(client, payload);
+  }
+
+  // suna : match_found 후 "게임 시작" 버튼을 누른 클라이언트가 보내는 ready 신호.
+  // 양쪽 모두 ready 면 Runtime 에서 startMatch 가 실행돼 실제 게임 루프가 돈다.
+  @SubscribeMessage(GAME_READY_EVENT)
+  async onReady(client: Socket) {
+    await this.gameRuntime.handleReady(client, this.server);
   }
 
   private extractUserId(client: Socket): string | null {
@@ -126,9 +135,48 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 이유: 큐 대기 중 끊긴 경우 큐에서 빼고 matching_ended 발행.
     await this.matchmaking.dequeue(userId, isGuest);
 
+    // suna : match_found 후 ready 대기 중 끊긴 경우 처리.
+    // 살아남은 상대가 있으면 Redis 세션은 폐기되고 상대는 다시 큐로 들어간다.
+    const pendingResult = await this.gameRuntime.handlePendingDisconnect(client, this.server);
+    if (pendingResult.wasPending) {
+      await this.requeueSurvivor(userId, pendingResult);
+      return;
+    }
+
     // 이유: 매칭된 게임 진행 중 끊긴 경우는 다은님 영역(로직 서비스)에서 game_ended 처리.
     // daeunki2 수정 : 실제 게임 중 disconnect는 Runtime 서비스가 기권 처리, game_over, 기록 저장, Redis 정리를 담당한다.
     await this.gameRuntime.handleDisconnect(client, this.server);
+  }
+
+  // suna : pending 단계에서 한쪽이 끊겼을 때 호출. 끊긴 쪽은 socket 이 닫혔으므로 별도 알림 불필요.
+  // 살아남은 쪽은 inGame -> matching 상태로 되돌리고 큐에 다시 넣어 다음 매칭을 기다리게 한다.
+  private async requeueSurvivor(
+    leaverUserId: string,
+    pending: Awaited<ReturnType<GameRuntimeService['handlePendingDisconnect']>>,
+  ): Promise<void> {
+    if (!pending.alive) {
+      console.log(`[Game] pending 양쪽 모두 종료: leaver=${leaverUserId}`);
+      return;
+    }
+    const { userId: aliveUserId, socketId: aliveSocketId, isGuest } = pending.alive;
+    console.log(
+      `[Game] pending 단계 이탈: leaver=${leaverUserId} survivor=${aliveUserId} -> 큐 복귀`,
+    );
+
+    // suna : 살아남은 쪽에 먼저 "매칭 취소" 신호를 보내 프론트가 모달을 "찾는 중" 으로 되돌리게 한다.
+    // 그 뒤에 enqueue 가 즉시 매칭에 성공하면 새 match_found 가 또 날아간다.
+    this.server.to(aliveSocketId).emit(GAME_MATCH_CANCELED_EVENT);
+
+    // 살아남은 쪽을 큐로 복귀. 큐에 이미 누가 있으면 즉시 매칭될 수 있으므로 결과를 받아 prepareMatch 까지 연결.
+    const nextMatch = await this.matchmaking.enqueue(
+      aliveUserId,
+      aliveSocketId,
+      isGuest,
+      this.server,
+    );
+    if (nextMatch) {
+      this.gameRuntime.prepareMatch(nextMatch, isGuest);
+    }
   }
 
   // @SubscribeMessage('join_queue')
@@ -158,7 +206,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // await this.matchmaking.enqueue(userId, client.id, isGuest, this.server); >> 매창까지만 하는 로직
     const match = await this.matchmaking.enqueue(userId, client.id, isGuest, this.server);
     if (match) {
-        await this.gameRuntime.startMatch(match, this.server);
+        // suna : 매칭 직후 바로 게임 루프를 돌리지 않고 양쪽 ready 핸드셰이크 대기 상태로 진입.
+        this.gameRuntime.prepareMatch(match, isGuest);
     } // daeunki2 :  매칭이 존재하면 게임 시작하게 수정
   }
 
