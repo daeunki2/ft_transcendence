@@ -69,6 +69,8 @@ game: {
   matchFoundReady: 'Adversaire trouvé ! Appuyez sur Démarrer quand vous êtes prêt.',
   startGameButton: 'Démarrer la partie',
   waitingOpponentReady: 'En attente que l\'adversaire soit prêt...',
+  invitingFriend: 'En attente de la réponse de votre ami...',
+  invitedByFriend: 'Vous avez été invité à une partie. Patientez...',
 },
 
   social: {
@@ -184,6 +186,14 @@ errors: {
     UNAUTHENTICATED: "Authentification requise. Veuillez vous reconnecter.",
     ALREADY_IN_GAME: "Vous êtes déjà dans une partie en cours.",
     KICKED_BY_NEW_TAB: "Connexion fermée car une nouvelle session a démarré dans un autre onglet.",
+    CANNOT_INVITE_SELF: "Vous ne pouvez pas vous inviter vous-même.",
+    TARGET_ALREADY_INVITED: "Votre ami a déjà une invitation en attente.",
+    ALREADY_INVITING: "Vous avez déjà envoyé une invitation en attente.",
+    TARGET_BUSY: "Votre ami est actuellement dans une autre partie.",
+    INVITE_TIMEOUT: "Votre ami n'a pas répondu à temps.",
+    INVITE_TARGET_LEFT: "Votre ami a refusé ou s'est déconnecté.",
+    INVITE_INVITER_GONE: "L'invitant n'est plus connecté.",
+    INVALID_INVITE_TARGET: "Cible d'invitation invalide.",
   },
   errorPage: {
     errorCode: "Code d'erreur",

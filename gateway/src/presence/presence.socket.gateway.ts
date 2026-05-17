@@ -10,6 +10,16 @@ import { PRESENCE_UPDATED_CHANNEL, type PresenceUpdatedEvent } from './presence.
 import { PresenceRedis } from './presence.redis';
 import * as jwt from 'jsonwebtoken';
 
+// suna : game-service 와 합의된 친구 초대 wakeup 채널.
+// game-service/src/engine/game-engine.constants.ts 의 GAME_INVITE_WAKEUP_CHANNEL 과 동일해야 한다.
+const GAME_INVITE_WAKEUP_CHANNEL = 'game.invite.wakeup';
+type GameInviteWakeupPayload = {
+  targetUserId: string;
+  inviterUserId: string;
+  inviterNickname: string;
+  at: string;
+};
+
 @WebSocketGateway({
   namespace: '/presence',
   cors: {
@@ -28,6 +38,8 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
     private readonly presenceRedis: PresenceRedis,
   ) {
     void this.subscribePresenceUpdates();
+    // suna : game-service 의 친구 초대 신호를 받아 target 의 presence 룸으로 forward.
+    void this.subscribeGameInviteWakeup();
   }
 
   async handleConnection(client: Socket) {
@@ -102,6 +114,23 @@ export class PresenceSocketGateway implements OnGatewayConnection, OnGatewayDisc
         for (const room of targets) {
           this.server.to(room).emit('presence.updated', event);
         }
+      } catch {
+        // invalid payload ignore
+      }
+    });
+  }
+
+  // suna : game.invite.wakeup 채널 구독 -> user:{targetUserId} 룸에 'game.invite' 이벤트 emit.
+  // payload 는 frontend usePresenceSocket 이 받아 GameContext 의 activateGameSocket 을 트리거한다.
+  private async subscribeGameInviteWakeup() {
+    const sub = this.presenceRedis.createSubscriber();
+    await sub.subscribe(GAME_INVITE_WAKEUP_CHANNEL);
+    sub.on('message', (channel, payload) => {
+      if (channel !== GAME_INVITE_WAKEUP_CHANNEL) return;
+      try {
+        const event = JSON.parse(payload) as GameInviteWakeupPayload;
+        if (!event?.targetUserId || !this.server) return;
+        this.server.to(`user:${event.targetUserId}`).emit('game.invite', event);
       } catch {
         // invalid payload ignore
       }

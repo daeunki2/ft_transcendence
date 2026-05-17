@@ -65,9 +65,30 @@ const joinAiQueue = useCallback(() => {
   if (socketRef.current && isConnected) {
     console.log('[Game Socket] AI 게임 시작 요청');
     // 서버와 약속한 AI 전용 이벤트 송신
-    socketRef.current.emit('join_ai_queue'); 
+    socketRef.current.emit('join_ai_queue');
   }
 }, [isConnected, currentUserId]);
+
+// suna : 친구 초대 송신. 소켓이 아직 연결 전이면 connect 이벤트를 한번만 기다린 뒤 emit.
+const inviteFriend = useCallback((targetUserId: string) => {
+  if (!targetUserId) return;
+  const socket = socketRef.current;
+  if (!socket) {
+    console.warn('[Game Socket] inviteFriend 호출 시 소켓이 활성화돼 있지 않습니다.');
+    return;
+  }
+  if (socket.connected) {
+    console.log('[Game Socket] invite_friend 송신:', targetUserId);
+    socket.emit('invite_friend', { targetUserId });
+    return;
+  }
+  // 아직 연결 전 (activateGameSocket 직후): 연결되면 한 번만 송신.
+  console.log('[Game Socket] 소켓 연결 대기 후 invite_friend 송신 예약:', targetUserId);
+  const onceConnected = () => {
+    socket.emit('invite_friend', { targetUserId });
+  };
+  socket.once('connect', onceConnected);
+}, []);
 
 //패들 이동
 const movePaddle = useCallback((direction: 'up' | 'down') => {
@@ -212,7 +233,7 @@ const sendReady = useCallback(() => {
   const clearQueueError = useCallback(() => setQueueError(null), []);
 
   // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
+  return { isConnected, movePaddle, joinQueue, joinAiQueue, inviteFriend, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
 };
 
 

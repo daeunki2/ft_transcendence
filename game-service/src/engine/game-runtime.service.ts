@@ -32,11 +32,13 @@ type RuntimeGameSession = {
 
 // suna : match_found 직후 ~ 양쪽 ready 까지 머무는 단계의 상태.
 // 양쪽 ready 가 모이면 startMatch 로 승격되어 RuntimeGameSession 으로 바뀐다.
+// mode 는 'queue'(일반 매칭) 또는 'friend'(친구 초대). ESC 처리에서 큐 복귀 vs 양쪽 취소를 가른다.
 type PendingMatch = {
   match: MatchResult;
   p1Ready: boolean;
   p2Ready: boolean;
   isGuest: boolean;
+  mode: 'queue' | 'friend';
 };
 
 // suna : 한쪽이 ready 전에 ESC/연결 끊김으로 빠졌을 때, 남은 한쪽을 큐로 되돌리기 위해 필요한 정보.
@@ -75,7 +77,7 @@ export class GameRuntimeService {
    * Redis 게임 세션은 MatchmakingService 가 이미 만들어 둔 상태고, 이 단계에서
    * 한쪽이 연결을 끊으면 handlePendingDisconnect 가 세션을 정리하고 남은 한쪽을 큐로 복귀시킨다.
    */
-  prepareMatch(match: MatchResult, isGuest: boolean): void {
+  prepareMatch(match: MatchResult, isGuest: boolean, mode: 'queue' | 'friend' = 'queue'): void {
     const { session, p1SocketId, p2SocketId } = match;
     if (this.pendingMatches.has(session.gameId)) return;
     if (this.sessions.has(session.gameId)) return;
@@ -85,6 +87,7 @@ export class GameRuntimeService {
       p1Ready: false,
       p2Ready: false,
       isGuest,
+      mode,
     });
     this.socketToPendingGameId.set(p1SocketId, session.gameId);
     this.socketToPendingGameId.set(p2SocketId, session.gameId);
@@ -132,16 +135,21 @@ export class GameRuntimeService {
   async handlePendingDisconnect(
     client: Socket,
     server: Namespace,
-  ): Promise<{ wasPending: boolean; alive: PendingMatchSurvivor | null; isGuest: boolean }> {
+  ): Promise<{
+    wasPending: boolean;
+    alive: PendingMatchSurvivor | null;
+    isGuest: boolean;
+    mode: 'queue' | 'friend' | null;
+  }> {
     const gameId = this.socketToPendingGameId.get(client.id);
-    if (!gameId) return { wasPending: false, alive: null, isGuest: false };
+    if (!gameId) return { wasPending: false, alive: null, isGuest: false, mode: null };
     const pending = this.pendingMatches.get(gameId);
     if (!pending) {
       this.socketToPendingGameId.delete(client.id);
-      return { wasPending: false, alive: null, isGuest: false };
+      return { wasPending: false, alive: null, isGuest: false, mode: null };
     }
 
-    const { match, isGuest } = pending;
+    const { match, isGuest, mode } = pending;
     const isP1 = client.id === match.p1SocketId;
     const aliveSocketId = isP1 ? match.p2SocketId : match.p1SocketId;
     const aliveUserId = isP1 ? match.session.p2 : match.session.p1;
@@ -156,7 +164,7 @@ export class GameRuntimeService {
 
     const aliveSocket = server.sockets.get(aliveSocketId);
     if (!aliveSocket) {
-      return { wasPending: true, alive: null, isGuest };
+      return { wasPending: true, alive: null, isGuest, mode };
     }
 
     return {
@@ -167,6 +175,7 @@ export class GameRuntimeService {
         isGuest: Boolean(aliveSocket.data.isGuest),
       },
       isGuest,
+      mode,
     };
   }
 

@@ -7,6 +7,7 @@ import {
   PresenceEventType,
   PresenceRawEvent,
 } from '../types/presence.types';
+import { GAME_INVITE_WAKEUP_CHANNEL } from '../engine/game-engine.constants';
 
 export interface GameSession {
   gameId: string;
@@ -139,6 +140,22 @@ export class GameRedis implements OnModuleDestroy {
   }
 
   // ───────── presence raw 발행 ─────────
+
+  // suna : 친구 초대 시 gateway 의 presence 소켓을 통해 B 를 깨우기 위한 publish.
+  // payload 는 frontend usePresenceSocket 이 받을 'game.invite' 이벤트의 본문이 된다.
+  async publishInviteWakeup(
+    targetUserId: string,
+    inviterUserId: string,
+    inviterNickname: string,
+  ): Promise<void> {
+    const payload = {
+      targetUserId,
+      inviterUserId,
+      inviterNickname,
+      at: new Date().toISOString(),
+    };
+    await this.pub.publish(GAME_INVITE_WAKEUP_CHANNEL, JSON.stringify(payload));
+  }
 
   async publishPresence(userId: string, type: PresenceEventType): Promise<void> {
     // 이유: gateway/presence.service가 source별 user별 단조 증가 seq를 요구하므로 INCR로 보장.

@@ -16,6 +16,9 @@ import Button from '../ui/Button';
 import { useTheme } from '../../theme/useTheme';
 import { useI18n } from '../../i18n/useI18n';
 
+// suna : Provider 의 GameModalContext 와 동일하나, 모달 컴포넌트는 contexts 의존을 갖지 않도록 별도 타입.
+type ModalPhase = 'queue-match' | 'ai-match' | 'inviting' | 'invited' | null;
+
 interface GameMatchModalProps {
   open: boolean;
   isConnected: boolean;
@@ -28,6 +31,8 @@ interface GameMatchModalProps {
   matched?: boolean;
   readySent?: boolean;
   onReady?: () => void;
+  // suna : 매칭 전 단계(queue/ai/inviting/invited)를 구분하는 컨텍스트.
+  modalContext?: ModalPhase;
 }
 
 export default function GameMatchModal({
@@ -38,6 +43,7 @@ export default function GameMatchModal({
   matched,
   readySent,
   onReady,
+  modalContext,
 }: GameMatchModalProps) {
   const { theme } = useTheme();
   const { messages } = useI18n();
@@ -59,7 +65,10 @@ export default function GameMatchModal({
       if (readySent) return messages.game.waitingOpponentReady;
       return messages.game.matchFoundReady;
     }
-    if (gameType === 'ai') {
+    // suna : 친구 초대 단계별 문구.
+    if (modalContext === 'inviting') return messages.game.invitingFriend;
+    if (modalContext === 'invited') return messages.game.invitedByFriend;
+    if (modalContext === 'ai-match' || gameType === 'ai') {
       return messages.game.preparingAiMatch;
     }
     return messages.game.connectGameJoin;
