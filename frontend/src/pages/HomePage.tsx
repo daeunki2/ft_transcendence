@@ -37,7 +37,8 @@ export default function HomePage() {
 
   const { 
     isConnected, 
-    joinQueue, 
+    joinQueue,
+    aiGame, 
     queueError, 
     matchInfo, 
     activateGameSocket,
@@ -107,7 +108,11 @@ export default function HomePage() {
     if (gameType === 'match') {
       joinQueue();
     }
-  }, [matchModalOpen, isMatchStarted, isConnected, gameType, joinQueue]);
+    else if (gameType === 'ai') {
+      aiGame();
+    }
+
+  }, [matchModalOpen, isMatchStarted, isConnected, gameType, joinQueue, aiGame]);
 
   return (
     <PageContainer header={<Navbar />} footer={<FooterLinks />}>

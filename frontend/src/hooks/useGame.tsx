@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/17 13:40:27 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 21:49:39 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,13 +61,13 @@ const joinQueue = useCallback(() => {
  }
 }, [isConnected, currentUserId]);
 
-// const joinAiQueue = useCallback(() => {
-//   if (socketRef.current && isConnected) {
-//     console.log('[Game Socket] AI 게임 시작 요청');
-//     // 서버와 약속한 AI 전용 이벤트 송신
-//     socketRef.current.emit('join_ai_queue'); 
-//   }
-// }, [isConnected, currentUserId]);
+const aiGame= useCallback(() => {
+  if (socketRef.current && isConnected) {
+    console.log('[Game Socket] AI 게임 시작 요청');
+    // 서버와 약속한 AI 전용 이벤트 송신
+    socketRef.current.emit('start_ai_game'); 
+  }
+}, [isConnected, currentUserId]);
 
 //패들 이동
 const movePaddle = useCallback((direction: 'up' | 'down') => {
@@ -207,7 +207,7 @@ const sendReady = useCallback(() => {
   const clearQueueError = useCallback(() => setQueueError(null), []);
 
   // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
+  return { isConnected, movePaddle, joinQueue, aiGame, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
 };
 
 
