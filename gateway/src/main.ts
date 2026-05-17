@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/11 11:37:22 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 11:45:31 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ function createAccessTokenMiddleware(
     const token = req.cookies?.accessToken;
     const isSocket = req.path.includes('socket.io'); // 소켓 요청인지 확인
 
-  console.log('[게이트웨이] 액세스 토큰 검사 시작', { path: req.path,hasAccessToken: Boolean(req.cookies?.accessToken), });
+//  console.log('[게이트웨이] 액세스 토큰 검사 시작', { path: req.path,hasAccessToken: Boolean(req.cookies?.accessToken), });
 
     
     if (!token)
@@ -148,7 +148,7 @@ function createAccessTokenMiddleware(
       const userId = String(payload.sub ?? '');
       req.headers['x-user-id'] = userId;
 
-      console.log('[게이트웨이] 액세스 토큰 검증 성공', { sub: payload.sub });
+//      console.log('[게이트웨이] 액세스 토큰 검증 성공', { sub: payload.sub });
 
       if (payload.id) {
         req.headers['x-user-login-id'] = payload.id as string;

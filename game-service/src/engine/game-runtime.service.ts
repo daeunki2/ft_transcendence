@@ -14,6 +14,7 @@ import type {
   PlayerSlot,
 } from './game-engine.types';
 import { GameEngineService } from './game-engine.service';
+import { AiRuntimeAdapter } from './ai-runtime.adapter';
 import { GameRecordEntity } from '../game-record.entity';
 import type { MatchResult } from '../matchmaking/matchmaking.service';
 import { GameRedis } from '../redis/game.redis';
@@ -41,6 +42,9 @@ export class GameRuntimeService {
 
   constructor(
     private readonly engine: GameEngineService,
+    // daeunki2추가 : 추가한 사유
+    // AI 매치일 때 p2 패들 입력을 자동 생성해 기존 엔진 루프에 주입한다.
+    private readonly aiRuntimeAdapter: AiRuntimeAdapter,
     private readonly gameRedis: GameRedis,
     @InjectRepository(GameRecordEntity)
     private readonly gameRecordRepository: Repository<GameRecordEntity>,
@@ -180,6 +184,13 @@ export class GameRuntimeService {
     const prevScore1 = session.state.score1;
     const prevScore2 = session.state.score2;
 
+    // daeunki2추가 : 추가한 사유
+    // AI 매치면 updateTick 전에 p2 패들 이동 입력을 1틱 반영한다.
+    session.state = this.aiRuntimeAdapter.applyAiInputIfNeeded(
+      session.state,
+      session.p2UserId,
+    );
+
     // 공 이동/벽 충돌/패들 충돌/득점 처리는 엔진에 위임한다.
     session.state = this.engine.updateTick(session.state);
 
@@ -225,10 +236,12 @@ export class GameRuntimeService {
       score2: session.state.score2,
     };
 
-    // 현재 구조는 각 socketId를 직접 대상으로 송신한다.
-    // MatchmakingService가 룸 join도 해두지만, 직접 송신이 더 명시적이다.
-    server.to(session.p1SocketId).emit(GAME_STATE_EVENT, payload);
-    server.to(session.p2SocketId).emit(GAME_STATE_EVENT, payload);
+    // daeunki2추가 : 추가한 사유
+    // AI 매치에서 p1/p2가 동일 socketId를 가질 수 있어 중복 emit을 방지하기 위해 dedup 전송한다.
+    const targets = new Set<string>([session.p1SocketId, session.p2SocketId]);
+    for (const socketId of targets) {
+      server.to(socketId).emit(GAME_STATE_EVENT, payload);
+    }
   }
 
   /**
@@ -241,9 +254,12 @@ export class GameRuntimeService {
     server: Namespace,
     result: GameResult,
   ): void {
-    // 끊긴 소켓은 못 받을 수 있지만, 남아있는 상대에게는 반드시 전달된다.
-    server.to(session.p1SocketId).emit(GAME_OVER_EVENT, result);
-    server.to(session.p2SocketId).emit(GAME_OVER_EVENT, result);
+    // daeunki2추가 : 추가한 사유
+    // AI 매치의 동일 socketId 케이스에서 game_over 중복 수신을 막기 위해 dedup 전송한다.
+    const targets = new Set<string>([session.p1SocketId, session.p2SocketId]);
+    for (const socketId of targets) {
+      server.to(socketId).emit(GAME_OVER_EVENT, result);
+    }
   }
 
   /**
