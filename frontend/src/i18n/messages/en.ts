@@ -108,8 +108,12 @@ export const en: Messages = {
   nickname: 'Nickname',
   nicknamePlaceholder: 'Enter your nickname',
   save: 'Save',
-  gameHistory: 'Game History',
+  gameHistory: 'Game History (latest 5 match)',
   noGames: 'No games played yet',
+  win: 'Win',
+  lose: 'Lose',
+  me: 'me',
+  Loading: 'Loading',
   cancel: 'cancel',
   },
 

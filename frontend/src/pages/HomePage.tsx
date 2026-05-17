@@ -38,7 +38,6 @@ export default function HomePage() {
   const { 
     isConnected, 
     joinQueue, 
-    joinAiQueue, 
     queueError, 
     matchInfo, 
     activateGameSocket,
@@ -105,12 +104,10 @@ export default function HomePage() {
   useEffect(() => {
     if (!matchModalOpen || !isMatchStarted || !isConnected) return;
 
-    if (gameType === 'ai') {
-      joinAiQueue();
-    } else {
+    if (gameType === 'match') {
       joinQueue();
     }
-  }, [matchModalOpen, isMatchStarted, isConnected, gameType, joinQueue, joinAiQueue]);
+  }, [matchModalOpen, isMatchStarted, isConnected, gameType, joinQueue]);
 
   return (
     <PageContainer header={<Navbar />} footer={<FooterLinks />}>

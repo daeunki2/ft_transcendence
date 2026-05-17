@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 20:29:08 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 13:40:27 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ export interface QueueError {
 }
 
 // merge수정 : main의 userId 기반 소켓 연결에 daeunki2의 기록 저장용 nickname 전달 인자를 추가함.
-export const useGame = (currentUserId: string | null, shouldConnect: boolean,  currentNickname?: string | null) => {
+export const useGame = (currentUserId: string | null, shouldConnect: boolean,  currentNickname?: string | null, gameType?: 'match' | 'ai' | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -61,13 +61,13 @@ const joinQueue = useCallback(() => {
  }
 }, [isConnected, currentUserId]);
 
-const joinAiQueue = useCallback(() => {
-  if (socketRef.current && isConnected) {
-    console.log('[Game Socket] AI 게임 시작 요청');
-    // 서버와 약속한 AI 전용 이벤트 송신
-    socketRef.current.emit('join_ai_queue'); 
-  }
-}, [isConnected, currentUserId]);
+// const joinAiQueue = useCallback(() => {
+//   if (socketRef.current && isConnected) {
+//     console.log('[Game Socket] AI 게임 시작 요청');
+//     // 서버와 약속한 AI 전용 이벤트 송신
+//     socketRef.current.emit('join_ai_queue'); 
+//   }
+// }, [isConnected, currentUserId]);
 
 //패들 이동
 const movePaddle = useCallback((direction: 'up' | 'down') => {
@@ -86,7 +86,8 @@ const sendReady = useCallback(() => {
 }, [isConnected]);
 
   useEffect(() => {
-	if (!shouldConnect || !currentUserId || currentUserId === 'undefined'|| currentUserId === 'null'){
+	if (!shouldConnect || !currentUserId || currentUserId === 'undefined'|| currentUserId === 'null'
+    || !currentNickname || currentNickname === 'undefined' || currentNickname === 'null'){
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
@@ -115,6 +116,7 @@ const sendReady = useCallback(() => {
         // daeunki2수정 : 수정이유
         // 게임 종료 기록에 winner/loser nickname을 저장하기 위해 소켓 연결 시 함께 전달한다.
         nickname: currentNickname ?? '',
+        gameType: gameType ?? 'match',
       },
 
     //  reconnection: true,            // 재연결 활성화
@@ -199,7 +201,7 @@ const sendReady = useCallback(() => {
         socketRef.current = null;
       }
     };
-  }, [currentUserId, currentNickname, shouldConnect]);
+  }, [currentUserId, currentNickname, shouldConnect, gameType]);
 
   // queueError 는 호출 컴포넌트가 읽어 모달 닫기/알림 표시 후 setQueueError(null) 로 초기화한다.
   const clearQueueError = useCallback(() => setQueueError(null), []);
