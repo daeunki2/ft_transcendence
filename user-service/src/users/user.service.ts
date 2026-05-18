@@ -6,6 +6,9 @@ import { isNicknameAllowed } from '../utils/nickname-filter';
 import { join } from 'path';
 import * as fs from 'fs';
 
+const GATEWAY_UPLOADS_URL = "https://localhost:8000/api/users/uploads";
+const DEFAULT_PHOTO_URL = `${GATEWAY_UPLOADS_URL}/default.jpg`;
+
 @Injectable()
 export class UserService {
   constructor(
@@ -13,6 +16,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
 
   ) {}
+
 
   async createUserProfile(
     id: string,
@@ -40,7 +44,7 @@ export class UserService {
       userId: id, // 전달받은 UUID
       loginId,
       nickname: normalizedNickname,
-      userPhoto: "http://localhost:4001/uploads/default.jpg",
+      userPhoto: DEFAULT_PHOTO_URL,
       role,
       });
 
@@ -73,12 +77,8 @@ export class UserService {
     const user = await this.userRepository.findOne({ where: { userId } });
     
     if (!user) return null;
-
-    // 🟢 [추가] 사진이 default가 아닌데, 실제 파일이 서버에 없는 경우 체크
-    const DEFAULT_PHOTO_URL = "http://localhost:4001/uploads/default.jpg";
     
     if (user.userPhoto && user.userPhoto !== DEFAULT_PHOTO_URL) {
-      // URL에서 파일명만 추출 (예: http://.../uploads/abc.jpg -> abc.jpg)
       const fileName = user.userPhoto.split('/').pop();
       if (fileName) {
       const filePath = join(process.cwd(), 'uploads', fileName);
@@ -155,7 +155,7 @@ export class UserService {
     }
 
     // 1. 파일 접근 URL 생성
-    const fileUrl = `http://localhost:4001/uploads/${file.filename}`;
+    const fileUrl = `${GATEWAY_UPLOADS_URL}/${file.filename}`;
 
     // 2. DB 업데이트 (기존 updateProfile 로직 재활용 가능)
     const updatedUser = await this.updateProfile(userId, { userPhoto: fileUrl });

@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 14:52:48 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 20:10:25 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 15:13:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,10 @@ import React, { createContext, useContext, useMemo, useEffect, useState, useCall
 import { useGame } from '../hooks/useGame';
 import { useAuth } from './AuthContext';
 
-type GameContextType = ReturnType<typeof useGame>;
+type GameContextType = ReturnType<typeof useGame> & {
+  activateGameSocket: () => void;
+  deactivateGameSocket: () => void;
+};
 
 const GameContext = createContext<GameContextType | null>(null);
 
@@ -35,7 +38,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Case A: 사용자가 로그아웃했을 때
     if (!user) {
-      console.log('[GameProvider] 사용자가 로그아웃하여 세션을 정리합니다.');
+      // console.log('[GameProvider] 사용자가 로그아웃하여 세션을 정리합니다.');
       setShouldConnect(false);
       game.resetGameState();
       return;

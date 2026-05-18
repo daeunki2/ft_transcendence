@@ -12,6 +12,9 @@ import { GameRecordEntity } from './game-record.entity';
 import { GameHistoryService } from './game-history.service';
 import { GameHistoryController } from './game-history.controller';
 import { GameRuntimeService } from './engine/game-runtime.service';
+import { AiBotService } from './engine/ai-bot.service';
+import { AiRuntimeAdapter } from './engine/ai-runtime.adapter';
+import { GameAiGatewayHelper } from './game-ai.gateway.helper';
 
 @Module({
   imports: [
@@ -33,6 +36,14 @@ import { GameRuntimeService } from './engine/game-runtime.service';
   ],
   controllers: [GameHistoryController], // daeunki2수정 : 수정이유 - 게임 히스토리 조회 API 노출
   // merge수정 : Gateway에서 분리한 실제 게임 루프/재연결/기록 저장 Runtime 서비스를 provider로 등록함.
-  providers: [GameGateway, GameEngineService, GameHistoryService, GameRuntimeService],
+  providers: [
+    GameGateway,
+    GameEngineService,
+    GameHistoryService,
+    GameRuntimeService,
+    AiBotService,
+    AiRuntimeAdapter,
+    GameAiGatewayHelper,
+  ],
 })
 export class AppModule {}

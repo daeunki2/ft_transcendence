@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   useGameHistory.tsx                                 :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/12 12:01:28 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 20:54:50 by chanypar         ###   ########.fr       */
-/*                                                                            */
+/* */
+/* :::      ::::::::   */
+/* useGameHistory.tsx                                 :+:      :+:    :+:   */
+/* +:+ +:+         +:+     */
+/* By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/* +#+#+#+#+#+   +#+           */
+/* Created: 2026/05/12 12:01:28 by chanypar          #+#    #+#             */
+/* Updated: 2026/05/17 11:22:00 by chanypar         ###   ########.fr       */
+/* */
 /* ************************************************************************** */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,34 +25,32 @@ export const useGameHistory = (userId: string | null) => {
     if (!userId) return;
 
     setIsLoading(true);
-    setAlertMsg(null); // 새로운 요청 시 이전 에러 초기화
+    setAlertMsg(null);
 
     try {
-      // 1. 서비스 호출 (아까 만든 gameService 사용)
       const data = await gameService.fetchHistory(userId);
 
-      // 2. 성공 시 데이터 저장
-      // 데이터가 없을 경우를 대비해 Array.isArray 체크를 넣어주면 더 안전합니다.
+      // 백엔드가 배열([]) 대신 인덱스 객체를 뱉을 때를 위한 방어 로직
       if (Array.isArray(data)) {
         setHistory(data);
+      } else if (data && typeof data === 'object') {
+        setHistory(Object.values(data));
       } else {
         setHistory([]);
       }
     } catch (error: any) {
       console.error("전적 로딩 에러:", error);
       
-      // 3. 에러 발생 시 번역된 메시지 세팅 (기본 서버 에러 사용)
       const errorKey = error?.response?.data?.message;
       const translated = (messages.errors as any)[errorKey] || messages.errors?.SERVER_ERROR || "Server Error";
       
       setAlertMsg(translated);
-      setHistory([]); // 에러 시 빈 배열로 초기화하여 map 에러 방지
+      setHistory([]);
     } finally {
       setIsLoading(false);
     }
   }, [userId, messages.errors]);
 
-  // 마운트 시 혹은 userId 변경 시 실행
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
@@ -62,6 +60,6 @@ export const useGameHistory = (userId: string | null) => {
     isLoading, 
     alertMsg, 
     setAlertMsg,
-    refetch: fetchHistory // 필요 시 수동으로 새로고침 할 수 있도록 반환
+    refetch: fetchHistory
   };
 };
