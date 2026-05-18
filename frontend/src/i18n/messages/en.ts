@@ -61,7 +61,7 @@ export const en: Messages = {
   match: 'Find Match',
   aiGame: 'Play vs AI',
   gameRule: 'Game Rules',
-  rule: 'Score more points than your opponent by hitting the ball without missing it.',
+  rule: 'Get the ball past your opponent’s paddle and score 5 points to win',
   matchFound: 'Match found, joining game...',
   escCancel: 'Press ESC to cancel matchmaking',
   },

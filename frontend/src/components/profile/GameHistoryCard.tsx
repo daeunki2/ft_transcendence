@@ -5,10 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/17 11:27:58 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/18 20:43:25 by chanypar         ###   ########.fr       */
+/*   Created: 2026/05/18 20:48:02 by chanypar          #+#    #+#             */
+/*   Updated: 2026/05/18 20:48:10 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 import React, { useMemo } from 'react'; // 🟢 useMemo 추가
 import Card from '../ui/Card';

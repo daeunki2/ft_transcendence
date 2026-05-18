@@ -55,7 +55,7 @@ export default function HomePage() {
             <h2 style={{ margin: 0, fontSize: '20px', color: theme.colors.text }}>
               {messages.HomePage.gameRule}
             </h2>
-            <p style={{ margin: 0, color: theme.colors.textMuted, fontSize: '14px' }}>
+            <p style={{ margin: 0, color: theme.colors.textMuted, fontSize: '18px' }}>
               {messages.HomePage.rule}
             </p>
           </div>

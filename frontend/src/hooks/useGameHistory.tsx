@@ -1,14 +1,16 @@
 /* ************************************************************************** */
-/* */
-/* :::      ::::::::   */
-/* useGameHistory.tsx                                 :+:      :+:    :+:   */
-/* +:+ +:+         +:+     */
-/* By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
-/* +#+#+#+#+#+   +#+           */
-/* Created: 2026/05/12 12:01:28 by chanypar          #+#    #+#             */
-/* Updated: 2026/05/17 11:22:00 by chanypar         ###   ########.fr       */
-/* */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   useGameHistory.tsx                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/18 20:47:50 by chanypar          #+#    #+#             */
+/*   Updated: 2026/05/18 20:47:51 by chanypar         ###   ########.fr       */
+/*                                                                            */
 /* ************************************************************************** */
+
+
 import { useState, useEffect, useCallback } from 'react';
 import { gameService } from '../services/gameService';
 import { useI18n } from '../i18n/useI18n';
