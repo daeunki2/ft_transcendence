@@ -4,6 +4,3 @@ export type AiDecisionContext = {
   state: EngineState;
   paddleY: number;
 };
-
-export type AiDifficulty = 'normal';
-

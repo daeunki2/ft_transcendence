@@ -208,6 +208,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 살아남은 상대가 있으면 Redis 세션은 폐기되고 (queue 모드일 때만) 상대는 다시 큐로 들어간다.
     const pendingResult = await this.gameRuntime.handlePendingDisconnect(client, this.server);
     if (pendingResult.wasPending) {
+      // daeunki2 : 상태변화 추가
+      // ready 대기(pending)에서 이탈한 사용자 상태를 MATCHING 종료로 정리
+      await this.gameRedis.publishPresence(userId, 'matching_ended');
       await this.handleSurvivor(userId, pendingResult);
       return;
     }
@@ -233,6 +236,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(aliveSocketId).emit(GAME_MATCH_CANCELED_EVENT);
 
     if (pending.mode === 'friend') {
+      // daeunki2 : 상태변화 추가
+      // 친구 초대 pending 취소 시 남은 사용자도 MATCHING 종료로 정리
+      await this.gameRedis.publishPresence(aliveUserId, 'matching_ended');
       // suna : 친구매치는 큐 복귀 없음. 살아남은 쪽도 모달이 닫히고 "친구가 거절" 알림이 뜨도록 queue_error 발행.
       // 프론트 Provider 가 queueError 를 받으면 closeMatchModal 호출 + i18n alert 표시.
       this.server.to(aliveSocketId).emit('queue_error', {

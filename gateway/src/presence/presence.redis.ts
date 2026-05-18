@@ -170,7 +170,7 @@ export class PresenceRedis implements OnModuleDestroy {
     }
   }
 
-  async setFriendIdsCache(userId: string, friendIds: string[], ttlSec = 15): Promise<void> {
+  async setFriendIdsCache(userId: string, friendIds: string[], ttlSec = 60): Promise<void> {
     await this.kv.set(this.friendIdsKey(userId), JSON.stringify(friendIds), 'EX', ttlSec);
   }
 

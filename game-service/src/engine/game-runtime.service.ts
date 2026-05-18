@@ -27,6 +27,7 @@ type RuntimeGameSession = {
   p2UserId: string;
   p1Nickname: string;
   p2Nickname: string;
+  isFinishing: boolean; // 게임 히스토리 1번만 저장하려고 추가
   state: EngineState;
   timer: NodeJS.Timeout;
 };
@@ -222,7 +223,10 @@ export class GameRuntimeService {
       p1UserId: session.p1,
       p2UserId: session.p2,
       p1Nickname: this.getSocketNickname(p1Socket, session.p1),
-      p2Nickname: this.getSocketNickname(p2Socket, session.p2),
+      p2Nickname: this.isAiUserId(session.p2)
+        ? 'AI_BOT'
+        : this.getSocketNickname(p2Socket, session.p2),
+      isFinishing: false,
       state: this.engine.createInitialState(),
       timer: setInterval(() => this.tick(session.gameId, server), 1000 / 60),
     };
@@ -287,6 +291,7 @@ export class GameRuntimeService {
       this.socketToGameId.delete(client.id);
       return;
     }
+    if (session.isFinishing) return;
 
     // 끊긴 소켓이 p1/p2 중 누구인지 확인한다.
     const disconnectedPlayer = this.getPlayerSlotBySocket(session, client.id);
@@ -304,6 +309,7 @@ export class GameRuntimeService {
       score2: session.state.score2,
     };
 
+    session.isFinishing = true;
     await this.finishGame(session, server, result, 'forfeit');
   }
 
@@ -353,8 +359,10 @@ export class GameRuntimeService {
       session.p2UserId,
     );
     if (!result) return;
+    if (session.isFinishing) return;
 
     // 정상 종료: game_over -> DB 저장 -> 세션 정리.
+    session.isFinishing = true;
     void this.finishGame(session, server, result, 'normal');
   }
 
@@ -412,6 +420,11 @@ export class GameRuntimeService {
     result: GameResult,
     endedReason: 'normal' | 'forfeit',
   ): Promise<void> {
+    const live = this.sessions.get(session.gameId);
+    if (!live) return;
+    if (!live.isFinishing) {
+      live.isFinishing = true;
+    }
     this.emitGameOver(session, server, result);
     await this.saveGameRecord(session, result.winnerId, endedReason);
     await this.endSession(session.gameId);
@@ -461,6 +474,7 @@ export class GameRuntimeService {
       // game_records 테이블에 최종 결과를 저장한다.
       // 조회 서비스는 이 레코드를 winner/loser 중심 응답으로 다시 가공한다.
       await this.gameRecordRepository.save({
+        gameId: session.gameId,
         player1Id: session.p1UserId,
         player2Id: session.p2UserId,
         winnerId,
@@ -472,6 +486,13 @@ export class GameRuntimeService {
         endedReason,
       });
     } catch (error) {
+      const code = (error as { code?: string })?.code;
+      if (code === '23505') {
+        console.warn(
+          `[Game] duplicate game record ignored: gameId=${session.gameId}, reason=${endedReason}`,
+        );
+        return;
+      }
       // 기록 저장 실패가 게임 종료 정리를 막으면 안 되므로 로그만 남긴다.
       console.warn(
         `[Game] game record save failed: gameId=${session.gameId}, reason=${endedReason}`,
@@ -491,6 +512,10 @@ export class GameRuntimeService {
     return typeof nickname === 'string' && nickname.trim() !== ''
       ? nickname
       : fallback;
+  }
+
+  private isAiUserId(userId: string): boolean {
+    return userId.startsWith('AI_BOT_');
   }
 
   /**

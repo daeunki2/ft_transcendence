@@ -1,9 +1,13 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'game_records' })
 export class GameRecordEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Index('uq_game_records_game_id', { unique: true })
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  gameId: string | null;
 
   @Column({ type: 'varchar', length: 64 })
   player1Id: string;
