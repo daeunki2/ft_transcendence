@@ -6,7 +6,7 @@
 /*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/18 18:15:21 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/18 19:13:55 by daeunki2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,33 @@ const aiGame= useCallback(() => {
   if (socketRef.current && isConnected) {
     console.log('[Game Socket] AI 게임 시작 요청');
     // 서버와 약속한 AI 전용 이벤트 송신
+    // suna : 기존 payload 없는 emit 보존.
+    // socketRef.current.emit('start_ai_game');
+    // suna : 서버 game-ai.gateway.helper.ts 가 gameType !== 'ai' 면 INVALID_GAME_TYPE 반환. payload 명시 필요.
     socketRef.current.emit('start_ai_game', { gameType: 'ai' });
   }
 }, [isConnected, currentUserId]);
+
+// suna : 친구 초대 송신. 소켓이 아직 연결 전이면 connect 이벤트를 한번만 기다린 뒤 emit.
+const inviteFriend = useCallback((targetUserId: string) => {
+  if (!targetUserId) return;
+  const socket = socketRef.current;
+  if (!socket) {
+    console.warn('[Game Socket] inviteFriend 호출 시 소켓이 활성화돼 있지 않습니다.');
+    return;
+  }
+  if (socket.connected) {
+    console.log('[Game Socket] invite_friend 송신:', targetUserId);
+    socket.emit('invite_friend', { targetUserId });
+    return;
+  }
+  // 아직 연결 전 (activateGameSocket 직후): 연결되면 한 번만 송신.
+  console.log('[Game Socket] 소켓 연결 대기 후 invite_friend 송신 예약:', targetUserId);
+  const onceConnected = () => {
+    socket.emit('invite_friend', { targetUserId });
+  };
+  socket.once('connect', onceConnected);
+}, []);
 
 //패들 이동
 const movePaddle = useCallback((direction: 'up' | 'down') => {
@@ -188,6 +212,13 @@ const sendReady = useCallback(() => {
       setMatchInfo(info);
     });
 
+    // suna : 상대가 ready 전에 ESC/disconnect 했을 때 서버가 보내는 신호.
+    // matchInfo 를 비워 모달이 "찾는 중" 상태로 되돌아가게 하고, 서버는 알아서 다시 큐에 넣는다.
+    socket.on('match_canceled', () => {
+      console.log('[Game Socket] match_canceled 수신: 상대 이탈, 재매칭 대기');
+      setMatchInfo(null);
+    });
+
     // 이유: join_queue 거절 사유(UNAUTHENTICATED / ALREADY_IN_GAME 등)를 상태로 보관해
     // 호출 컴포넌트가 모달을 닫거나 알림을 띄우는 분기 처리에 사용한다.
     socket.on('queue_error', (err: QueueError) => {
@@ -225,7 +256,7 @@ const sendReady = useCallback(() => {
   const clearQueueError = useCallback(() => setQueueError(null), []);
 
   // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
-  return { isConnected, movePaddle, joinQueue, aiGame, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
+  return { isConnected, movePaddle, joinQueue, aiGame, inviteFriend, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
 };
 
 

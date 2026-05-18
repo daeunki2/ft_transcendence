@@ -31,6 +31,24 @@ type RuntimeGameSession = {
   timer: NodeJS.Timeout;
 };
 
+// suna : match_found 직후 ~ 양쪽 ready 까지 머무는 단계의 상태.
+// 양쪽 ready 가 모이면 startMatch 로 승격되어 RuntimeGameSession 으로 바뀐다.
+// mode 는 'queue'(일반 매칭) 또는 'friend'(친구 초대). ESC 처리에서 큐 복귀 vs 양쪽 취소를 가른다.
+type PendingMatch = {
+  match: MatchResult;
+  p1Ready: boolean;
+  p2Ready: boolean;
+  isGuest: boolean;
+  mode: 'queue' | 'friend';
+};
+
+// suna : 한쪽이 ready 전에 ESC/연결 끊김으로 빠졌을 때, 남은 한쪽을 큐로 되돌리기 위해 필요한 정보.
+export interface PendingMatchSurvivor {
+  userId: string;
+  socketId: string;
+  isGuest: boolean;
+}
+
 @Injectable()
 export class GameRuntimeService {
   // merge수정 : daeunki2가 Gateway 안에 급하게 넣었던 실행 중 게임 세션 저장소를 별도 서비스로 분리함.
@@ -39,6 +57,12 @@ export class GameRuntimeService {
 
   // merge수정 : move_paddle/disconnect 이벤트는 socketId만 들고 들어오므로 socketId -> gameId 역인덱스를 둔다.
   private readonly socketToGameId = new Map<string, string>();
+
+  // suna : ready 핸드셰이크 대기 중인 매치. 양쪽 ready 가 모이면 sessions 로 이동한다.
+  private readonly pendingMatches = new Map<string, PendingMatch>();
+
+  // suna : ready 이벤트/disconnect 는 socketId 만 들고 들어오므로 pending 단계 역인덱스도 둔다.
+  private readonly socketToPendingGameId = new Map<string, string>();
 
   constructor(
     private readonly engine: GameEngineService,
@@ -49,6 +73,115 @@ export class GameRuntimeService {
     @InjectRepository(GameRecordEntity)
     private readonly gameRecordRepository: Repository<GameRecordEntity>,
   ) {}
+
+  /**
+   * suna : match_found 직후 호출하는 ready 대기 단계 진입점.
+   *
+   * 양쪽 모두 ready 를 보내기 전까지는 게임 루프를 돌리지 않는다.
+   * Redis 게임 세션은 MatchmakingService 가 이미 만들어 둔 상태고, 이 단계에서
+   * 한쪽이 연결을 끊으면 handlePendingDisconnect 가 세션을 정리하고 남은 한쪽을 큐로 복귀시킨다.
+   */
+  prepareMatch(match: MatchResult, isGuest: boolean, mode: 'queue' | 'friend' = 'queue'): void {
+    const { session, p1SocketId, p2SocketId } = match;
+    if (this.pendingMatches.has(session.gameId)) return;
+    if (this.sessions.has(session.gameId)) return;
+
+    this.pendingMatches.set(session.gameId, {
+      match,
+      p1Ready: false,
+      p2Ready: false,
+      isGuest,
+      mode,
+    });
+    this.socketToPendingGameId.set(p1SocketId, session.gameId);
+    this.socketToPendingGameId.set(p2SocketId, session.gameId);
+  }
+
+  /**
+   * suna : 클라이언트의 ready 이벤트 처리.
+   *
+   * 자기 슬롯을 ready 로 표시하고, 양쪽 다 ready 면 pending 을 닫고 실제 게임 루프(startMatch)를 시작한다.
+   */
+  async handleReady(client: Socket, server: Namespace): Promise<void> {
+    const gameId = this.socketToPendingGameId.get(client.id);
+    if (!gameId) return;
+    const pending = this.pendingMatches.get(gameId);
+    if (!pending) {
+      this.socketToPendingGameId.delete(client.id);
+      return;
+    }
+
+    const { match } = pending;
+    if (client.id === match.p1SocketId) {
+      pending.p1Ready = true;
+    } else if (client.id === match.p2SocketId) {
+      pending.p2Ready = true;
+    } else {
+      return;
+    }
+
+    if (!(pending.p1Ready && pending.p2Ready)) return;
+
+    // suna : 양쪽 ready 완료 -> pending 정리 후 게임 루프 시작.
+    this.socketToPendingGameId.delete(match.p1SocketId);
+    this.socketToPendingGameId.delete(match.p2SocketId);
+    this.pendingMatches.delete(gameId);
+    await this.startMatch(match, server);
+  }
+
+  /**
+   * suna : pending 단계(ready 대기 중)에 한쪽이 끊겼을 때 호출.
+   *
+   * - Redis 의 게임 세션을 지운다(아직 게임은 시작 안 했으므로 통째로 폐기).
+   * - 살아있는 상대에 대한 정보를 반환해, Gateway 가 다시 큐에 넣을 수 있게 한다.
+   * - 반환값 alive 가 null 이면 상대도 이미 끊긴 상태라 큐 복귀 불필요.
+   */
+  async handlePendingDisconnect(
+    client: Socket,
+    server: Namespace,
+  ): Promise<{
+    wasPending: boolean;
+    alive: PendingMatchSurvivor | null;
+    isGuest: boolean;
+    mode: 'queue' | 'friend' | null;
+  }> {
+    const gameId = this.socketToPendingGameId.get(client.id);
+    if (!gameId) return { wasPending: false, alive: null, isGuest: false, mode: null };
+    const pending = this.pendingMatches.get(gameId);
+    if (!pending) {
+      this.socketToPendingGameId.delete(client.id);
+      return { wasPending: false, alive: null, isGuest: false, mode: null };
+    }
+
+    const { match, isGuest, mode } = pending;
+    const isP1 = client.id === match.p1SocketId;
+    const aliveSocketId = isP1 ? match.p2SocketId : match.p1SocketId;
+    const aliveUserId = isP1 ? match.session.p2 : match.session.p1;
+
+    // pending 상태/역인덱스 제거.
+    this.socketToPendingGameId.delete(match.p1SocketId);
+    this.socketToPendingGameId.delete(match.p2SocketId);
+    this.pendingMatches.delete(gameId);
+
+    // 게임이 실제로 시작되지 않았으므로 세션과 user->game 매핑 모두 삭제.
+    await this.gameRedis.deleteSession(gameId);
+
+    const aliveSocket = server.sockets.get(aliveSocketId);
+    if (!aliveSocket) {
+      return { wasPending: true, alive: null, isGuest, mode };
+    }
+
+    return {
+      wasPending: true,
+      alive: {
+        userId: aliveUserId,
+        socketId: aliveSocketId,
+        isGuest: Boolean(aliveSocket.data.isGuest),
+      },
+      isGuest,
+      mode,
+    };
+  }
 
   /**
    * merge수정 : main의 MatchmakingService가 매칭을 끝낸 뒤 호출할 게임 실행 시작점.
@@ -100,6 +233,12 @@ export class GameRuntimeService {
     // move_paddle/disconnect는 socketId만 들고 들어오므로 역방향 조회 테이블을 만든다.
     this.socketToGameId.set(p1SocketId, session.gameId);
     this.socketToGameId.set(p2SocketId, session.gameId);
+
+    // suna : 실제 게임 루프 시작 시점에 presence 를 in_game 으로 전이한다.
+    await Promise.all([
+      this.gameRedis.publishPresence(session.p1, 'game_started'),
+      this.gameRedis.publishPresence(session.p2, 'game_started'),
+    ]);
   }
 
   /**

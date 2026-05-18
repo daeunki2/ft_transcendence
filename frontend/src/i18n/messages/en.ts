@@ -75,6 +75,11 @@ export const en: Messages = {
   winner: '🏆 YOU WIN!',
   loser: '💀 YOU LOSE',
   backHome: 'Go Back Home',
+  matchFoundReady: 'Opponent found! Press Start when you are ready.',
+  startGameButton: 'Start Game',
+  waitingOpponentReady: 'Waiting for the opponent to get ready...',
+  invitingFriend: 'Waiting for your friend to respond...',
+  invitedByFriend: 'You have been invited to a game. Hold on...',
   },
     //소셜
   social: {
@@ -198,6 +203,14 @@ export const en: Messages = {
   UNAUTHENTICATED: "Authentication required. Please log in again.",
   ALREADY_IN_GAME: "You are already in an ongoing game.",
   KICKED_BY_NEW_TAB: "Connection closed because a new session started in another tab.",
+  CANNOT_INVITE_SELF: "You cannot invite yourself.",
+  TARGET_ALREADY_INVITED: "Your friend already has a pending invite.",
+  ALREADY_INVITING: "You already have a pending invite out.",
+  TARGET_BUSY: "Your friend is currently in another game.",
+  INVITE_TIMEOUT: "Your friend did not respond in time.",
+  INVITE_TARGET_LEFT: "Your friend declined or disconnected.",
+  INVITE_INVITER_GONE: "The inviter is no longer connected.",
+  INVALID_INVITE_TARGET: "Invalid invite target.",
   },
 
   errorPage: {

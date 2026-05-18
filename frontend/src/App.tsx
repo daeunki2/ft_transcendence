@@ -29,6 +29,7 @@ import Alert from './components/ui/Alert';
 import { useI18n } from './i18n/useI18n';
 import { useAuth } from './contexts/AuthContext';
 import { usePresenceSocket } from './hooks/usePresenceSocket';
+import GameModalHost from './components/ui/GameModalHost';
 
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 
@@ -92,6 +93,9 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* suna : Router 내부에서 useNavigate 가 동작해야 하므로 GameModalHost 를 여기에 둔다.
+          모달과 매칭 에러 알림이 어느 페이지에서든 일관되게 표시되도록 App 레벨에 마운트. */}
+      <GameModalHost />
       <ErrorBoundary>
         {isOffline ? (
           <ErrorPage variant="network" />

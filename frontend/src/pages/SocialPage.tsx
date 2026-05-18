@@ -25,6 +25,7 @@ import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
 import { PRESENCE_UPDATED_EVENT } from '../types/presence';
+import { useGameContext } from '../contexts/GameContext';
 import { usePresenceStatus } from '../hooks/usePresenceStatus';
 import { presenceStore } from '../services/presenceStore';
 
@@ -39,6 +40,11 @@ type PresenceUpdatedPayload = {
 function SocialPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
+
+  // suna : 친구 startGame 버튼이 호출할 친구 초대 진입점.
+  // 모달/소켓/이벤트 처리는 모두 GameProvider 가 담당하므로 페이지는 메서드만 호출.
+  const { startInvite } = useGameContext();
+
   const [chatTarget, setChatTarget] = useState<{
   id: string;
   nickname: string;
@@ -281,7 +287,12 @@ function SocialPage() {
                   >
                     {messages.social.sendMessage}
                   </Button>
-                  <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
+                  <Button
+                    // suna : GameProvider 가 모달 오픈 + 소켓 활성화 + invite_friend emit 전부 처리.
+                    onClick={() => startInvite(friend.userId)}
+                    disabled={friend.status !== 'ONLINE'}
+                    style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+                  >
                     {messages.social.startGame}
                   </Button>
                   <Button
@@ -313,6 +324,8 @@ function SocialPage() {
                     })
                   }
                   onRemove={() => handleRemove(friend.friendId)}
+                  // suna : GameProvider 가 모달 + 소켓 + invite_friend emit 다 처리. 페이지는 진입점만.
+                  onStartGame={() => startInvite(friend.userId)}
                 />
               ))}
               {/* daeunki2주석 : 주석이유
@@ -517,9 +530,11 @@ type FriendRowProps = {
   friend: FriendItem;
   onOpenChat: () => void;
   onRemove: () => void;
+  // suna : 머지 때 누락된 친구초대 prop 추가. SocialPage 의 startInvite 를 그대로 전달.
+  onStartGame: () => void;
 };
 
-function FriendRow({ friend, onOpenChat, onRemove }: FriendRowProps) {
+function FriendRow({ friend, onOpenChat, onRemove, onStartGame }: FriendRowProps) {
   const { theme } = useTheme();
   const { messages } = useI18n();
   // daeunki2추가 : 추가한 사유
@@ -567,7 +582,16 @@ function FriendRow({ friend, onOpenChat, onRemove }: FriendRowProps) {
       >
         {messages.social.sendMessage}
       </Button>
-      <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
+      {/* suna : 기존 onClick 없는 버튼 보존. */}
+      {/* <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
+        {messages.social.startGame}
+      </Button> */}
+      {/* suna : 친구초대 호출 + ONLINE 일 때만 활성화. liveStatus 로 실시간 상태 반영. */}
+      <Button
+        onClick={onStartGame}
+        disabled={liveStatus !== 'ONLINE'}
+        style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+      >
         {messages.social.startGame}
       </Button>
       <Button
