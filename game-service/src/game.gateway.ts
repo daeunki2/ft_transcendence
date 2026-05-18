@@ -19,7 +19,7 @@ import type { MovePaddlePayload } from './engine/game-engine.types'; //daeunki2ì
 @WebSocketGateway({
   namespace: 'game',
   cors: {
-    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173',
     credentials: true,
   },
 })

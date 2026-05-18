@@ -3,23 +3,59 @@
 /*                                                        :::      ::::::::   */
 /*   main.ts                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/17 11:45:31 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/18 15:15:37 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { JwtService } from '@nestjs/jwt'; // 토큰검증
 import cookieParser from 'cookie-parser'; // 쿠키접근
 import type { Request, Response, NextFunction } from 'express';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ServerOptions, Server } from 'socket.io';
+import * as fs from 'fs';
+import * as path from 'path';
+import express from 'express';
+import * as https from 'https';
+import * as http from 'http';
+
+
+class HttpsIoAdapter extends IoAdapter {
+  constructor(private readonly httpsServer: https.Server) {
+    super();
+  }
+
+  createIOServer(port: number, options?: ServerOptions): Server {
+    return new Server(this.httpsServer, options);
+  }
+}
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const frontendOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173';
+ // 로컬 mkcert 인증서 파일 읽기
+  // .pem 파일들이 backend/gateway/certs/ 폴더에 들어있다고 가정합니다.
+  const httpsOptions = {
+    key: fs.readFileSync(path.join(__dirname, '../certs/localhost+2-key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, '../certs/localhost+2.pem')),
+  };
+
+  const expressApp = express();
+  const httpsServer = https.createServer(httpsOptions, expressApp);
+  
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(expressApp),
+  );
+  
+  app.useWebSocketAdapter(new HttpsIoAdapter(httpsServer));
+
+  // 프론트엔드 오리진도 HTTPS 주소로 강제 연동
+  const frontendOrigin = process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173';
 
   // 1. CORS 설정 (프론트엔드 허용)
   app.enableCors({
@@ -49,12 +85,15 @@ async function bootstrap() {
           }
           const cookieList = Array.isArray(cookies) ? cookies : [cookies];
           proxyRes.headers['set-cookie'] = cookieList.map((cookie) => {
-            // dev 환경에서는 HTTPS가 아니므로 Secure 플래그를 제거해 쿠키 저장을 허용한다.
-            let updated = cookie.replace(/;\s*secure/gi, '');
-            // SameSite=None은 Secure 플래그와 함께 써야 하므로, Secure를 뗀 경우 Lax로 강제 변환한다.
-            if (/;\s*samesite=none/gi.test(updated)) {
-              updated = updated.replace(/;\s*samesite=none/gi, '; SameSite=Lax');
-            } // 개발환경이라 어쩔 수 없음. 나중에 수정해야할 수 있음. 
+            // 이제 진짜 HTTPS 환경이므로 Secure 플래그를 지우지 않습니다.
+            // 브라우저 쿠키 저장과 세션 탈취 방지를 위해 원래 붙어 나온 값을 그대로 유지합니다.
+            let updated = cookie;
+            // 만약 auth-service에서 Secure 옵션을 안 붙여서 보냈다면, 오히려 여기서 강제로 붙여줍니다.
+            if (!/;\s*secure/gi.test(updated)) {
+              updated += '; Secure';
+            }
+            // SameSite=None도 Secure가 보장되므로 굳이 Lax로 바꿀 필요 없이 원본을 인정합니다.
+            // 크롬에서 cross-origin 쿠키 전송이 원활하게 작동합니다.
             return updated;
           });
         },
@@ -72,7 +111,8 @@ async function bootstrap() {
     createProxyMiddleware({
       target: 'http://user-service:4001',
       changeOrigin: true,
-	  pathRewrite: { '^/api/users': '' },
+	    pathRewrite: { '^/api/users': '' },
+      
       // user-service 다운 시 502 대신 표준 503 + 코드로 응답 (프론트 헬스 가드와 연결)
       on: {
         error(_err, _req, res) {
@@ -113,8 +153,19 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(8000);
-  console.log('API Gateway is running on http://localhost:8000');
+  await app.init();
+
+  httpsServer.listen(8000, () => {
+    console.log('Gateway HTTPS running on 8000');
+  });
+
+  http.createServer(expressApp).listen(8080, () => {
+    console.log('Gateway internal HTTP running on 8080');
+  });
+
+  // httpsServer.on('upgrade', (request, socket, head) => {
+  // console.log('[게이트웨이] 웹소켓 업그레이드 요청 감지:', request.url);
+  // });
 }
 bootstrap();
 

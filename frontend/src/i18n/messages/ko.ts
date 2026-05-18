@@ -96,8 +96,12 @@ game: {
     nickname: '닉네임',
     nicknamePlaceholder: '닉네임을 입력하세요',
     save: '저장',
-    gameHistory: '게임 히스토리',
+    gameHistory: '게임 히스토리 (최근 5경기)',
     noGames: '아직 게임 기록이 없습니다',
+    win: '승리',
+    lose: '패배',
+    me: '본인',
+    Loading: '로딩 중',
     cancel: '뒤로가기',
   },
   privacy: {
