@@ -100,8 +100,12 @@ game: {
     nickname: 'Pseudo',
     nicknamePlaceholder: 'Entrez votre pseudo',
     save: 'Enregistrer',
-    gameHistory: 'Historique des parties',
+    gameHistory: 'Historique des parties (5 derniers matchs)',
     noGames: 'Aucune partie jouée',
+    win: 'Gagné',
+    lose: 'Perdu',
+    me: 'moi',
+    Loading: 'chargement en cours',
     cancel: 'retour',
   },
   privacy: {

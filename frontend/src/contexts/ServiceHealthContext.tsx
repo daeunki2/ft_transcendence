@@ -10,7 +10,7 @@ import {
 import { ServiceHealthContext } from './ServiceHealthContext.types';
 import type { ServiceHealthContextValue } from './ServiceHealthContext.types';
 
-const HEALTH_URL = 'http://localhost:8000/health/ready';
+const HEALTH_URL = 'https://localhost:8000/health/ready';
 const POLL_INTERVAL_MS = 15_000;
 
 // terminus 응답에서 서비스별 상태를 뽑아온다. 200/503 둘 다 details 포맷은 같다.

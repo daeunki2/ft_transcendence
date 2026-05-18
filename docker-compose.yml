@@ -7,6 +7,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - ./gateway/certs:/app/certs
     stdin_open: true
     tty: true
 
@@ -38,7 +39,9 @@ services:
     build: ./gateway
     container_name: api-gateway
     ports:
-      - "8000:8000"
+    - "8000:8000" # 외부 HTTPS
+    expose:
+    - "8080"      # 내부 HTTP
     env_file:
       - ./gateway/.env
     environment:
@@ -46,6 +49,7 @@ services:
     volumes:
       - ./gateway:/app
       - /app/node_modules
+      - ./gateway/certs:/app/certs
     depends_on:
       auth-service:
         condition: service_healthy
@@ -54,7 +58,7 @@ services:
     stdin_open: true
     tty: true
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider --no-check-certificate https://localhost:8000/health || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -69,6 +73,7 @@ services:
       - ./user-service/.env
     environment:
       - PRESENCE_INTERNAL_TOKEN=${PRESENCE_INTERNAL_TOKEN}
+      - PRESENCE_INTERNAL_BASE_URL=http://api-gateway:8080/internal/presence
     volumes:
       - ./user-service:/app
       - /app/node_modules

@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/15 20:38:29 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 11:49:03 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,10 @@ export type Messages = {
     save: string;
     gameHistory: string;
     noGames: string;
+    win: string;
+    lose: string;
+    me: string;
+    Loading: string;
     cancel: string;
   };
   privacy: {

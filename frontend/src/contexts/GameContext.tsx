@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 14:52:48 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 20:10:25 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 15:13:23 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Case A: 사용자가 로그아웃했을 때
     if (!user) {
-      console.log('[GameProvider] 사용자가 로그아웃하여 세션을 정리합니다.');
+      // console.log('[GameProvider] 사용자가 로그아웃하여 세션을 정리합니다.');
       setShouldConnect(false);
       setModalOpen(false);
       setModalContext(null);
@@ -160,13 +160,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     if (modalContext === 'queue-match') {
       game.joinQueue();
     } else if (modalContext === 'ai-match') {
-      game.joinAiQueue();
+      // suna : study 의 AI 게임 담당 코드가 aiGame 이라는 이름을 쓰고 있어 그쪽 명명에 맞춤.
+      game.aiGame();
     } else if (modalContext === 'inviting' && pendingInviteTarget) {
       // suna : 소켓 연결 직후 1회만 emit. 클리어해서 중복 호출 방지.
       game.inviteFriend(pendingInviteTarget);
       setPendingInviteTarget(null);
     }
-  }, [modalOpen, game.isConnected, modalContext, game.matchInfo, pendingInviteTarget, game.joinQueue, game.joinAiQueue, game.inviteFriend]);
+  }, [modalOpen, game.isConnected, modalContext, game.matchInfo, pendingInviteTarget, game.joinQueue, game.aiGame, game.inviteFriend]);
 
   // suna : 친구 초대 수신 시 자동으로 게임 소켓 활성화 + 모달 오픈.
   // B 의 game socket 이 연결되면 game-service 의 tryFulfillOnConnect 가 match_found 를 보낸다.

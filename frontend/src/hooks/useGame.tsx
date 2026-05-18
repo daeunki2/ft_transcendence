@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 11:13:24 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 20:29:08 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 15:31:25 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ export interface QueueError {
 }
 
 // merge수정 : main의 userId 기반 소켓 연결에 daeunki2의 기록 저장용 nickname 전달 인자를 추가함.
-export const useGame = (currentUserId: string | null, shouldConnect: boolean,  currentNickname?: string | null) => {
+export const useGame = (currentUserId: string | null, shouldConnect: boolean,  currentNickname?: string | null, gameType?: 'match' | 'ai' | null) => {
   const socketRef = useRef<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -40,6 +40,7 @@ export const useGame = (currentUserId: string | null, shouldConnect: boolean,  c
   const [queueError, setQueueError] = useState<QueueError | null>(null);
   // merge수정 : daeunki2의 game_over 결과 상태를 main의 매칭 상태들과 함께 유지함.
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const isReadySent = useRef(false);
  
 
 //Context 리셋함수
@@ -48,24 +49,41 @@ setMatchInfo(null);
   setGameState(null);
   setGameResult(null);
   setQueueError(null);
+  isReadySent.current = false;
   // console.log('[Game Hook] 모든 게임 데이터가 초기화되었습니다.');
 }, []);
   
  // 대기열 추가
-const joinQueue = useCallback(() => {
- if (socketRef.current && isConnected) {
-   console.log('[Game Socket] 대기열 등록 시도:', currentUserId);
-   socketRef.current.emit('join_queue');
- } else {
-   console.error('[Game Socket] 소켓이 연결되지 않았습니다.');
- }
-}, [isConnected, currentUserId]);
+// const joinQueue = useCallback(() => {
+//  if (socketRef.current && isConnected) {
+//    console.log('[Game Socket] 대기열 등록 시도:', currentUserId);
+//    socketRef.current.emit('join_queue');
+//  } else {
+//    console.error('[Game Socket] 소켓이 연결되지 않았습니다.');
+//  }
+// }, [isConnected, currentUserId]);
 
-const joinAiQueue = useCallback(() => {
+// 🟢 useGame.tsx 내부의 joinQueue 함수 수정본
+const joinQueue = useCallback(() => {
+  // 🚩 [치명적인 타이밍 버그 해결]: 이미 매칭 정보가 존재한다면 실행을 원천 차단
+  if (matchInfo) {
+    console.warn('[Game Socket] 이미 매칭이 성사되어 대기열 등록을 거부합니다. (중복 호출 방어)');
+    return;
+  }
+
+  if (socketRef.current && isConnected) {
+    console.log('[Game Socket] 대기열 등록 시도:', currentUserId);
+    socketRef.current.emit('join_queue');
+  } else {
+    console.error('[Game Socket] 소켓이 연결되지 않았습니다.');
+  }
+}, [isConnected, currentUserId, matchInfo]); // ✨ 의존성 배열에 matchInfo를 반드시 추가!
+
+const aiGame= useCallback(() => {
   if (socketRef.current && isConnected) {
     console.log('[Game Socket] AI 게임 시작 요청');
     // 서버와 약속한 AI 전용 이벤트 송신
-    socketRef.current.emit('join_ai_queue');
+    socketRef.current.emit('start_ai_game'); 
   }
 }, [isConnected, currentUserId]);
 
@@ -93,11 +111,13 @@ const inviteFriend = useCallback((targetUserId: string) => {
 //패들 이동
 const movePaddle = useCallback((direction: 'up' | 'down') => {
   if (socketRef.current && isConnected) {
+    console.log('[Game Socket] move paddle');
     socketRef.current.emit('move_paddle', { direction });
   }
 }, [isConnected]);
 
 const sendReady = useCallback(() => {
+  if (isReadySent.current) return;
   if (socketRef.current && isConnected) {
     console.log('[Game Socket] 게임 준비 완료(ready) 송신');
     socketRef.current.emit('ready');
@@ -107,26 +127,31 @@ const sendReady = useCallback(() => {
 }, [isConnected]);
 
   useEffect(() => {
-	if (!shouldConnect || !currentUserId || currentUserId === 'undefined'|| currentUserId === 'null'){
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-	  setIsConnected(false);
-  	setGameState(null);
-	  setMatchInfo(null);
-	  setQueueError(null);
-	  // merge수정 : 소켓이 닫히는 경우 게임 결과 상태도 함께 초기화함.
-	  // setGameResult(null);
-    return;
-  	}
+	// 연결 검증 조건 검사
+    const isValidUser = currentUserId && currentUserId !== 'undefined' && currentUserId !== 'null';
+    const isValidNickname = currentNickname && currentNickname !== 'undefined' && currentNickname !== 'null';
 
-	if (socketRef.current?.connected) {
-    console.log('[Game Socket] 이미 연결된 소켓 유지');
-    return;
-  	}
+    // 연결하면 안 되는 조건일 때 정직하게 클린업 후 종료
+    if (!shouldConnect || !isValidUser || !isValidNickname) {
+      if (socketRef.current) {
+        console.log('[Game Socket] 조건 미충족으로 인한 소켓 연결 종료(클린업)');
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      setIsConnected(false);
+      setGameState(null);
+      setMatchInfo(null);
+      setQueueError(null);
+      return;
+    }
+
+    // 이미 활성화된 소켓이 정상 작동 중이면 중복 생성 차단
+    if (socketRef.current?.connected) {
+      console.log('[Game Socket] 이미 활성화된 소켓 유지');
+      return;
+    }
    
-    const socket = io('http://localhost:8000/game', {
+    const socket = io('https://localhost:8000/game', {
 	  path: '/api/game/socket.io',
 	  withCredentials: true,
       transports: ['polling', 'websocket'], 
@@ -161,11 +186,6 @@ const sendReady = useCallback(() => {
         console.warn('[Game Socket] 인증 문제로 재연결을 중단합니다.');
         socket.disconnect();
       }
-    });
-
-    socket.on('queue_error', (data: { message: string }) => {
-      console.error('[Game Socket] 큐 에러 수신:', data.message);
-      setQueueError(data.message);
     });
 	
 	  socket.on('disconnect', (reason) => {
@@ -211,10 +231,10 @@ const sendReady = useCallback(() => {
       
       // 게임이 종료되었으니 불필요한 game_state 수신은 끊어줍니다.
       socket.off('game_state');
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
+      // if (socketRef.current) {
+      //   socketRef.current.disconnect();
+      //   socketRef.current = null;
+      // }
       setIsConnected(false);
     });
 	
@@ -227,13 +247,13 @@ const sendReady = useCallback(() => {
         socketRef.current = null;
       }
     };
-  }, [currentUserId, currentNickname, shouldConnect]);
+  }, [currentUserId, currentNickname, shouldConnect, gameType]);
 
   // queueError 는 호출 컴포넌트가 읽어 모달 닫기/알림 표시 후 setQueueError(null) 로 초기화한다.
   const clearQueueError = useCallback(() => setQueueError(null), []);
 
   // merge수정 : main의 매칭 반환값과 daeunki2의 gameResult를 모두 노출함.
-  return { isConnected, movePaddle, joinQueue, joinAiQueue, inviteFriend, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
+  return { isConnected, movePaddle, joinQueue, aiGame, inviteFriend, gameState, matchInfo, queueError, clearQueueError, gameResult, sendReady, resetGameState};
 };
 
 

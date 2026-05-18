@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 13:14:39 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/11 11:30:41 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 22:33:21 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
     // fetchInitialStatus();
 
     // 소켓 연결 설정 (게이트웨이 8000번 포트 경유)
-    const socket = io('http://localhost:8000/chat', {
+    const socket = io('https://localhost:8000/chat', {
       path: '/api/chat/socket.io', // 게이트웨이가 이 경로를 보고 chat-service로 전달함
       withCredentials: true,      // 브라우저가 자동으로 쿠키(accessToken)를 실어 보냄
       forceNew: true,
