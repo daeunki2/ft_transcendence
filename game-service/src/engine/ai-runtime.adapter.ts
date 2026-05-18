@@ -5,6 +5,15 @@ import type { EngineState } from './game-engine.types';
 
 @Injectable()
 export class AiRuntimeAdapter {
+  // 인간처럼 보이게 하기 위한 판단 간격/스킵 설정.
+  private readonly baseDecisionIntervalMs = 130; // 반응주기
+  private readonly intervalJitterMs = 50;
+  private readonly decisionSkipChance = 0.12; // 스킵확률
+  private readonly decisionState = new Map<
+    string,
+    { nextDecisionAt: number; lastDirection: 'up' | 'down' | 'none' }
+  >();
+
   constructor(
     private readonly aiBot: AiBotService,
     private readonly engine: GameEngineService,
@@ -19,10 +28,26 @@ export class AiRuntimeAdapter {
       return state;
     }
 
-    const direction = this.aiBot.decideDirection({
-      state,
-      paddleY: state.p2Y,
-    });
+    const now = Date.now();
+    const memory = this.decisionState.get(p2UserId) ?? {
+      nextDecisionAt: 0,
+      lastDirection: 'none' as 'up' | 'down' | 'none',
+    };
+
+    if (now >= memory.nextDecisionAt) {
+      memory.nextDecisionAt = now + this.nextIntervalMs();
+      if (Math.random() < this.decisionSkipChance) {
+        memory.lastDirection = 'none';
+      } else {
+        memory.lastDirection = this.aiBot.decideDirection({
+          state,
+          paddleY: state.p2Y,
+        });
+      }
+      this.decisionState.set(p2UserId, memory);
+    }
+
+    const direction = memory.lastDirection;
     if (direction === 'none') {
       return state;
     }
@@ -32,5 +57,8 @@ export class AiRuntimeAdapter {
   private isAiUser(userId: string): boolean {
     return userId.startsWith('AI_BOT_');
   }
-}
 
+  private nextIntervalMs(): number {
+    return this.baseDecisionIntervalMs + Math.floor(Math.random() * (this.intervalJitterMs + 1));
+  }
+}
