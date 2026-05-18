@@ -114,15 +114,19 @@ export class FriendInviteService {
     await server.in(invite.inviterSocketId).socketsJoin(room);
     await server.in(target.socketId).socketsJoin(room);
 
+    // opponent 를 userId → nickname 으로 변경. inviterSocket 은 위에서 이미 가져왔고 target 만 추가 조회.
+    const targetSocket = server.sockets.get(target.socketId);
+    const inviterNickname = String(inviterSocket.data?.nickname ?? invite.inviterUserId);
+    const targetNickname = String(targetSocket?.data?.nickname ?? target.userId);
     server.to(invite.inviterSocketId).emit('match_found', {
       gameId: session.gameId,
       side: 'p1',
-      opponent: target.userId,
+      opponent: targetNickname,
     });
     server.to(target.socketId).emit('match_found', {
       gameId: session.gameId,
       side: 'p2',
-      opponent: invite.inviterUserId,
+      opponent: inviterNickname,
     });
 
     // presence: matching 단계는 없었으므로 matching_ended 만 형식적으로 보낼 필요 없음.
