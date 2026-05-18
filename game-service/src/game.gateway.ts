@@ -257,11 +257,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (nextMatch) {
       this.gameRuntime.prepareMatch(nextMatch, isGuest, 'queue');
     }
+  }
+
   // ai용 추가
   @SubscribeMessage('start_ai_game')
   async onStartAiGame(client: Socket, payload: { gameType?: string }) {
     await this.gameAiHelper.startAiGame(client, payload?.gameType ?? '');
-  
   }
 
   // @SubscribeMessage('join_queue')

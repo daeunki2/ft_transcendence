@@ -83,7 +83,10 @@ const aiGame= useCallback(() => {
   if (socketRef.current && isConnected) {
     console.log('[Game Socket] AI 게임 시작 요청');
     // 서버와 약속한 AI 전용 이벤트 송신
-    socketRef.current.emit('start_ai_game'); 
+    // suna : 기존 payload 없는 emit 보존.
+    // socketRef.current.emit('start_ai_game');
+    // suna : 서버 game-ai.gateway.helper.ts 가 gameType !== 'ai' 면 INVALID_GAME_TYPE 반환. payload 명시 필요.
+    socketRef.current.emit('start_ai_game', { gameType: 'ai' });
   }
 }, [isConnected, currentUserId]);
 
