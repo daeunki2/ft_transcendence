@@ -12,8 +12,9 @@ import * as jwt from 'jsonwebtoken';
 
 @WebSocketGateway({
   namespace: '/presence',
+  transports: ['websocket', 'polling'],
   cors: {
-    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173',
     credentials: true,
   },
 })

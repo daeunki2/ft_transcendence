@@ -7,23 +7,19 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { MatchmakingService } from './matchmaking/matchmaking.service';
-import { FriendInviteService } from './matchmaking/friend-invite.service';
 import { GameRedis } from './redis/game.redis';
 import { GameRuntimeService } from './engine/game-runtime.service'; // daeunki2 추가
+import { GameAiGatewayHelper } from './game-ai.gateway.helper'; // ai용 추가
 import {
-  GAME_INVITE_FRIEND_EVENT,
   GAME_JOIN_QUEUE_EVENT,
-  GAME_MATCH_CANCELED_EVENT,
   GAME_MOVE_PADDLE_EVENT,
-  GAME_READY_EVENT,
 } from './engine/game-engine.constants';
 import type { MovePaddlePayload } from './engine/game-engine.types'; //daeunki2추가
-import { GameAiGatewayHelper } from './game-ai.gateway.helper';
 
 @WebSocketGateway({
   namespace: 'game',
   cors: {
-    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173',
     credentials: true,
   },
 })
@@ -40,66 +36,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly matchmaking: MatchmakingService,
     private readonly gameRedis: GameRedis,
     private readonly gameRuntime: GameRuntimeService, // daeunki2 추가 : 게임 실행 로직
-    private readonly friendInvite: FriendInviteService, // suna : 친구 초대 매칭 처리
-    private readonly gameAiHelper: GameAiGatewayHelper, // daeunki2 : ai매칭
-
+    private readonly gameAiHelper: GameAiGatewayHelper, // ai용 추가
   ) {}
 
   // daeunki2 추가 : 패들 움직임
   @SubscribeMessage(GAME_MOVE_PADDLE_EVENT)
   onMovePaddle(client: Socket, payload: MovePaddlePayload) {
     this.gameRuntime.movePaddle(client, payload);
-  }
-
-  // suna : match_found 후 "게임 시작" 버튼을 누른 클라이언트가 보내는 ready 신호.
-  // 양쪽 모두 ready 면 Runtime 에서 startMatch 가 실행돼 실제 게임 루프가 돈다.
-@SubscribeMessage(GAME_READY_EVENT)
-async onReady(client: Socket) {
-  // daeunki2추가 : 추가한 사유
-  // AI pending 매치가 있으면 큐/친구매치 ready 로직보다 먼저 소비해 Runtime 시작.
-  const pending = this.gameAiHelper.consumePendingForReady(client.id);
-  if (pending) {
-    await this.gameRuntime.startMatch(pending, this.server);
-    return;
-  }
-
-  await this.gameRuntime.handleReady(client, this.server);
-}
-
-
-  // suna : 친구 초대 시작. SocialPage 의 startGame 버튼에서 emit.
-  // payload: { targetUserId: string }
-  @SubscribeMessage(GAME_INVITE_FRIEND_EVENT)
-  async onInviteFriend(client: Socket, payload: { targetUserId?: string }) {
-    const userId: string | undefined = client.data.userId;
-    if (!userId) {
-      client.emit('queue_error', { code: 'UNAUTHENTICATED', message: 'Authentication required.' });
-      return;
-    }
-    const targetUserId = payload?.targetUserId;
-    if (typeof targetUserId !== 'string' || targetUserId.trim() === '') {
-      client.emit('queue_error', { code: 'INVALID_INVITE_TARGET', message: 'Invalid target user.' });
-      return;
-    }
-
-    const rejectCode = await this.friendInvite.invite(
-      this.server,
-      {
-        userId,
-        socketId: client.id,
-        isGuest: Boolean(client.data.isGuest),
-        nickname: String(client.data.nickname ?? userId),
-      },
-      targetUserId.trim(),
-    );
-
-    if (rejectCode) {
-      // suna : 거절 코드가 있으면 그대로 클라이언트에 전달. 성공이면 다음 단계는 B 의 game socket connect 시 진행.
-      client.emit('queue_error', {
-        code: rejectCode,
-        message: `Invite rejected: ${rejectCode}`,
-      });
-    }
   }
 
   private extractUserId(client: Socket): string | null {
@@ -155,19 +98,6 @@ async onReady(client: Socket) {
     console.log(
       `[Game] 연결 성공: userId=${userId}, isGuest=${isGuest}, socketId=${client.id}`,
     );
-
-    // suna : B 의 game socket 이 막 들어왔을 때 pending friend invite 가 있으면 즉시 매치 진입.
-    // tryFulfillOnConnect 가 세션/룸/match_found 까지 처리하고 MatchResult 를 반환한다.
-    void this.friendInvite
-      .tryFulfillOnConnect(this.server, { userId, socketId: client.id, isGuest })
-      .then((match) => {
-        if (match) {
-          this.gameRuntime.prepareMatch(match, isGuest, 'friend');
-        }
-      })
-      .catch((err) => {
-        console.error('[Game] tryFulfillOnConnect 실패', err);
-      });
   }
 
   // 이유: namespace 의 모든 소켓을 훑어 동일 userId 인 기존 소켓을 종료한다.
@@ -195,70 +125,31 @@ async onReady(client: Socket) {
 
     console.log(`[Game] 연결 종료: userId=${userId}, socketId=${client.id}`);
 
+    // ai용 추가
+    await this.gameAiHelper.cleanupPendingAiMatch(client.id);
+
     // 이유: 큐 대기 중 끊긴 경우 큐에서 빼고 matching_ended 발행.
     await this.matchmaking.dequeue(userId, isGuest);
-
-    // suna : 친구 초대 단계에 머물러 있던 사용자(inviter 또는 target) 정리.
-    // pending invite 가 정리되고 inviter 가 살아있으면 그쪽에 match_canceled 통보.
-    this.friendInvite.cancelInvolvingUser(userId, this.server);
-
-    // suna : match_found 후 ready 대기 중 끊긴 경우 처리.
-    // 살아남은 상대가 있으면 Redis 세션은 폐기되고 (queue 모드일 때만) 상대는 다시 큐로 들어간다.
-    const pendingResult = await this.gameRuntime.handlePendingDisconnect(client, this.server);
-    if (pendingResult.wasPending) {
-      await this.handleSurvivor(userId, pendingResult);
-      return;
-    }
 
     // 이유: 매칭된 게임 진행 중 끊긴 경우는 다은님 영역(로직 서비스)에서 game_ended 처리.
     // daeunki2 수정 : 실제 게임 중 disconnect는 Runtime 서비스가 기권 처리, game_over, 기록 저장, Redis 정리를 담당한다.
     await this.gameRuntime.handleDisconnect(client, this.server);
-    // daeunki2추가 : 추가한 사유
-    // ready 전 disconnect된 AI pending 매치 세션 정리를 위해 helper cleanup 호출.
-    await this.gameAiHelper.cleanupPendingAiMatch(client.id);
-
   }
 
-  // suna : pending 단계에서 한쪽이 끊겼을 때 호출. 끊긴 쪽은 socket 이 닫혔으므로 별도 알림 불필요.
-  // queue 모드면 살아남은 쪽을 큐로 다시 넣고, friend 모드면 매치만 취소하고 끝.
-  private async handleSurvivor(
-    leaverUserId: string,
-    pending: Awaited<ReturnType<GameRuntimeService['handlePendingDisconnect']>>,
-  ): Promise<void> {
-    if (!pending.alive) {
-      console.log(`[Game] pending 양쪽 모두 종료: leaver=${leaverUserId} mode=${pending.mode}`);
+  // ai용 추가
+  @SubscribeMessage('start_ai_game')
+  async onStartAiGame(client: Socket, payload: { gameType?: string }) {
+    await this.gameAiHelper.startAiGame(client, payload?.gameType ?? '');
+  }
+
+  // ai용 추가
+  @SubscribeMessage('ready')
+  async onReady(client: Socket) {
+    const pending = this.gameAiHelper.consumePendingForReady(client.id);
+    if (!pending) {
       return;
     }
-    const { userId: aliveUserId, socketId: aliveSocketId, isGuest } = pending.alive;
-
-    // suna : 어떤 모드든 살아남은 쪽 모달이 "찾는 중"/"홈"으로 되돌아가게 match_canceled 부터 보낸다.
-    this.server.to(aliveSocketId).emit(GAME_MATCH_CANCELED_EVENT);
-
-    if (pending.mode === 'friend') {
-      // suna : 친구매치는 큐 복귀 없음. 살아남은 쪽도 모달이 닫히고 "친구가 거절" 알림이 뜨도록 queue_error 발행.
-      // 프론트 Provider 가 queueError 를 받으면 closeMatchModal 호출 + i18n alert 표시.
-      this.server.to(aliveSocketId).emit('queue_error', {
-        code: 'INVITE_TARGET_LEFT',
-        message: 'Friend declined or disconnected.',
-      });
-      console.log(`[Game] friend match canceled: leaver=${leaverUserId} survivor=${aliveUserId}`);
-      return;
-    }
-
-    console.log(
-      `[Game] pending 단계 이탈(queue): leaver=${leaverUserId} survivor=${aliveUserId} -> 큐 복귀`,
-    );
-
-    // 살아남은 쪽을 큐로 복귀. 큐에 이미 누가 있으면 즉시 매칭될 수 있으므로 결과를 받아 prepareMatch 까지 연결.
-    const nextMatch = await this.matchmaking.enqueue(
-      aliveUserId,
-      aliveSocketId,
-      isGuest,
-      this.server,
-    );
-    if (nextMatch) {
-      this.gameRuntime.prepareMatch(nextMatch, isGuest, 'queue');
-    }
+    await this.gameRuntime.startMatch(pending, this.server);
   }
 
   // @SubscribeMessage('join_queue')
@@ -288,21 +179,7 @@ async onReady(client: Socket) {
     // await this.matchmaking.enqueue(userId, client.id, isGuest, this.server); >> 매창까지만 하는 로직
     const match = await this.matchmaking.enqueue(userId, client.id, isGuest, this.server);
     if (match) {
-        // suna : 매칭 직후 바로 게임 루프를 돌리지 않고 양쪽 ready 핸드셰이크 대기 상태로 진입.
-        this.gameRuntime.prepareMatch(match, isGuest, 'queue');
+        await this.gameRuntime.startMatch(match, this.server);
     } // daeunki2 :  매칭이 존재하면 게임 시작하게 수정
   }
-
-  @SubscribeMessage('start_ai_game')
-async onStartAiGame(client: Socket) {
-  const gameType =
-    typeof client.handshake.query.gameType === 'string'
-      ? client.handshake.query.gameType
-      : '';
-
-  // daeunki2추가 : 추가한 사유
-  // AI 시작 진입은 helper로 위임해 큐 우회 + match_found 준비를 공통 처리한다.
-  await this.gameAiHelper.startAiGame(client, gameType);
-}
-
 }

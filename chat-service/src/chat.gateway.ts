@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 19:06:54 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/08 10:40:02 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 09:38:06 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ import { PRESENCE_UPDATED_CHANNEL, PresenceUpdatedEvent } from 'src/types/presen
 import { SendDmDto, GetHistoryDto } from './dto/message.dto'; // DTO 임포트
 import { Redis } from 'ioredis';
 
-@WebSocketGateway({ namespace: 'chat', cors: {origin: 'http://localhost:5173'} })
+@WebSocketGateway({ namespace: 'chat', cors: {origin: 'https://localhost:5173'} })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer() server: Server;
 

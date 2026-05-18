@@ -43,6 +43,7 @@ export default function HomePage() {
     matchInfo, 
     activateGameSocket,
     deactivateGameSocket,
+    clearQueueError,
     resetGameState 
   } = useGameContext();
 
@@ -103,7 +104,7 @@ export default function HomePage() {
 
   // 연결 완료 후 큐 진입
   useEffect(() => {
-    if (!matchModalOpen || !isMatchStarted || !isConnected) return;
+    if (!matchModalOpen || !isMatchStarted || !isConnected || matchInfo) return;
 
     if (gameType === 'match') {
       joinQueue();
@@ -112,7 +113,12 @@ export default function HomePage() {
       aiGame();
     }
 
-  }, [matchModalOpen, isMatchStarted, isConnected, gameType, joinQueue, aiGame]);
+}, [matchModalOpen, isMatchStarted, isConnected, gameType, matchInfo, joinQueue, aiGame]);
+
+const handleCloseAlert = () => {
+    setErrorAlert(null);
+    if (clearQueueError) clearQueueError(); // 컨텍스트 에러 상태 초기화
+  };
 
   return (
     <PageContainer header={<Navbar />} footer={<FooterLinks />}>
@@ -161,7 +167,7 @@ export default function HomePage() {
         title={messages.social.alertTitle}
         message={errorAlert ?? ''}
         confirmText={messages.result.false}
-        onClose={() => setErrorAlert(null)}
+        onClose={handleCloseAlert}
       />
     </PageContainer>
   );

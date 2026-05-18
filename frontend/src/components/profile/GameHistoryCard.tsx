@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/17 11:27:58 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/17 11:50:50 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 11:49:33 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,18 @@ export default function GameHistoryCard({ user }: GameHistoryCardProps) {
         <p style={{ textAlign: 'center', color: theme.colors.textMuted }}>{messages.mySpace.Loading}</p>
       ) : history.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {Array.isArray(history) && history.slice(0, 5).map((game) => {
+          {Array.isArray(history) && history.slice(0, 5).map((game, index) => {
             // 본인 여부 판별
             const isWinnerMe = game.winnerNickname === user.nickname;
             const isLoserMe = game.loserNickname === user.nickname;
 
+            
+            const gameKey =
+              game.id ??
+              `${game.winnerNickname}-${game.loserNickname}-${game.winnerScore}-${game.loserScore}-${index}`;
+
             return (
-              <div key={game.id} style={{
+              <div key={gameKey} style={{
                 padding: '14px 20px',
                 borderRadius: '8px',
                 backgroundColor: theme.colors.backgroundVariant,

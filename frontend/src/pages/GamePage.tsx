@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/15 21:14:20 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 10:41:49 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,22 +15,31 @@ import { useGameContext } from '../contexts/GameContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../i18n/useI18n';
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function GamePage() {
-
+	const navigate = useNavigate();
 	const { user } = useAuth();
 	// 게임 페이지에 들어오자마자 소켓 연결 및 데이터 수신 시작
-	const { gameState, movePaddle, matchInfo, gameResult, isConnected, joinQueue } = useGameContext();
+	const { gameState, movePaddle, matchInfo, gameResult, isConnected, sendReady } = useGameContext();
 	const { messages } = useI18n();
 	const inputStateRef = useRef({ up: false, down: false });
 
+	// 매칭 정보도 없고 게임 결과도 없는 상태로 주소창에 /game만 치고 들어온 유저를 홈으로 튕겨냅니다.
+    useEffect(() => {
+        if (!matchInfo && !gameResult) {
+            console.warn('[GamePage] 활성화된 게임 세션이 없어 홈으로 리다이렉트합니다.');
+            navigate('/home');
+        }
+    }, [matchInfo, gameResult, navigate]);
+	
 	useEffect(() => {
-		// daeunki2수정 : 수정이유
-		// HomePage에서 /game 이동 시 기존 소켓이 정리되고, GamePage에서 새 소켓이 열린다.
-		// 따라서 연결 직후 이 페이지에서 큐 재등록을 1회 수행해야 game_state를 다시 수신할 수 있다.
-		if (!isConnected) return;
-		joinQueue();
-	}, [isConnected, joinQueue]);
+        // 소켓이 연결되어 있고, 아직 게임 결과가 안 나왔으며, 매칭 정보가 존재할 때 1회 송신
+        if (isConnected && matchInfo && !gameResult) {
+            console.log('[GamePage] 인게임 페이지 로드 완료 ➡️ sendReady 실행');
+            sendReady(); 
+        }
+    }, [isConnected, matchInfo, gameResult, sendReady]);
 
 	useEffect(() => {
 		// daeunki2수정 : 수정이유
