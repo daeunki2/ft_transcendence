@@ -6,11 +6,11 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/17 11:27:58 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/18 11:49:33 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 20:43:25 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import React from 'react';
+import React, { useMemo } from 'react'; // 🟢 useMemo 추가
 import Card from '../ui/Card';
 import { useTheme } from '../../theme/useTheme';
 import { useI18n } from '../../i18n/useI18n';
@@ -24,10 +24,15 @@ interface GameHistoryCardProps {
 export default function GameHistoryCard({ user }: GameHistoryCardProps) {
   const { theme } = useTheme();
   const { messages } = useI18n();
-  const { history, isLoading } = useGameHistory(user.userId || null);
 
-  // 다국어 메시지에 me가 없을 경우를 대비한 폴백(Fallback) 문자열
-  const meText =  messages.mySpace.me;
+  const stableUserId = useMemo(() => user?.userId || null, [user?.userId]);
+  const { history, isLoading } = useGameHistory(stableUserId);
+  const displayedHistory = useMemo(() => {
+    if (!Array.isArray(history)) return [];
+    return history.slice(0, 5);
+  }, [history]);
+
+  const meText = messages.mySpace.me;
 
   return (
     <Card>
@@ -37,14 +42,12 @@ export default function GameHistoryCard({ user }: GameHistoryCardProps) {
       
       {isLoading ? (
         <p style={{ textAlign: 'center', color: theme.colors.textMuted }}>{messages.mySpace.Loading}</p>
-      ) : history.length > 0 ? (
+      ) : displayedHistory.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {Array.isArray(history) && history.slice(0, 5).map((game, index) => {
-            // 본인 여부 판별
+          {displayedHistory.map((game, index) => { // 🟢 렌더링부 간결화
             const isWinnerMe = game.winnerNickname === user.nickname;
             const isLoserMe = game.loserNickname === user.nickname;
 
-            
             const gameKey =
               game.id ??
               `${game.winnerNickname}-${game.loserNickname}-${game.winnerScore}-${game.loserScore}-${index}`;

@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 21:25:37 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/18 10:41:49 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 20:23:37 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ export default function GamePage() {
         <GameBoard 
           data={gameState} 
           meName={user?.nickname || 'ME'} 
-          opponentName={matchInfo?.opponent || 'OPPONENT'} 
+          matchInfo={matchInfo}
         />
       ) : (
         <p>{messages.game.connectGameServer}</p>

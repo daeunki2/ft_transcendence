@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GameBoard.tsx                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 09:49:50 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/14 15:56:10 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/18 20:24:18 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,36 @@ const GAME_HEIGHT = 600;
 const PADDLE_WIDTH = 15;
 const PADDLE_HEIGHT = 100;
 
-interface GameBoardProps {
-  data: GameState | null;
-  meName?: string;
-  opponentName?: string;
+interface MatchInfo {
+  gameId: string;
+  side: 'p1' | 'p2';
+  opponent: string;
 }
 
-export default function GameBoard({ data, meName = 'Me', opponentName = 'Opponent' }: GameBoardProps) {
+interface GameBoardProps {
+  data: GameState | null;
+  meName: string;
+  matchInfo: MatchInfo | null;
+}
+
+export default function GameBoard({ data, meName, matchInfo }: GameBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   const stateRef = useRef<GameState | null>(null);
+
+  // 렌더링용 플레이어 이름 변수
+  let leftPlayerName = 'Player 1';
+  let rightPlayerName = 'Player 2';
+
+  if (matchInfo) {
+    if (matchInfo.side === 'p1') {
+      leftPlayerName = `${meName} (Me)`;
+      rightPlayerName = matchInfo.opponent;
+    } else {
+      leftPlayerName = matchInfo.opponent;
+      rightPlayerName = `${meName} (Me)`;
+    }
+  }
 
   useEffect(() => {
     stateRef.current = data;
@@ -61,9 +81,9 @@ export default function GameBoard({ data, meName = 'Me', opponentName = 'Opponen
     ctx.setLineDash([]);
     ctx.fillStyle = '#fff';
     
-    // 왼쪽 패들
+    // 왼쪽 패들 (Player 1)
     ctx.fillRect(20, s.p1Y, PADDLE_WIDTH, PADDLE_HEIGHT); 
-    // 오른쪽 패들
+    // 오른쪽 패들 (Player 2)
     ctx.fillRect(GAME_WIDTH - 35, s.p2Y, PADDLE_WIDTH, PADDLE_HEIGHT); 
     // 공
     ctx.beginPath();
@@ -89,24 +109,24 @@ export default function GameBoard({ data, meName = 'Me', opponentName = 'Opponen
         justifyContent: 'space-between',
         padding: '0 100px',
         color: '#fff',
-        fontSize: '40px', // 점수 가독성을 위해 키움
+        fontSize: '40px',
         fontWeight: 'bold',
-        fontFamily: '"Press Start 2P", monospace', // 게임 느낌 폰트 (없으면 monospace)
+        fontFamily: '"Press Start 2P", monospace',
         pointerEvents: 'none',
         boxSizing: 'border-box'
       }}>
-        {/* 왼쪽: Player 1 (Me) */}
+        {/* 왼쪽: Player 1 진영 (항상 score1) */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '14px', opacity: 0.6, marginBottom: '8px', textTransform: 'uppercase' }}>
-            {meName}
+          <div style={{ fontSize: '14px', opacity: 0.6, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            {leftPlayerName}
           </div>
           <div>{data?.score1 ?? 0}</div>
         </div>
 
-        {/* 오른쪽: Player 2 (Opponent) */}
+        {/* 오른쪽: Player 2 진영 (항상 score2) */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '14px', opacity: 0.6, marginBottom: '8px', textTransform: 'uppercase' }}>
-            {opponentName}
+          <div style={{ fontSize: '14px', opacity: 0.6, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            {rightPlayerName}
           </div>
           <div>{data?.score2 ?? 0}</div>
         </div>
