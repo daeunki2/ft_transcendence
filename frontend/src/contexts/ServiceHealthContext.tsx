@@ -10,7 +10,12 @@ import {
 import { ServiceHealthContext } from './ServiceHealthContext.types';
 import type { ServiceHealthContextValue } from './ServiceHealthContext.types';
 
-const HEALTH_URL = 'https://localhost:8000/health/ready';
+// suna : env 없으면 현재 접속 호스트의 8000 포트로 fallback (LAN IP 원격 접속 대응).
+const defaultGatewayOrigin =
+  typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : '';
+const HEALTH_URL = `${import.meta.env.VITE_API_BASE_URL ?? defaultGatewayOrigin}/health/ready`;
 const POLL_INTERVAL_MS = 15_000;
 
 // terminus 응답에서 서비스별 상태를 뽑아온다. 200/503 둘 다 details 포맷은 같다.

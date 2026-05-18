@@ -154,7 +154,11 @@ const sendReady = useCallback(() => {
       return;
     }
    
-    const socket = io('https://localhost:8000/game', {
+    // suna : env 없으면 현재 접속 호스트의 8000 포트로 fallback (localhost / LAN IP 모두 대응).
+    const gatewayOrigin =
+      import.meta.env.VITE_API_BASE_URL ??
+      `${window.location.protocol}//${window.location.hostname}:8000`;
+    const socket = io(`${gatewayOrigin}/game`, {
 	  path: '/api/game/socket.io',
 	  withCredentials: true,
       transports: ['polling', 'websocket'], 

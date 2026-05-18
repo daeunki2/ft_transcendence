@@ -81,7 +81,11 @@ export const useChat = (targetId: string | null, currentUserId: string | null) =
     // fetchInitialStatus();
 
     // 소켓 연결 설정 (게이트웨이 8000번 포트 경유)
-    const socket = io('https://localhost:8000/chat', {
+    // suna : env 없으면 현재 접속 호스트의 8000 포트로 fallback (localhost / LAN IP 모두 대응).
+    const gatewayOrigin =
+      import.meta.env.VITE_API_BASE_URL ??
+      `${window.location.protocol}//${window.location.hostname}:8000`;
+    const socket = io(`${gatewayOrigin}/chat`, {
       path: '/api/chat/socket.io', // 게이트웨이가 이 경로를 보고 chat-service로 전달함
       withCredentials: true,      // 브라우저가 자동으로 쿠키(accessToken)를 실어 보냄
       forceNew: true,

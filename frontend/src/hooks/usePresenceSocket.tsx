@@ -45,7 +45,11 @@ export const usePresenceSocket = (currentUserId: string | null) => {
     // forceNew: 훅 재진입 시 이전 매니저 재사용으로 인한 꼬임 방지
     // transports: polling -> websocket 업그레이드 경로를 열어 환경별 연결 안정성 확보
     // reconnection*: 무한 재시도 방지 + 재시도 간격 제어 숫자 변경 가능
-    const socket = io('https://localhost:8000/presence', {
+    // suna : env 없으면 현재 접속 호스트의 8000 포트로 fallback (localhost / LAN IP 모두 대응).
+    const gatewayOrigin =
+      import.meta.env.VITE_API_BASE_URL ??
+      `${window.location.protocol}//${window.location.hostname}:8000`;
+    const socket = io(`${gatewayOrigin}/presence`, {
       withCredentials: true,
       forceNew: true,
       

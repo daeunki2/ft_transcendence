@@ -55,11 +55,17 @@ async function bootstrap() {
   app.useWebSocketAdapter(new HttpsIoAdapter(httpsServer));
 
   // 프론트엔드 오리진도 HTTPS 주소로 강제 연동
-  const frontendOrigin = process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173';
+  // suna : env에 콤마로 여러 origin을 넣을 수 있게 파싱. 한 개만 있으면 그대로, 여러 개면 배열로 enableCors에 전달.
+  // localhost(로컬 개발) + LAN IP(원격 접속) 같은 다중 origin 시나리오 지원.
+  const frontendOriginRaw = process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173';
+  const frontendOrigin = frontendOriginRaw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
 
   // 1. CORS 설정 (프론트엔드 허용)
   app.enableCors({
-    origin: frontendOrigin,
+    origin: frontendOrigin.length === 1 ? frontendOrigin[0] : frontendOrigin,
     credentials: true,
   });
   app.use(cookieParser());
@@ -72,10 +78,12 @@ async function bootstrap() {
       target: 'http://auth-service:4000',
       changeOrigin: true,
       pathRewrite: { '^/api/auth': '' },
-      // 개발 환경에서는 auth-service 컨테이너의 도메인을 그대로 쓰면
-      // 브라우저가 쿠키를 저장하지 못하므로 localhost로 재작성한다.
+      // 이유: 개발 환경에서는 auth-service 컨테이너의 도메인을 그대로 쓰면
+      // 브라우저가 쿠키를 저장하지 못하므로 도메인을 비워 요청 호스트에 묶이게 한다.
+      // suna : 빈 문자열로 두면 Domain 속성 자체가 제거되어 현재 접속 호스트(localhost / LAN IP)에
+      // 자동으로 묶인다. 기존 '*':'localhost'는 LAN IP로 들어오는 원격 접속에서 쿠키가 거절됨.
       cookieDomainRewrite: {
-        '*': 'localhost',
+        '*': '',
       },
       on: {
         proxyRes(proxyRes) {

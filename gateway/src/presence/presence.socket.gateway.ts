@@ -23,8 +23,13 @@ type GameInviteWakeupPayload = {
 @WebSocketGateway({
   namespace: '/presence',
   transports: ['websocket', 'polling'],
+  // suna : env가 콤마로 여러 origin을 가질 수 있어 파싱해서 단일/배열로 전달.
   cors: {
-    origin: process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173',
+    origin: (() => {
+      const raw = process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173';
+      const list = raw.split(',').map((o) => o.trim()).filter((o) => o.length > 0);
+      return list.length === 1 ? list[0] : list;
+    })(),
     credentials: true,
   },
 })
