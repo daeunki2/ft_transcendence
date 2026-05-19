@@ -149,7 +149,21 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 
 ### (5) Why We Chose Them
 
-## 2.5 Database Schema
+## 2.5 System Architecture & Data Flow
+```mermaid
+flowchart TD
+    A[user] -->|Request| B(Frontend)
+    B --> C{"Gateway(routing & guard)"}
+    C -->|Login & Logout| D[Auth Service]
+	D -->|User Data push| E
+    C -->|User Page & Friend Page| E[User Service]
+    C -->|Chatting| F[Chat Service]
+    C -->|Play game| G[Game Service]
+	H[Presence redis] <-->|pub/sub| D
+	H[Presence redis] -->|sub|E
+	H[Presence redis] -->|sub| F
+	H[Presence redis] -->|pub/sub| G
+```
 
 ---
 
