@@ -186,9 +186,6 @@ git clone <your-repository-url>
 # Move into the project directory
 cd ft_transcendence
 
-## 3.3 Environment Setup (.env)
-
-## 3.4 Run the Project
 ```
 
 ### 3.3 Environment Setup (.env)
