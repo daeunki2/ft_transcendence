@@ -38,8 +38,6 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 
 ### (3) Key Features
 
-## 3. Key Technical Features (Architecture & Engineering)
-
 ### 🚀 1. Loosely Coupled Microservices Architecture (MSA)
 * **Domain Isolation:** Separated application core into 4 distinct Dockerized microservices—**Auth, User, Chat, and Game**—orchestrated through a centralized Nginx API Gateway to maximize fault isolation and scalability.
 * **Event-Driven Presence Layer:** Integrated a **Redis Pub/Sub** network to synchronize live user presence states (Online/Offline/In-Game) cross-services smoothly without direct HTTP coupling.
