@@ -142,6 +142,10 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 * **Redis:** Deployed as an in-memory data store explicitly leveraged for its high-performance **Pub/Sub** capabilities, serving as an event-driven synchronization layer to broadcast live user presence data across distinct microservices.
 
 ### (4) Other Technologies
+* **Uptime Kuma:** Deployed as a centralized, lightweight monitoring engine to continuously ping container health-check endpoints, track response latencies, and display active system uptime.
+* **Git & GitHub:** Utilized as the core version control system (VCS), maintaining strict branch conventions, structured pull request reviews, and synchronized codebase collaboration.
+* **Notion & Zapier:** Leveraged as agile project management and automation tools to structure development sprints, track core core feature roadmaps, and automate numeric database calculations.
+* **Make / Makefile:** Authored optimized automated build scripts to orchestrate complex multi-container Docker operations, environment variable setup, and teardown commands via a single unified interface.
 
 ### (5) Why We Chose Them
 
