@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/18 15:15:37 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/19 14:55:09 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,7 +177,7 @@ async function bootstrap() {
 }
 bootstrap();
 
-function createAccessTokenMiddleware(
+function createAccessTokenMiddleware(ㅓ
   jwtService: JwtService,
 ) // 인증로직
 {

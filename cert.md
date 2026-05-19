@@ -4,10 +4,10 @@
 ```
 
 # 디렉토리 생성 (이미 있다면 생략 가능)
-mkdir -p gateway/cert
+mkdir -p gateway/certs
 
 # 해당 디렉토리로 이동
-cd gateway/cert
+cd gateway/certs
 
 # mkcert 다운로드
 wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -O mkcert
