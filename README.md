@@ -48,7 +48,7 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 
 ### 🔌 3. Scalable WebSockets Infrastructure (Chat, Game & Presence)
 * **Full-Duplex Socket Architecture:** Designed and managed a centralized WebSockets (Socket.io) infrastructure to handle heavy concurrent connection lifecycles across distinct domains including real-time chatting, instant game invitations, and live global status syncing.
-* **Stateful Connection Management:** Engineered custom socket-room management and multiplexing logic, allowing seamless message routing within dynamic chat channels and instant, atomic synchronization of "Ready" status toggles within game matchmaking lobbies.
+* **Stateful Connection Management:** Engineered custom socket-room management and multiplexing logic, allowing seamless peer-to-peer message routing within secure 1:1 DM sessions and instant, atomic synchronization of "Ready" status toggles within game matchmaking lobbies.
 
 ### 🎨 4. Dynamic UI/UX Theme Engine & Internationalization (Frontend)
 * **Context-Driven Theme Switching:** Built a fully custom responsive UI from scratch featuring distinct **"Retro"** and **"Future"** concept themes toggleable via a single click. The UI dynamically transforms not just the color palette, but adapts the entire visual style and layout components to fit the selected aesthetic.
@@ -132,7 +132,7 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 
 ### (2) Backend
 * **NestJS (Node.js framework):** Adopted for its highly structured, modular architecture, enabling robust domain segregation and scalable enterprise-level API design.
-* **Socket.io (WebSockets):** Managed full-duplex persistent connections to drive the backend server-authoritative 60 FPS physics game engine and real-time social/lobby synchronization.
+* **Socket.io (WebSockets):** Managed full-duplex persistent connections across a centralized gateway to simultaneously drive the server-authoritative 60 FPS physics game engine, instant 1:1 direct messaging pipelines, and global user presence synchronizations.
 * **JWT & Native NestJS Guards:** Built a multi-layered, proprietary authentication infrastructure completely from scratch. Engineered strict Access/Refresh token verification lifecycles combined with custom Refresh Token Rotation (RTR) logic directly at the framework route level without relying on third-party auth middlewares.
 * **Docker & Docker Compose:** Containerized individual service layers to ensure strict environment consistency and seamless orchestration across development and staging environments.
 
