@@ -1,21 +1,9 @@
-# ft_transcendence
-42 ft_transcendence project
-
-
-## 토큰 사용위해 필요
-npm install @nestjs/jwt passport-jwt
-
-npm install -D @types/passport-jwt
-
-npm install @nestjs/config
-
--------------------------------
 *This project has been created as part of the 42 curriculum by daeunki2, ...*
 
 # 1. Team
 
 ## 1.1 Team Information
-- 나중에 자기소개 넣으면 될듯 합니다.
+- daeunki2, suna, chanypar, tronguye
 
 ## 1.2 Project Management
 - git 버전관리 + team_log 작성 한거 서술
@@ -23,19 +11,30 @@ npm install @nestjs/config
 - 같이 공부하고 설계잡고 일정 나눔
 
 ## 1.3 Individual Contributions
-- chanypar
-- daeunki2
-- suna
+To maintain high agility, we did not divide the team into strict "Frontend vs Backend" roles. Instead, **all members acted as Full-Stack Developers**, but we assigned specific administrative and architectural leads to ensure project stability:
 
+1. **daeunki2 : Product Owner + Technical Lead + Project Manager + Full-Stack Developers**
+	• Founded the project group and defined the overall product vision and direction.
+  	• Led the team's sprint coordination while contributing to the full-stack implementation alongside all members.
+2. **suna : Project Manager + Technical Lead + Full-Stack Developers**
+	• Defined the technical architecture and implementation direction for their assigned services.
+	• Developed core full-stack features from end to end.
+3. **chanypar : Project Manager + Technical Lead + Full-Stack Developers**
+	• Defined the technical architecture and implementation direction for their assigned services.
+	• Developed core full-stack features from end to end.
+4. **tronguye : Technical Lead + Front Developer**
+  • Managed final bug fixing, error handling, and real-world integration testing to stabilize the application(e2e).
 ---
 
 # 2. Project Overview
 
 ## 2.1 Description
 ### (1) Project Name
-- 
+- ft_Pong
 ### (2) Goal
-- 웹에서 사용되는 개념들을 직접 구현하며 공부. 가장 기본적인 통신인 rest와 소켓통신을 구현하고자 퐁을 선택하였고, 대규모 서비스들이 사용하는 마이크로 서비스를 구현하면서 어떻게 동작하는지 배움. 
+- **Hands-on Learning of Core Web Concepts:** We chose to build a Pong game to deeply understand and implement fundamental web communication protocols from scratch, specifically REST APIs and real-time WebSockets.
+- **Experiencing Modern Architecture:** By building a decoupled Microservices Architecture (MSA), we learned firsthand how production-level, large-scale systems operate, communicate, and ensure fault isolation.
+- **Focus on the Journey of Architectural Decisions:** Rather than simply checking off features to rush the project to completion, our ultimate focus was on the engineering process itself—deliberately analyzing how to structure our services, weighing architectural trade-offs, and choosing the right technology for each specific scenario.
 
 ### (3) Key Features
 
