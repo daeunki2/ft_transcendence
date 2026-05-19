@@ -143,9 +143,9 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 
 ### (4) Other Technologies
 * **Uptime Kuma:** Deployed as a centralized, lightweight monitoring engine to continuously ping container health-check endpoints, track response latencies, and display active system uptime.
-* **Git & GitHub:** Utilized as the core version control system (VCS), maintaining strict branch conventions, structured pull request reviews, and synchronized codebase collaboration.
-* **Notion & Zapier:** Leveraged as agile project management and automation tools to structure development sprints, track core core feature roadmaps, and automate numeric database calculations.
-* **Make / Makefile:** Authored optimized automated build scripts to orchestrate complex multi-container Docker operations, environment variable setup, and teardown commands via a single unified interface.
+* **Make / Makefile:** Authored optimized automated build scripts to orchestrate complex multi-container Docker operations, environment variable setup, and immediate teardown commands via a single unified command interface.
+* **Docker Network:** Configured isolated, secure internal bridge networks to facilitate high-speed, private inter-service communication between the microservices while blocking external exposure.
+* **Notion & GitHub:** Leveraged as primary collaboration tools to maintain agile development sprints, track core feature milestones, manage strict Git branch conventions, and conduct peer code reviews.
 
 ### (5) Why We Chose Them
 
