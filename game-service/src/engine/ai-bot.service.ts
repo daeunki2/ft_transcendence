@@ -19,7 +19,7 @@ export class AiBotService {
     const targetY = this.predictImpactY(state.ballX, state.ballY, state.ballVx, state.ballVy);
 
     // 목표와 패들 중심 차이가 너무 작으면 떨림을 줄이기 위해 정지한다.
-    const deadZone = PADDLE_SPEED * 0.55; //데드존
+    const deadZone = PADDLE_SPEED * 0.80; //데드존
     if (Math.abs(targetY - paddleCenterY) <= deadZone) {
       return 'none';
     }

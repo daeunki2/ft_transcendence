@@ -156,8 +156,14 @@ export class PresenceService implements OnModuleDestroy {
         await this.redis.touchAlive(event.userId, this.heartbeatTtlSec);
         return;
       case 'disconnected':
-        await this.redis.clearAlive(event.userId);
-        await this.redis.decrementConnection(event.userId);
+        // await this.redis.clearAlive(event.userId);
+        // await this.redis.decrementConnection(event.userId);
+        { // 기존에 너무 가차없이 끊어버려서 쉽게 오프라인 처리 되어 버림.
+          const remainingConnections = await this.redis.decrementConnection(event.userId);
+          if (remainingConnections === 0) {
+            await this.redis.clearAlive(event.userId);
+          }
+        }
         return;
       case 'matching_started':
         flags.matching = true;

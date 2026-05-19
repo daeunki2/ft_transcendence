@@ -6,9 +6,9 @@ import type { EngineState } from './game-engine.types';
 @Injectable()
 export class AiRuntimeAdapter {
   // 인간처럼 보이게 하기 위한 판단 간격/스킵 설정.
-  private readonly baseDecisionIntervalMs = 130; // 반응주기
+  private readonly baseDecisionIntervalMs = 180; // 반응주기
   private readonly intervalJitterMs = 50;
-  private readonly decisionSkipChance = 0.12; // 스킵확률
+  private readonly decisionSkipChance = 0.20; // 스킵확률
   private readonly decisionState = new Map<
     string,
     { nextDecisionAt: number; lastDirection: 'up' | 'down' | 'none' }
