@@ -125,10 +125,21 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 ## 2.4 Technical Stack
 
 ### (1) Frontend
+* **React & TypeScript:** Utilized to build a scalable, type-safe Single Page Application (SPA) with efficient component reusability.
+* **Context API & Tailored CSS:** Engineered a fully custom style system without relying on pre-made external templates, implementing an on-the-fly "Retro" and "Future" concept theme-switching engine.
+* **i18next (Internationalization):** Integrated a client-side translation pipeline to deliver seamless, native live-switching between Korean, English, and French.
+* **Socket.io-client:** Established persistent full-duplex WebSockets connections to handle real-time chat sync, presence updates, and low-latency game 60 FPS state rendering.
 
 ### (2) Backend
+* **NestJS (Node.js framework):** Adopted for its highly structured, modular architecture, enabling robust domain segregation and scalable enterprise-level API design.
+* **Socket.io (WebSockets):** Managed full-duplex persistent connections to drive the backend server-authoritative 60 FPS physics game engine and real-time social/lobby synchronization.
+* **JWT & Native NestJS Guards:** Built a multi-layered, proprietary authentication infrastructure completely from scratch. Engineered strict Access/Refresh token verification lifecycles combined with custom Refresh Token Rotation (RTR) logic directly at the framework route level without relying on third-party auth middlewares.
+* **Docker & Docker Compose:** Containerized individual service layers to ensure strict environment consistency and seamless orchestration across development and staging environments.
 
-### (3) Database
+### (3) Database & Caching
+* **PostgreSQL:** Selected as the primary ACID-compliant relational database to strictly persist structured schemas including user credentials, relational friend graphs, and historic match logs.
+* **TypeORM:** Implemented as the Object-Relational Mapper (ORM) to enforce type safety, streamline repository patterns, and handle safe programmatic database schema migrations.
+* **Redis:** Deployed as an in-memory data store explicitly leveraged for its high-performance **Pub/Sub** capabilities, serving as an event-driven synchronization layer to broadcast live user presence data across distinct microservices.
 
 ### (4) Other Technologies
 
