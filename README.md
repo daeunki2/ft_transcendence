@@ -38,17 +38,32 @@ To maintain high agility, we did not divide the team into strict "Frontend vs Ba
 
 ### (3) Key Features
 
-- front
-- 테마 2개
-- 언어 변경
+## 3. Key Technical Features (Architecture & Engineering)
 
-- back
-- 실시간 채팅
-- 원격 멀티 플레이
+### 🚀 1. Loosely Coupled Microservices Architecture (MSA)
+* **Domain Isolation:** Separated application core into 4 distinct Dockerized microservices—**Auth, User, Chat, and Game**—orchestrated through a centralized Nginx API Gateway to maximize fault isolation and scalability.
+* **Event-Driven Presence Layer:** Integrated a **Redis Pub/Sub** network to synchronize live user presence states (Online/Offline/In-Game) cross-services smoothly without direct HTTP coupling.
 
-- struct
-- gateway
-- micro 
+### ⚡ 2. High-Performance 60 FPS Game Engine & Sync
+* **Server-Side Physics Engine:** Implemented a robust game loop executing at a strict **60 FPS** on the backend to enforce state authority and eliminate client-side cheating or interpolation manipulation.
+* **Resilient Connection-Drop Handling:** Engineered an immediate socket disconnection hook via WebSockets (Socket.io) that instantly detects link failures, gracefully resolves active game sessions, updates the Postgres DB, and awards forfeit victories to remaining players.
+
+### 🔌 3. Scalable WebSockets Infrastructure (Chat, Game & Presence)
+* **Full-Duplex Socket Architecture:** Designed and managed a centralized WebSockets (Socket.io) infrastructure to handle heavy concurrent connection lifecycles across distinct domains including real-time chatting, instant game invitations, and live global status syncing.
+* **Stateful Connection Management:** Engineered custom socket-room management and multiplexing logic, allowing seamless message routing within dynamic chat channels and instant, atomic synchronization of "Ready" status toggles within game matchmaking lobbies.
+
+### 🎨 4. Dynamic UI/UX Theme Engine & Internationalization (Frontend)
+* **Context-Driven Theme Switching:** Built a fully custom responsive UI from scratch featuring distinct **"Retro"** and **"Future"** concept themes toggleable via a single click. The UI dynamically transforms not just the color palette, but adapts the entire visual style and layout components to fit the selected aesthetic.
+* **Native Multi-Language Support:** Integrated a scalable Internationalization (i18n) translation pipeline dynamically supporting **Korean, English, and French**, allowing instantaneous client-side layout adjustments without forcing application reloads.
+
+### 🔐 5. Dual-Token Security Infrastructure with RTR
+* **Strict Session Hijacking Defense:** Enforced a robust custom authentication system leveraging a dual-token standard (**Access & Refresh tokens**) delivered entirely via secure **HTTP-only browser cookies**.
+* **Refresh Token Rotation (RTR):** Programmed an active rotation pipeline that invalidates used/compromised token chains immediately upon verification, mitigating replay attacks.
+* **Role-Based Guards:** Designed targeted NestJS Authorization Guards to strictly separate "Guest" and "Registered User" interaction layers at the API route level.
+
+### 📊 6. High-Availability Infrastructure Monitoring & Health Checks
+* **Continuous Endpoint Verification:** Configured automated live health-check endpoints for all containerized microservices to ensure continuous service availability and rapid fault detection.
+* **Centralized Live Status Dashboard:** Integrated **Uptime Kuma** to monitor real-time container status, response latency, and system uptime, guaranteeing high availability (HA) across the entire decentralized infrastructure.
 
 ## 2.2 Features List
 - 친구 추가
