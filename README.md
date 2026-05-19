@@ -169,13 +169,30 @@ flowchart TD
 
 # 3. Instructions
 
-## 3.1 Prerequisites
+## 3. Instructions
 
-## 3.2 Installation
+### 3.1 Prerequisites
+Before running the project, ensure you have the following software installed on your system:
+* **Docker:** Version 20.10.0 or higher
+* **Docker Compose:** Version 2.0.0 or higher
+* **Make / Makefile utility** (pre-installed on macOS/Linux; required to run automated build scripts)
+
+### 3.2 Installation
+Clone the repository and navigate into the project root directory:
+```bash
+# Clone the repository
+git clone <your-repository-url>
+
+# Move into the project directory
+cd ft_transcendence
 
 ## 3.3 Environment Setup (.env)
 
 ## 3.4 Run the Project
+```
+
+### 3.3 Environment Setup (.env)
+### 3.4 Run the Project
 
 ---
 
