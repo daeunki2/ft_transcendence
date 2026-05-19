@@ -162,7 +162,7 @@ flowchart TD
 	H[Presence redis] <-->|pub/sub| D
 	H[Presence redis] -->|sub|E
 	H[Presence redis] -->|sub| F
-	H[Presence redis] -->|pub/sub| G
+	H[Presence redis] <-->|pub/sub| G
 ```
 
 ---
