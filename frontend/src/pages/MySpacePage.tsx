@@ -31,7 +31,12 @@ export default function MySpacePage() {
     );
   }
 
-  const currentAvatarUrl = user.userPhoto;
+  const gatewayDomain = window.location.origin.replace(':5173', ':8000');
+
+// 백엔드가 준 주소가 도메인이 없는 상대 경로('/api/...') 형식이면 앞에 도메인을 결합해 줍니다.
+  const currentAvatarUrl = user.userPhoto?.startsWith('/')
+    ? `${gatewayDomain}${user.userPhoto}`
+    : user.userPhoto;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -6,11 +6,12 @@ import { isNicknameAllowed } from '../utils/nickname-filter';
 import { join } from 'path';
 import * as fs from 'fs';
 
-const GATEWAY_UPLOADS_URL = "https://localhost:8000/api/users/uploads";
-const DEFAULT_PHOTO_URL = `${GATEWAY_UPLOADS_URL}/default.jpg`;
+const DEFAULT_PHOTO_PATH = '/api/users/uploads/default.jpg';
+const UPLOADS_PREFIX_PATH = '/api/users/uploads';
 
 @Injectable()
 export class UserService {
+  
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -44,7 +45,7 @@ export class UserService {
       userId: id, // 전달받은 UUID
       loginId,
       nickname: normalizedNickname,
-      userPhoto: DEFAULT_PHOTO_URL,
+      userPhoto: DEFAULT_PHOTO_PATH,
       role,
       });
 
@@ -78,7 +79,7 @@ export class UserService {
     
     if (!user) return null;
     
-    if (user.userPhoto && user.userPhoto !== DEFAULT_PHOTO_URL) {
+    if (user.userPhoto && user.userPhoto !== DEFAULT_PHOTO_PATH) {
       const fileName = user.userPhoto.split('/').pop();
       if (fileName) {
       const filePath = join(process.cwd(), 'uploads', fileName);
@@ -86,7 +87,7 @@ export class UserService {
       // 4. 파일이 실제로 없으면 DB 업데이트
       if (!fs.existsSync(filePath)) {
         console.log(`📂 파일 없음: ${fileName}. 기본값으로 복구.`);
-        user.userPhoto = DEFAULT_PHOTO_URL;
+        user.userPhoto = DEFAULT_PHOTO_PATH;
         await this.userRepository.save(user);
       }
     }
@@ -155,7 +156,7 @@ export class UserService {
     }
 
     // 1. 파일 접근 URL 생성
-    const fileUrl = `${GATEWAY_UPLOADS_URL}/${file.filename}`;
+    const fileUrl = `${UPLOADS_PREFIX_PATH}/${file.filename}`;
 
     // 2. DB 업데이트 (기존 updateProfile 로직 재활용 가능)
     const updatedUser = await this.updateProfile(userId, { userPhoto: fileUrl });

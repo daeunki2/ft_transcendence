@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 14:02:33 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/19 14:55:09 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/20 12:34:52 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,14 +45,12 @@ async function bootstrap() {
   };
 
   const expressApp = express();
-  const httpsServer = https.createServer(httpsOptions, expressApp);
   
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressApp),
   );
   
-  app.useWebSocketAdapter(new HttpsIoAdapter(httpsServer));
 
   // 프론트엔드 오리진도 HTTPS 주소로 강제 연동
   // suna : env에 콤마로 여러 origin을 넣을 수 있게 파싱. 한 개만 있으면 그대로, 여러 개면 배열로 enableCors에 전달.
@@ -163,6 +161,9 @@ async function bootstrap() {
 
   await app.init();
 
+  const httpsServer = https.createServer(httpsOptions, expressApp);
+  app.useWebSocketAdapter(new HttpsIoAdapter(httpsServer));
+
   httpsServer.listen(8000, () => {
     console.log('Gateway HTTPS running on 8000');
   });
@@ -175,9 +176,8 @@ async function bootstrap() {
   // console.log('[게이트웨이] 웹소켓 업그레이드 요청 감지:', request.url);
   // });
 }
-bootstrap();
 
-function createAccessTokenMiddleware(ㅓ
+function createAccessTokenMiddleware(
   jwtService: JwtService,
 ) // 인증로직
 {
@@ -235,6 +235,8 @@ function createAccessTokenMiddleware(ㅓ
     } // 만료된 쿠키도 삭제되기 때문에 현재는 필요 없으나 나중을 위해 남겨둠 
   };
 }
+
+bootstrap();
 
 /*
 로그인 상태에서 API 요청
