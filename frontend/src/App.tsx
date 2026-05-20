@@ -38,6 +38,10 @@ function App() {
   const { messages } = useI18n();
   const { user, setUser, isGuest, setIsGuest } = useAuth();
   const currentUserId = user?.userId ?? null;
+  // daeunki2: 주석이유
+  // 인증 초기화(fetchMe) 완료 이전에는 presence 소켓을 열지 않도록 게이팅한다.
+  // 초기 부팅 구간의 불필요한 connect/disconnect 반복과 로그 노이즈를 줄이기 위함.
+  const shouldConnectPresence = isAuthReady && Boolean(currentUserId);
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isOffline, setIsOffline] = useState(
@@ -79,8 +83,13 @@ function App() {
     };
   }, []);
 
-  // 추가 이유 : 상태변화를 프론트 어디서나 쓰게 하려고
-  usePresenceSocket(currentUserId);
+  // daeunki2: 주석이유
+  // 소켓 연결 조건을 명시적으로 전달해 인증 준비 완료 이후에만 presence 연결을 시작한다.
+  usePresenceSocket(currentUserId, shouldConnectPresence);
+  // daeunki2주석 : 주석이유
+  // 기존 구현은 currentUserId만 기준으로 훅을 호출했다.
+  // 인증 준비 전 구간에서도 훅이 반복 실행되어 초기 연결 흔들림이 발생할 수 있어 비활성화.
+  // usePresenceSocket(currentUserId);
 
   const handleUnauthenticated = useCallback(() => {
     const isIntentLogout = sessionStorage.getItem('intent_logout') === '1';

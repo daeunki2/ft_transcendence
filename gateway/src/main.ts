@@ -159,10 +159,18 @@ async function bootstrap() {
     }),
   );
 
-  await app.init();
-
+  // daeunki2: 주석이유
+  // WebSocket Gateway 초기화 시점에 HTTPS 서버 어댑터가 먼저 바인딩되도록 순서를 앞으로 당긴다.
+  // 일부 환경에서 init 이후 어댑터 등록 시 소켓 attach 타이밍이 흔들릴 여지가 있어 부팅 순서를 고정한다.
   const httpsServer = https.createServer(httpsOptions, expressApp);
   app.useWebSocketAdapter(new HttpsIoAdapter(httpsServer));
+  await app.init();
+
+  // daeunki2주석 : 주석이유
+  // 기존 순서(init -> httpsServer 생성 -> 어댑터 등록)를 보존한다.
+  // await app.init();
+  // const httpsServer = https.createServer(httpsOptions, expressApp);
+  // app.useWebSocketAdapter(new HttpsIoAdapter(httpsServer));
 
   httpsServer.listen(8000, () => {
     console.log('Gateway HTTPS running on 8000');

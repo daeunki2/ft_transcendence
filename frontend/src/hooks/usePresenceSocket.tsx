@@ -20,15 +20,20 @@ import {
   type PresenceUpdatedEvent,
 } from '../types/presence';
 
-export const usePresenceSocket = (currentUserId: string | null) => {
+export const usePresenceSocket = (
+  currentUserId: string | null,
+  shouldConnect: boolean,
+) => {
   // 현재 활성 presence 소켓 인스턴스를 보관 >> 중복 연결 차단
   const socketRef = useRef<Socket | null>(null);
   //종료 사유 구분 플래그.
   const intentionalDisconnectRef = useRef(false);
 
   useEffect(() => {
-    // 로그인 유저가 없으면 연결을 정리하고 캐시 상태도 비운다.
-    if (!currentUserId) {
+    // daeunki2: 주석이유
+    // 인증 준비 완료 + 유저 식별자 존재 조건이 충족될 때만 소켓을 열도록 명시적으로 게이팅한다.
+    // 부팅/재검증 구간의 불필요한 연결 시도를 줄여 초기 상태 동기화 흔들림을 완화한다.
+    if (!shouldConnect || !currentUserId) {
       // 로그아웃/세션만료로 인한 의도적 종료임을 먼저 기록한다.
       intentionalDisconnectRef.current = true;
       socketRef.current?.disconnect();
@@ -36,6 +41,16 @@ export const usePresenceSocket = (currentUserId: string | null) => {
       presenceStore.clear();
       return;
     }
+    // daeunki2주석 : 주석이유
+    // 기존 조건은 currentUserId만 검사했다.
+    // 인증 준비 완료 여부를 몰라 초기 구간에서 connect/disconnect가 반복될 수 있어 비활성화.
+    // if (!currentUserId) {
+    //   intentionalDisconnectRef.current = true;
+    //   socketRef.current?.disconnect();
+    //   socketRef.current = null;
+    //   presenceStore.clear();
+    //   return;
+    // }
     // 이미 연결이 살아 있으면 같은 유저에 대해 새 소켓을 만들지 않는다.
     if (socketRef.current) {
       return;
@@ -156,7 +171,7 @@ export const usePresenceSocket = (currentUserId: string | null) => {
         socketRef.current = null;
       }
     };
-  }, [currentUserId]);
+  }, [currentUserId, shouldConnect]);
 };
 
 

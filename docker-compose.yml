@@ -44,8 +44,6 @@ services:
     - "8080"      # 내부 HTTP
     env_file:
       - ./gateway/.env
-    environment:
-      - PRESENCE_INTERNAL_TOKEN=${PRESENCE_INTERNAL_TOKEN}
     volumes:
       - ./gateway:/app
       - /app/node_modules
@@ -72,7 +70,6 @@ services:
     env_file:
       - ./user-service/.env
     environment:
-      - PRESENCE_INTERNAL_TOKEN=${PRESENCE_INTERNAL_TOKEN}
       - PRESENCE_INTERNAL_BASE_URL=http://api-gateway:8080/internal/presence
     volumes:
       - ./user-service:/app
