@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/04 10:49:09 by chanypar          #+#    #+#             */
-/*   Updated: 2026/04/24 17:47:22 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 22:54:00 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,14 @@ import {
   markServiceDown,
 } from './serviceHealthStore';
 
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}/`; // gateway 주소
+// suna : env 없으면 현재 접속 호스트의 8000 포트로 fallback.
+// localhost로 들어오면 https://localhost:8000, LAN IP로 들어오면 https://<그 IP>:8000.
+// 기존 'https://localhost:8000' 하드코딩은 LAN IP 원격 접속에서 깨짐.
+const defaultGatewayOrigin =
+  typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : '';
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL ?? defaultGatewayOrigin}/`; // gateway 주소
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 const USER_SERVICE_PATH_PREFIX = 'api/users';
 const USER_SERVICE_UNAVAILABLE_CODE = 'USER_SERVICE_UNAVAILABLE';

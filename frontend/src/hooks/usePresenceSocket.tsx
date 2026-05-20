@@ -3,17 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   usePresenceSocket.tsx                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 09:33:45 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/09 12:00:05 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/18 11:20:50 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useEffect, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { presenceStore } from '../services/presenceStore';
-import { PRESENCE_UPDATED_EVENT, type PresenceUpdatedEvent } from '../types/presence';
+import {
+  PRESENCE_UPDATED_EVENT,
+  GAME_INVITE_RECEIVED_EVENT,
+  type GameInvitePayload,
+  type PresenceUpdatedEvent,
+} from '../types/presence';
 
 export const usePresenceSocket = (currentUserId: string | null) => {
   // 현재 활성 presence 소켓 인스턴스를 보관 >> 중복 연결 차단
@@ -40,10 +45,14 @@ export const usePresenceSocket = (currentUserId: string | null) => {
     // forceNew: 훅 재진입 시 이전 매니저 재사용으로 인한 꼬임 방지
     // transports: polling -> websocket 업그레이드 경로를 열어 환경별 연결 안정성 확보
     // reconnection*: 무한 재시도 방지 + 재시도 간격 제어 숫자 변경 가능
-    const socket = io('http://localhost:8000/presence', {
+    // suna : env 없으면 현재 접속 호스트의 8000 포트로 fallback (localhost / LAN IP 모두 대응).
+    const gatewayOrigin =
+      import.meta.env.VITE_API_BASE_URL ??
+      `${window.location.protocol}//${window.location.hostname}:8000`;
+    const socket = io(`${gatewayOrigin}/presence`, {
       withCredentials: true,
       forceNew: true,
-      transports: ['polling', 'websocket'],
+      
       reconnectionAttempts: 3,
       reconnectionDelay: 5000,
       reconnectionDelayMax: 10000,
@@ -113,6 +122,18 @@ export const usePresenceSocket = (currentUserId: string | null) => {
       // 기존 SocialPage 호환을 위해 커스텀 이벤트도 함께 발행한다.
       window.dispatchEvent(
         new CustomEvent(PRESENCE_UPDATED_EVENT, {
+          detail: event,
+        }),
+      );
+    });
+
+    // suna : 친구 초대 wakeup 수신.
+    // 본인이 target 인 경우에만 GameContext 가 게임 소켓을 활성화하도록 윈도우 이벤트로 재발행.
+    socket.on('game.invite', (event: GameInvitePayload) => {
+      if (!event?.targetUserId || event.targetUserId !== currentUserId) return;
+      console.log('[Presence] game.invite 수신:', event);
+      window.dispatchEvent(
+        new CustomEvent(GAME_INVITE_RECEIVED_EVENT, {
           detail: event,
         }),
       );

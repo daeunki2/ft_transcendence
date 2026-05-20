@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:28 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/11 12:17:15 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/17 11:49:03 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,10 +65,25 @@ export type Messages = {
     aiGame : string;
     gameRule : string;
     rule : string;
-    connectGameJoin: string;
-    connectGameServer: string;
     matchFound: string;
     escCancel: string;
+  };
+  game: {
+    connectGameJoin: string;
+    connectGameServer: string;
+    preparingAiMatch: string;
+    matchingError: string;
+    movePaddle: string;
+    winner: string;
+    loser: string;
+    backHome: string;
+    // suna : match_found 후 게임 시작 버튼 / ready 핸드셰이크용 문구.
+    matchFoundReady: string;
+    startGameButton: string;
+    waitingOpponentReady: string;
+    // suna : 친구 초대 단계 문구.
+    invitingFriend: string;
+    invitedByFriend: string;
   };
   social: {
     title: string;
@@ -99,6 +114,10 @@ export type Messages = {
     save: string;
     gameHistory: string;
     noGames: string;
+    win: string;
+    lose: string;
+    me: string;
+    Loading: string;
     cancel: string;
   };
   privacy: {
@@ -169,6 +188,15 @@ errors: {
     UNAUTHENTICATED: string;
     ALREADY_IN_GAME: string;
     KICKED_BY_NEW_TAB: string;
+    // suna : 친구 초대 관련 에러 코드.
+    CANNOT_INVITE_SELF: string;
+    TARGET_ALREADY_INVITED: string;
+    ALREADY_INVITING: string;
+    TARGET_BUSY: string;
+    INVITE_TIMEOUT: string;
+    INVITE_TARGET_LEFT: string;
+    INVITE_INVITER_GONE: string;
+    INVALID_INVITE_TARGET: string;
   };
   errorPage: {
     errorCode: string;

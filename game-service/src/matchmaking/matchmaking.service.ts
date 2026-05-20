@@ -109,23 +109,28 @@ export class MatchmakingService {
       await server.in(p1SocketId).socketsJoin(room);
       await server.in(p2SocketId).socketsJoin(room);
 
+      // opponent 필드를 userId 대신 nickname 으로 발행. 프론트 GameBoard 상단 표시에 그대로 사용됨.
+      // socket.data.nickname 은 game.gateway.ts handleConnection 에서 extractNickname() 으로 세팅됨. 없으면 userId fallback.
+      const p1Nickname = String(server.sockets.get(p1SocketId)?.data?.nickname ?? userA);
+      const p2Nickname = String(server.sockets.get(p2SocketId)?.data?.nickname ?? userB);
+
       server.to(p1SocketId).emit('match_found', {
         gameId: session.gameId,
         side: 'p1',
-        opponent: userB,
+        opponent: p2Nickname,
       });
       server.to(p2SocketId).emit('match_found', {
         gameId: session.gameId,
         side: 'p2',
-        opponent: userA,
+        opponent: p1Nickname,
       });
 
       // 이유: presence는 matching → in_game으로 전이. gateway가 flags.matching=false, flags.inGame=true로 처리.
+      // suna : game_started 는 ready 핸드셰이크 후 실제 게임 루프 시작 시점(GameRuntimeService.startMatch)으로 옮김.
+      // 여기서는 매칭 큐에서 빠졌다는 사실만 알린다.
       await Promise.all([
         this.gameRedis.publishPresence(userA, 'matching_ended'),
         this.gameRedis.publishPresence(userB, 'matching_ended'),
-        this.gameRedis.publishPresence(userA, 'game_started'),
-        this.gameRedis.publishPresence(userB, 'game_started'),
       ]);
 
       this.logger.log(

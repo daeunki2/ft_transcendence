@@ -6,7 +6,7 @@
 /*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 19:06:54 by chanypar          #+#    #+#             */
-/*   Updated: 2026/05/08 10:40:02 by chanypar         ###   ########.fr       */
+/*   Updated: 2026/05/18 09:38:06 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,14 @@ import { PRESENCE_UPDATED_CHANNEL, PresenceUpdatedEvent } from 'src/types/presen
 import { SendDmDto, GetHistoryDto } from './dto/message.dto'; // DTO 임포트
 import { Redis } from 'ioredis';
 
-@WebSocketGateway({ namespace: 'chat', cors: {origin: 'http://localhost:5173'} })
+// suna : env에 콤마로 여러 origin을 넣을 수 있게 파싱. LAN IP 원격 접속 대응.
+const chatCorsOrigin = (() => {
+  const raw = process.env.FRONTEND_ORIGIN ?? 'https://localhost:5173';
+  const list = raw.split(',').map((o) => o.trim()).filter((o) => o.length > 0);
+  return list.length === 1 ? list[0] : list;
+})();
+
+@WebSocketGateway({ namespace: 'chat', cors: { origin: chatCorsOrigin, credentials: true } })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer() server: Server;
 

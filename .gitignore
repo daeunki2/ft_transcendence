@@ -20,3 +20,11 @@ postgres_data/
 
 # coverage
 coverage/
+
+#certificate
+*.pem
+/backend/certs/
+#mkcert 결과물
+gateway/certs/
+frontend/certs/
+mkcert.exe

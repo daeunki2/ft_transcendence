@@ -6,7 +6,7 @@
 #    By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/03/15 19:06:56 by daeunki2          #+#    #+#              #
-#    Updated: 2026/03/15 19:06:58 by daeunki2         ###   ########.fr        #
+#    Updated: 2026/05/14 17:59:11 by daeunki2         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,9 +15,23 @@ COMPOSE = docker compose
 
 all: up
 
-up:
-	@echo "Starting $(NAME) 🚀"
-	$(COMPOSE) up --build
+up-core:
+	@echo "1. Starting core infra (db/redis)"
+	$(COMPOSE) up -d auth-database user-database chat-database game-database redis chat-redis
+
+up-auth-user:
+	@echo "2. Starting auth/user services"
+	$(COMPOSE) up -d auth-service user-service
+
+up-app:
+	@echo "3. Starting app services"
+	$(COMPOSE) up --no-deps -d gateway chat-service game-service frontend
+	$(COMPOSE) up -d --no-deps uptime-kuma
+
+up: up-core up-auth-user up-app
+	@echo "4. All services started 🚀"
+
+up-build: build up
 
 down:
 	@echo "Stopping containers 🛑"
@@ -52,4 +66,4 @@ fclean: clean
 
 re: fclean up
 
-.PHONY: all up down build start stop restart logs ps clean fclean re
+.PHONY: all up up-core up-auth-user up-app up-build down build start stop restart logs ps clean fclean re

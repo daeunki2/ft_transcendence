@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   App.tsx                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daeunki2 <daeunki2@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chanypar <chanypar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 18:47:36 by daeunki2          #+#    #+#             */
-/*   Updated: 2026/05/09 12:02:57 by daeunki2         ###   ########.fr       */
+/*   Updated: 2026/05/18 10:56:50 by chanypar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SocialPage from './pages/SocialPage';
 import MySpacePage from './pages/MySpacePage';
+import GamePage from './pages/GamePage';
 import ServiceGuard from './components/common/ServiceGuard';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import ErrorPage from './pages/ErrorPage';
@@ -28,6 +29,7 @@ import Alert from './components/ui/Alert';
 import { useI18n } from './i18n/useI18n';
 import { useAuth } from './contexts/AuthContext';
 import { usePresenceSocket } from './hooks/usePresenceSocket';
+import GameModalHost from './components/ui/GameModalHost';
 
 const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 
@@ -91,6 +93,9 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* suna : Router 내부에서 useNavigate 가 동작해야 하므로 GameModalHost 를 여기에 둔다.
+          모달과 매칭 에러 알림이 어느 페이지에서든 일관되게 표시되도록 App 레벨에 마운트. */}
+      <GameModalHost />
       <ErrorBoundary>
         {isOffline ? (
           <ErrorPage variant="network" />
@@ -165,6 +170,23 @@ function App() {
                 </ServiceGuard>
               }
             />
+            <Route
+              path="/game"
+              element={
+        //         <ServiceGuard requires="game"> 
+        //           <ProtectedRoute
+        //             isAuthReady={isAuthReady}
+        //             isAuthenticated={Boolean(user)}
+        //             isGuest={isGuest}
+        //             allowGuest={true}
+        //             onUnauthenticated={handleUnauthenticated}
+        //             revalidateAuth={fetchMe}
+        // >
+          <GamePage />
+        // </ProtectedRoute>
+      // </ServiceGuard>
+    }
+  />
             <Route path="*" element={<ErrorPage variant="notFound" />} />
           </Routes>
         )}

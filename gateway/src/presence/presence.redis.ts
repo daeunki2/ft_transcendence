@@ -88,24 +88,33 @@ export class PresenceRedis implements OnModuleDestroy {
     await this.kv.set(this.flagsKey(userId), JSON.stringify(flags));
   }
 
-  async getLastSequence(userId: string): Promise<number> {
-    const raw = await this.kv.get(this.lastSeqKey(userId));
+  // daeunki2수정 : 수정이유
+  // seq는 source별 단조 증가 값이라 user 단일 키로 비교하면 다른 source 이벤트와 충돌한다.
+  // source + userId 조합으로 분리 저장해야 stale 판정이 정확해진다.
+  async getLastSequence(source: string, userId: string): Promise<number> {
+    const raw = await this.kv.get(this.lastSeqKey(source, userId));
     return Number(raw ?? 0);
   }
 
-  async setLastSequence(userId: string, seq: number): Promise<void> {
-    await this.kv.set(this.lastSeqKey(userId), String(seq));
+  // daeunki2수정 : 수정이유
+  // source별 최신 seq 저장
+  async setLastSequence(source: string, userId: string, seq: number): Promise<void> {
+    await this.kv.set(this.lastSeqKey(source, userId), String(seq));
   }
 
-  async getLastEventAt(userId: string): Promise<number> {
-    const raw = await this.kv.get(this.lastEventAtKey(userId));
+  // daeunki2수정 : 수정이유
+  // at 타임스탬프도 source별로 분리해 동일 seq 동률 시 비교 정확도를 맞춘다.
+  async getLastEventAt(source: string, userId: string): Promise<number> {
+    const raw = await this.kv.get(this.lastEventAtKey(source, userId));
     if (!raw) return 0;
     const time = Date.parse(raw);
     return Number.isNaN(time) ? 0 : time;
   }
 
-  async setLastEventAt(userId: string, at: string): Promise<void> {
-    await this.kv.set(this.lastEventAtKey(userId), at);
+  // daeunki2수정 : 수정이유
+  // source별 최신 at 저장
+  async setLastEventAt(source: string, userId: string, at: string): Promise<void> {
+    await this.kv.set(this.lastEventAtKey(source, userId), at);
   }
 
   async markEventProcessed(eventId: string, ttlSec = 120): Promise<boolean> {
@@ -161,7 +170,7 @@ export class PresenceRedis implements OnModuleDestroy {
     }
   }
 
-  async setFriendIdsCache(userId: string, friendIds: string[], ttlSec = 15): Promise<void> {
+  async setFriendIdsCache(userId: string, friendIds: string[], ttlSec = 60): Promise<void> {
     await this.kv.set(this.friendIdsKey(userId), JSON.stringify(friendIds), 'EX', ttlSec);
   }
 
@@ -187,13 +196,27 @@ export class PresenceRedis implements OnModuleDestroy {
     return `presence:flags:${userId}`;
   }
 
-  private lastSeqKey(userId: string) {
-    return `presence:lastSeq:${userId}`;
+  // daeunki2수정 : 수정이유
+  // source별 lastSeq 키로 변경
+  private lastSeqKey(source: string, userId: string) {
+    return `presence:lastSeq:${source}:${userId}`;
   }
 
-  private lastEventAtKey(userId: string) {
-    return `presence:lastEventAt:${userId}`;
+  // daeunki2수정 : 수정이유
+  // source별 lastEventAt 키로 변경
+  private lastEventAtKey(source: string, userId: string) {
+    return `presence:lastEventAt:${source}:${userId}`;
   }
+
+  // daeunki2주석 : 주석이유
+  // 기존 user 단일 키 방식. source 혼합 비교로 stale 오판이 발생할 수 있어 비활성화.
+  // private lastSeqKey(userId: string) {
+  //   return `presence:lastSeq:${userId}`;
+  // }
+  //
+  // private lastEventAtKey(userId: string) {
+  //   return `presence:lastEventAt:${userId}`;
+  // }
 
   private eventDedupKey(eventId: string) {
     return `presence:event:${eventId}`;

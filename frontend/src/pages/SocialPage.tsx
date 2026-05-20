@@ -25,6 +25,9 @@ import { useI18n } from '../i18n/useI18n';
 import { userService } from '../services/userService';
 import { friendService, type FriendItem } from '../services/friendService';
 import { PRESENCE_UPDATED_EVENT } from '../types/presence';
+import { useGameContext } from '../contexts/GameContext';
+import { usePresenceStatus } from '../hooks/usePresenceStatus';
+import { presenceStore } from '../services/presenceStore';
 
 type PresenceUpdatedPayload = {
   userId: string;
@@ -37,6 +40,11 @@ type PresenceUpdatedPayload = {
 function SocialPage() {
   const { theme } = useTheme();
   const { messages } = useI18n();
+
+  // suna : 친구 startGame 버튼이 호출할 친구 초대 진입점.
+  // 모달/소켓/이벤트 처리는 모두 GameProvider 가 담당하므로 페이지는 메서드만 호출.
+  const { startInvite } = useGameContext();
+
   const [chatTarget, setChatTarget] = useState<{
   id: string;
   nickname: string;
@@ -65,6 +73,12 @@ function SocialPage() {
         friendService.getRequests(),
       ]);
       setFriends(f);
+      // daeunki2추가 : 추가한 사유
+      // usePresenceStatus의 초기 기본값(OFFLINE) 때문에 이벤트 도착 전 빨간불로 보이는 문제를 줄이기 위해
+      // friends API가 제공한 현재 상태를 presenceStore 초기 시드로 먼저 반영한다.
+      f.forEach((friend) => {
+        presenceStore.set(friend.userId, friend.status);
+      });
       setRequests(r);
     } catch (err: any) {
       console.error('Failed to load friends:', err);
@@ -174,7 +188,9 @@ function SocialPage() {
       await refresh();
     }
   };
-  const targetFriend = friends.find(f => f.userId === chatTarget?.id);
+  // daeunki2추가 : 추가한 사유
+  // 현재상태 표기를 서버 응답(friend.status) 대신 presenceStore 단일 소스로 읽기 위해 추가
+  const targetStatus = usePresenceStatus(chatTarget?.id ?? null);
   return (
     <PageContainer
       header={<Navbar />}
@@ -226,6 +242,95 @@ function SocialPage() {
             </p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* daeunki2주석 : 주석이유
+              기존 friend.status 기반 렌더링 블록을 보존한다.
+              상태 단일 소스를 presenceStore로 통일하기 위해 아래 새 블록(FriendRow)을 사용한다.
+              {friends.map((friend) => (
+                <div
+                  key={friend.friendId}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '8px 0',
+                    borderBottom: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
+                  }}
+                >
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <Avatar url={friend.userPhoto} />
+                    <span
+                      title={friend.status === 'ONLINE' ? 'online' : friend.status === 'IN_GAME' ? 'in_game' : 'offline'}
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background:
+                          friend.status === 'IN_GAME'
+                            ? '#f59e0b'
+                            : friend.status === 'ONLINE'
+                            ? '#22c55e'
+                            : '#ef4444',
+                        border: `2px solid ${theme.colors.background}`,
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
+                    {friend.nickname}
+                  </span>
+                  <Button
+                    onClick={() => setChatTarget({ id: friend.userId, nickname: friend.nickname, photo: friend.userPhoto })}
+                    style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+                  >
+                    {messages.social.sendMessage}
+                  </Button>
+                  <Button
+                    // suna : GameProvider 가 모달 오픈 + 소켓 활성화 + invite_friend emit 전부 처리.
+                    onClick={() => startInvite(friend.userId)}
+                    disabled={friend.status !== 'ONLINE'}
+                    style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+                  >
+                    {messages.social.startGame}
+                  </Button>
+                  <Button
+                    onClick={() => handleRemove(friend.friendId)}
+                    style={{
+                      fontSize: '12px',
+                      padding: '8px 12px',
+                      minHeight: 'auto',
+                      background: theme.colors.danger,
+                      color: '#ffffff',
+                    }}
+                  >
+                    {messages.social.remove}
+                  </Button>
+                </div>
+              ))}
+              */}
+              {/* daeunki2추가 : 추가한 사유
+              상태값을 friend.status가 아닌 usePresenceStatus(friend.userId)로 렌더하기 위해 컴포넌트 분리 */}
+              {friends.map((friend) => (
+                <FriendRow
+                  key={friend.friendId}
+                  friend={friend}
+                  onOpenChat={() =>
+                    setChatTarget({
+                      id: friend.userId,
+                      nickname: friend.nickname,
+                      photo: friend.userPhoto,
+                    })
+                  }
+                  onRemove={() => handleRemove(friend.friendId)}
+                  // suna : GameProvider 가 모달 + 소켓 + invite_friend emit 다 처리. 페이지는 진입점만.
+                  onStartGame={() => startInvite(friend.userId)}
+                />
+              ))}
+              {/* daeunki2주석 : 주석이유
+              기존 friend.status 기반 렌더 블록(중복) 보존.
+              아래 블록은 FriendRow 기반 새 렌더와 중복되어 비활성화한다.
               {friends.map((friend) => (
                 <div
                   key={friend.friendId}
@@ -285,6 +390,7 @@ function SocialPage() {
                   </Button>
                 </div>
               ))}
+              */}
             </div>
           )}
           </Card>
@@ -396,7 +502,7 @@ function SocialPage() {
         friendName={chatTarget?.nickname ?? ''}
         friendPhoto={chatTarget?.photo}
         currentUserId={currentUserId}
-        targetStatus={targetFriend?.status ?? 'OFFLINE'}
+        targetStatus={targetStatus}
       />
 
       <Alert
@@ -419,3 +525,87 @@ function SocialPage() {
 }
 
 export default SocialPage;
+
+type FriendRowProps = {
+  friend: FriendItem;
+  onOpenChat: () => void;
+  onRemove: () => void;
+  // suna : 머지 때 누락된 친구초대 prop 추가. SocialPage 의 startInvite 를 그대로 전달.
+  onStartGame: () => void;
+};
+
+function FriendRow({ friend, onOpenChat, onRemove, onStartGame }: FriendRowProps) {
+  const { theme } = useTheme();
+  const { messages } = useI18n();
+  // daeunki2추가 : 추가한 사유
+  // 훅 규칙을 지키면서 친구별 실시간 상태를 읽기 위해 row 컴포넌트 내부에서 usePresenceStatus를 호출
+  const liveStatus = usePresenceStatus(friend.userId);
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '8px 0',
+        borderBottom: `${theme.borderWidth.thin} solid ${theme.colors.border}`,
+      }}
+    >
+      <div style={{ position: 'relative', display: 'inline-block' }}>
+        <Avatar url={friend.userPhoto} />
+        <span
+          title={liveStatus === 'ONLINE' ? 'online' : liveStatus === 'IN_GAME' ? 'in_game' : 'offline'}
+          style={{
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            background:
+              liveStatus === 'IN_GAME'
+                ? '#f59e0b'
+                : liveStatus === 'ONLINE'
+                ? '#22c55e'
+                : '#ef4444',
+            border: `2px solid ${theme.colors.background}`,
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+      <span style={{ flex: 1, fontSize: '16px', color: theme.colors.text }}>
+        {friend.nickname}
+      </span>
+      <Button
+        onClick={onOpenChat}
+        style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+      >
+        {messages.social.sendMessage}
+      </Button>
+      {/* suna : 기존 onClick 없는 버튼 보존. */}
+      {/* <Button style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}>
+        {messages.social.startGame}
+      </Button> */}
+      {/* suna : 친구초대 호출 + ONLINE 일 때만 활성화. liveStatus 로 실시간 상태 반영. */}
+      <Button
+        onClick={onStartGame}
+        disabled={liveStatus !== 'ONLINE'}
+        style={{ fontSize: '12px', padding: '8px 12px', minHeight: 'auto' }}
+      >
+        {messages.social.startGame}
+      </Button>
+      <Button
+        onClick={onRemove}
+        style={{
+          fontSize: '12px',
+          padding: '8px 12px',
+          minHeight: 'auto',
+          background: theme.colors.danger,
+          color: '#ffffff',
+        }}
+      >
+        {messages.social.remove}
+      </Button>
+    </div>
+  );
+}

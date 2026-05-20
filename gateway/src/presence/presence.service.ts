@@ -116,11 +116,21 @@ export class PresenceService implements OnModuleDestroy {
     await this.applyEventToStorage(event); // 3번함수
     const nextStatus = await this.recomputeEffectiveStatus(event.userId); //4번 함수
     await Promise.all([
-      this.redis.setLastSequence(event.userId, event.seq),
-      this.redis.setLastEventAt(event.userId, event.at),
+      // daeunki2수정 : 수정이유
+      // lastSeq/lastEventAt는 source별로 분리 저장해야 이벤트 신선도 판정 충돌을 막을 수 있다.
+      this.redis.setLastSequence(event.source, event.userId, event.seq),
+      this.redis.setLastEventAt(event.source, event.userId, event.at),
       // 실제 기록: 계산된 최종 상태를 Redis에 저장
       this.redis.setEffectiveState(event.userId, nextStatus),
     ]);
+
+    // daeunki2주석 : 주석이유
+    // 기존 user 단일 키 저장 방식. source 혼합 시 stale 오판 가능.
+    // await Promise.all([
+    //   this.redis.setLastSequence(event.userId, event.seq),
+    //   this.redis.setLastEventAt(event.userId, event.at),
+    //   this.redis.setEffectiveState(event.userId, nextStatus),
+    // ]);
     if (prevStatus === nextStatus) return; // 상태 변화 없으면 스킵
     // 업데이트 이벤트 생성
     const updatedEvent: PresenceUpdatedEvent = {
@@ -146,8 +156,14 @@ export class PresenceService implements OnModuleDestroy {
         await this.redis.touchAlive(event.userId, this.heartbeatTtlSec);
         return;
       case 'disconnected':
-        await this.redis.clearAlive(event.userId);
-        await this.redis.decrementConnection(event.userId);
+        // await this.redis.clearAlive(event.userId);
+        // await this.redis.decrementConnection(event.userId);
+        { // 기존에 너무 가차없이 끊어버려서 쉽게 오프라인 처리 되어 버림.
+          const remainingConnections = await this.redis.decrementConnection(event.userId);
+          if (remainingConnections === 0) {
+            await this.redis.clearAlive(event.userId);
+          }
+        }
         return;
       case 'matching_started':
         flags.matching = true;
@@ -209,9 +225,18 @@ export class PresenceService implements OnModuleDestroy {
 
   private async isEventFresh(event: PresenceRawEvent): Promise<boolean> {
     const [lastSeq, lastAtMs] = await Promise.all([
-      this.redis.getLastSequence(event.userId),
-      this.redis.getLastEventAt(event.userId),
+      // daeunki2수정 : 수정이유
+      // freshness 판정은 source 내부 순서 보장 기준으로만 비교해야 정확하다.
+      this.redis.getLastSequence(event.source, event.userId),
+      this.redis.getLastEventAt(event.source, event.userId),
     ]);
+
+    // daeunki2주석 : 주석이유
+    // 기존 user 단일 키 조회 방식. source가 다르면 seq 공간이 달라 stale 오판 가능.
+    // const [lastSeq, lastAtMs] = await Promise.all([
+    //   this.redis.getLastSequence(event.userId),
+    //   this.redis.getLastEventAt(event.userId),
+    // ]);
     if (event.seq < lastSeq) return false;
     if (event.seq > lastSeq) return true;
     const eventAtMs = Date.parse(event.at);
